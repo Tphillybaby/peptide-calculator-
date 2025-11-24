@@ -128,35 +128,48 @@
 }
 
 .actions {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+    .actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .actionCard {
     display: flex;
-    align-items: center;
-    gap: var(--space-lg);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
     transition: all var(--transition-base);
     text-decoration: none;
     position: relative;
+    padding: var(--space-xl);
 }
 
 .actionCard::after {
     content: '';
     position: absolute;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 0;
+    bottom: 0;
+    width: 0;
+    height: 3px;
     background: var(--gradient-primary);
     border-radius: var(--radius-full);
-    transition: height var(--transition-base);
+    transition: width var(--transition-base);
 }
 
 .actionCard:hover::after {
-    height: 60%;
+    width: 100%;
 }
 
 .actionCard:active {
@@ -180,10 +193,10 @@
 }
 
 .actionText {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: var(--space-xs);
+    width: 100%;
 }
 
 .actionTitle {
@@ -201,9 +214,12 @@
 .arrow {
     color: var(--text-muted);
     transition: all var(--transition-base);
+    position: absolute;
+    top: var(--space-lg);
+    right: var(--space-lg);
 }
 
 .actionCard:hover .arrow {
     color: var(--accent-primary);
-    transform: translateX(4px);
+    transform: translate(4px, -4px);
 }

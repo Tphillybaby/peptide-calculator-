@@ -51,7 +51,12 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={vialAmount}
-              onChange={(e) => setVialAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Allow empty string for clearing, otherwise parse as float
+                setVialAmount(value === '' ? 0 : parseFloat(value) || 0);
+              }}
+              onWheel={(e) => e.target.blur()} // Prevent scroll from changing value
               step="1"
             />
           </label>
@@ -63,7 +68,11 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={waterAmount}
-              onChange={(e) => setWaterAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setWaterAmount(value === '' ? 0 : parseFloat(value) || 0);
+              }}
+              onWheel={(e) => e.target.blur()}
               step="0.1"
             />
           </label>
@@ -75,7 +84,11 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={doseAmount}
-              onChange={(e) => setDoseAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDoseAmount(value === '' ? 0 : parseFloat(value) || 0);
+              }}
+              onWheel={(e) => e.target.blur()}
               step="50"
             />
           </label>

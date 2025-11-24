@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Syringe, Calculator, Activity, Calendar } from 'lucide-react';
+import { LayoutDashboard, Syringe, Calculator, Activity, Calendar, TrendingDown, BookOpen } from 'lucide-react';
 import styles from './Navigation.module.css';
 
 const Navigation = () => {
@@ -45,6 +45,22 @@ const Navigation = () => {
         >
           <Calendar size={24} />
           <span className={styles.label}>Schedule</span>
+        </NavLink>
+
+        <NavLink
+          to="/encyclopedia"
+          className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+        >
+          <BookOpen size={24} />
+          <span className={styles.label}>Library</span>
+        </NavLink>
+
+        <NavLink
+          to="/price-checker"
+          className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+        >
+          <TrendingDown size={24} />
+          <span className={styles.label}>Prices</span>
         </NavLink>
 
         <NavLink

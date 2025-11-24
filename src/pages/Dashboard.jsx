@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, Syringe, Calendar, ArrowRight } from 'lucide-react';
+import { Activity, Syringe, Calendar, ArrowRight, TrendingDown } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import styles from './Dashboard.module.css';
 
@@ -84,6 +84,17 @@ const Dashboard = () => {
                         <div className={styles.actionText}>
                             <span className={styles.actionTitle}>Calculator</span>
                             <span className={styles.actionDesc}>Reconstitute peptides</span>
+                        </div>
+                        <ArrowRight size={20} className={styles.arrow} />
+                    </Link>
+
+                    <Link to="/price-checker" className={`card ${styles.actionCard}`}>
+                        <div className={styles.actionIcon} style={{ background: 'rgba(6, 182, 212, 0.1)', color: '#06b6d4' }}>
+                            <TrendingDown size={24} />
+                        </div>
+                        <div className={styles.actionText}>
+                            <span className={styles.actionTitle}>Price Checker</span>
+                            <span className={styles.actionDesc}>Compare vendor prices</span>
                         </div>
                         <ArrowRight size={20} className={styles.arrow} />
                     </Link>

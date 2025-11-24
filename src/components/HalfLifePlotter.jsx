@@ -26,15 +26,64 @@ ChartJS.register(
     Filler
 );
 
-const PEPTIDE_PRESETS = {
-    'Semaglutide': 168, // 7 days in hours
-    'Tirzepatide': 120, // 5 days
-    'Retatrutide': 144, // 6 days
-    'CJC-1295': 0.5,    // 30 mins (DAC is longer)
-    'Ipamorelin': 2,    // 2 hours
-    'BPC-157': 4,       // ~4 hours
-    'Custom': 24
+const PEPTIDE_CATEGORIES = {
+    'GLP-1 Agonists & Weight Loss': {
+        'Semaglutide': 168,
+        'Tirzepatide': 120,
+        'Retatrutide': 144,
+        'Liraglutide': 13,
+        'Dulaglutide': 120,
+        'Exenatide': 2.4
+    },
+    'Growth Hormone Secretagogues': {
+        'CJC-1295 (no DAC)': 0.5,
+        'CJC-1295 (DAC)': 168,
+        'Ipamorelin': 2,
+        'GHRP-2': 0.5,
+        'GHRP-6': 0.5,
+        'Hexarelin': 1.5,
+        'MK-677 (Ibutamoren)': 24
+    },
+    'Healing & Recovery': {
+        'BPC-157': 4,
+        'TB-500': 120,
+        'Thymosin Alpha-1': 3,
+        'Thymosin Beta-4': 24,
+        'GHK-Cu': 1
+    },
+    'Cosmetic & Skin': {
+        'Melanotan I': 1,
+        'Melanotan II': 1,
+        'PT-141 (Bremelanotide)': 3,
+        'GHK-Cu (Copper Peptide)': 1
+    },
+    'Performance & Muscle': {
+        'IGF-1 LR3': 24,
+        'IGF-1 DES': 0.5,
+        'Follistatin 344': 48,
+        'ACE-031': 168,
+        'YK-11': 12
+    },
+    'Cognitive & Nootropic': {
+        'Semax': 1,
+        'Selank': 0.5,
+        'Cerebrolysin': 2.5,
+        'P21': 3,
+        'Dihexa': 2
+    },
+    'Metabolic & Other': {
+        'AOD-9604': 0.5,
+        'MOTS-c': 2,
+        'Epithalon': 2,
+        'Pinealon': 2,
+        'SS-31 (Elamipretide)': 4
+    }
 };
+
+// Flatten for easy lookup
+const PEPTIDE_PRESETS = Object.values(PEPTIDE_CATEGORIES).reduce((acc, category) => {
+    return { ...acc, ...category };
+}, { 'Custom': 24 });
 
 const HalfLifePlotter = () => {
     const { injections } = useInjections();
@@ -150,9 +199,14 @@ const HalfLifePlotter = () => {
                         value={selectedPeptide}
                         onChange={(e) => setSelectedPeptide(e.target.value)}
                     >
-                        {Object.keys(PEPTIDE_PRESETS).map(p => (
-                            <option key={p} value={p}>{p}</option>
+                        {Object.entries(PEPTIDE_CATEGORIES).map(([category, peptides]) => (
+                            <optgroup key={category} label={category}>
+                                {Object.keys(peptides).map(peptide => (
+                                    <option key={peptide} value={peptide}>{peptide}</option>
+                                ))}
+                            </optgroup>
                         ))}
+                        <option value="Custom">Custom</option>
                     </select>
                 </div>
 
@@ -163,6 +217,7 @@ const HalfLifePlotter = () => {
                             type="number"
                             value={customHalfLife}
                             onChange={(e) => setCustomHalfLife(Number(e.target.value))}
+                            onWheel={(e) => e.target.blur()}
                         />
                     </div>
                 )}
