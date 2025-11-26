@@ -7,6 +7,9 @@
 
 .header {
   margin-bottom: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .headerContent {
@@ -42,6 +45,19 @@
   color: var(--text-secondary);
   font-size: 1.125rem;
   margin: var(--space-xs) 0 0;
+}
+
+.simNote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: rgba(244, 165, 96, 0.12);
+  border: 1px solid rgba(244, 165, 96, 0.25);
+  color: #fcd34d;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  font-weight: 600;
 }
 
 .controls {
@@ -114,6 +130,19 @@
   color: var(--text-muted);
   font-size: 0.875rem;
   margin-bottom: var(--space-lg);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fecdd3;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  justify-content: center;
 }
 
 .bestDeal {
@@ -288,6 +317,20 @@
   padding: var(--space-3xl);
   color: var(--text-secondary);
   gap: var(--space-lg);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl);
+  gap: var(--space-sm);
+  color: var(--text-secondary);
+}
+
+.vendorGridWrapper {
+  width: 100%;
 }
 
 .vendorGrid {

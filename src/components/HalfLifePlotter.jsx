@@ -85,11 +85,23 @@ const PEPTIDE_PRESETS = Object.values(PEPTIDE_CATEGORIES).reduce((acc, category)
     return { ...acc, ...category };
 }, { 'Custom': 24 });
 
+const convertDose = (value, fromUnit, toUnit) => {
+    if (fromUnit === toUnit) return value;
+    const mgToMcg = (val) => val * 1000;
+    const mcgToMg = (val) => val / 1000;
+    // IU conversion is compound-specific; leave as-is if not matching
+    if (fromUnit === 'mg' && toUnit === 'mcg') return mgToMcg(value);
+    if (fromUnit === 'mcg' && toUnit === 'mg') return mcgToMg(value);
+    return value;
+};
+
 const HalfLifePlotter = () => {
     const { injections } = useInjections();
     const [selectedPeptide, setSelectedPeptide] = useState('Semaglutide');
     const [customHalfLife, setCustomHalfLife] = useState(24);
     const [daysToProject, setDaysToProject] = useState(30);
+    const [weightKg, setWeightKg] = useState('');
+    const [doseUnit, setDoseUnit] = useState('mg');
 
     const halfLifeHours = selectedPeptide === 'Custom' ? customHalfLife : PEPTIDE_PRESETS[selectedPeptide];
 
@@ -128,7 +140,10 @@ const HalfLifePlotter = () => {
                 const injTime = new Date(inj.date).getTime();
                 if (injTime <= currentTime) {
                     const elapsedHours = (currentTime - injTime) / (1000 * 60 * 60);
-                    const remaining = inj.dosage * Math.pow(0.5, elapsedHours / halfLifeHours);
+                    const normalizedDose = inj.unit === doseUnit
+                        ? inj.dosage
+                        : convertDose(inj.dosage, inj.unit, doseUnit);
+                    const remaining = normalizedDose * Math.pow(0.5, elapsedHours / halfLifeHours);
                     totalActive += remaining;
                 }
             });
@@ -221,12 +236,38 @@ const HalfLifePlotter = () => {
                         />
                     </div>
                 )}
+
+                <div className={styles.controlGroup}>
+                    <label>Dose Unit</label>
+                    <select value={doseUnit} onChange={(e) => setDoseUnit(e.target.value)}>
+                        <option value="mg">mg</option>
+                        <option value="mcg">mcg</option>
+                        <option value="iu">IU</option>
+                    </select>
+                </div>
+
+                <div className={styles.controlGroup}>
+                    <label>Body Weight (kg)</label>
+                    <input
+                        type="number"
+                        step="0.1"
+                        placeholder="80"
+                        value={weightKg}
+                        onChange={(e) => setWeightKg(e.target.value)}
+                        onWheel={(e) => e.target.blur()}
+                    />
+                </div>
             </div>
 
             <div className="card glass-panel">
                 <div className={styles.chartHeader}>
                     <Activity size={20} color="var(--accent-primary)" />
                     <h3>Decay Plotter</h3>
+                    <div className={styles.summary}>
+                        <span>Entries: {injections.length}</span>
+                        <span>Unit: {doseUnit}</span>
+                        {weightKg && <span>Weight: {weightKg} kg</span>}
+                    </div>
                 </div>
 
                 <div className={styles.chartContainer}>

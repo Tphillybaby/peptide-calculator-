@@ -327,6 +327,30 @@
   border: 1px solid var(--glass-border);
 }
 
+.benefitsBlock li {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+}
+
+.sideEffectsBlock li {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(14, 165, 233, 0.25);
+  color: #bfdbfe;
+}
+
+.consBlock li {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #fde68a;
+}
+
+.warningsBlock li {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fecdd3;
+}
+
 .protocols {
   margin-bottom: var(--space-lg);
 }

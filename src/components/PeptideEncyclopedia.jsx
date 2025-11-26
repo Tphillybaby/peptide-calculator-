@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
     Activity,
     BookOpen,
@@ -21,6 +21,8 @@ const PeptideEncyclopedia = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('All');
     const [selectedPeptide, setSelectedPeptide] = useState(peptides[0]);
+    const detailRef = useRef(null);
+    const hasInteracted = useRef(false);
 
     const filteredPeptides = useMemo(() => {
         const term = searchTerm.toLowerCase();
@@ -49,6 +51,18 @@ const PeptideEncyclopedia = () => {
 
     const protocols = selectedPeptide?.protocols || [];
     const cons = selectedPeptide?.cons || [];
+
+    const handleSelect = (peptide) => {
+        hasInteracted.current = true;
+        setSelectedPeptide(peptide);
+    };
+
+    useEffect(() => {
+        if (!detailRef.current) return;
+        if (!hasInteracted.current) return;
+        if (typeof window !== 'undefined' && window.innerWidth > 900) return;
+        detailRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, [selectedPeptide]);
 
     return (
         <div className={styles.container}>
@@ -116,7 +130,7 @@ const PeptideEncyclopedia = () => {
                                 className={`${styles.peptideCard} ${
                                     selectedPeptide?.name === peptide.name ? styles.activeCard : ''
                                 }`}
-                                onClick={() => setSelectedPeptide(peptide)}
+                                onClick={() => handleSelect(peptide)}
                             >
                                 <div className={styles.cardHeader}>
                                     <div>
@@ -147,7 +161,7 @@ const PeptideEncyclopedia = () => {
                 </div>
 
                 {selectedPeptide && (
-                    <div className={styles.detailColumn}>
+                    <div className={styles.detailColumn} ref={detailRef}>
                         <div className={`glass-panel ${styles.detailCard}`}>
                             <div className={styles.detailHeader}>
                                 <div>
@@ -186,7 +200,7 @@ const PeptideEncyclopedia = () => {
                             </div>
 
                             <div className={styles.columns}>
-                                <div>
+                                <div className={styles.benefitsBlock}>
                                     <p className={styles.label}>Benefits</p>
                                     <ul>
                                         {(selectedPeptide.benefits || []).map((item) => (
@@ -194,7 +208,7 @@ const PeptideEncyclopedia = () => {
                                         ))}
                                     </ul>
                                 </div>
-                                <div>
+                                <div className={styles.sideEffectsBlock}>
                                     <p className={styles.label}>Side Effects</p>
                                     <ul>
                                         {(selectedPeptide.sideEffects || []).map((item) => (
@@ -202,7 +216,7 @@ const PeptideEncyclopedia = () => {
                                         ))}
                                     </ul>
                                 </div>
-                                <div>
+                                <div className={styles.consBlock}>
                                     <p className={styles.label}>Cons</p>
                                     <ul>
                                         {cons.length > 0 ? cons.map((item) => (
@@ -210,7 +224,7 @@ const PeptideEncyclopedia = () => {
                                         )) : <li>No major cons listed.</li>}
                                     </ul>
                                 </div>
-                                <div>
+                                <div className={styles.warningsBlock}>
                                     <p className={styles.label}>Warnings</p>
                                     <ul>
                                         {(selectedPeptide.warnings || []).map((item) => (

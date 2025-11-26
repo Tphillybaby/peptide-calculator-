@@ -11,7 +11,9 @@ const InjectionTracker = () => {
         peptide: '',
         dosage: '',
         unit: 'mg',
-        site: 'Abdomen'
+        site: 'Abdomen',
+        bodyWeightKg: '',
+        notes: ''
     });
 
     const handleSubmit = (e) => {
@@ -23,10 +25,12 @@ const InjectionTracker = () => {
             dosage: parseFloat(formData.dosage),
             unit: formData.unit,
             site: formData.site,
+            bodyWeightKg: formData.bodyWeightKg ? parseFloat(formData.bodyWeightKg) : null,
+            notes: formData.notes || '',
             date: new Date().toISOString()
         });
 
-        setFormData({ peptide: '', dosage: '', unit: 'mg', site: 'Abdomen' });
+        setFormData({ peptide: '', dosage: '', unit: 'mg', site: 'Abdomen', bodyWeightKg: '', notes: '' });
         setIsFormOpen(false);
     };
 
@@ -91,6 +95,28 @@ const InjectionTracker = () => {
                             <option value="Arm">Arm</option>
                             <option value="Glute">Glute</option>
                         </select>
+                    </div>
+
+                    <div className={styles.row}>
+                        <div className={styles.inputGroup}>
+                            <label>Body Weight (kg)</label>
+                            <input
+                                type="number"
+                                step="0.1"
+                                placeholder="80"
+                                value={formData.bodyWeightKg}
+                                onChange={e => setFormData({ ...formData, bodyWeightKg: e.target.value })}
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label>Notes</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., pre-breakfast"
+                                value={formData.notes}
+                                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                            />
+                        </div>
                     </div>
 
                     <button type="submit" className="btn-primary" style={{ width: '100%' }}>

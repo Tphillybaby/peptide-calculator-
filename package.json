@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node ./tests/run-tests.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.86.0",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.554.0",

@@ -9,6 +9,7 @@ const Navigation = () => {
       <div className={styles.navContent}>
         <NavLink
           to="/"
+          aria-label="Home"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <LayoutDashboard size={24} />
@@ -17,6 +18,7 @@ const Navigation = () => {
 
         <NavLink
           to="/tracker"
+          aria-label="Injection Tracker"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <Syringe size={24} />
@@ -25,6 +27,7 @@ const Navigation = () => {
 
         <NavLink
           to="/calculator"
+          aria-label="Reconstitution Calculator"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <Calculator size={24} />
@@ -33,6 +36,7 @@ const Navigation = () => {
 
         <NavLink
           to="/half-life"
+          aria-label="Half-Life Plotter"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <Activity size={24} />
@@ -41,6 +45,7 @@ const Navigation = () => {
 
         <NavLink
           to="/schedule"
+          aria-label="Schedule"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <Calendar size={24} />
@@ -49,6 +54,7 @@ const Navigation = () => {
 
         <NavLink
           to="/encyclopedia"
+          aria-label="Peptide Encyclopedia"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <BookOpen size={24} />
@@ -57,6 +63,7 @@ const Navigation = () => {
 
         <NavLink
           to="/price-checker"
+          aria-label="Price Checker"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <TrendingDown size={24} />
@@ -65,6 +72,7 @@ const Navigation = () => {
 
         <NavLink
           to="/login"
+          aria-label="Login"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
         >
           <div style={{

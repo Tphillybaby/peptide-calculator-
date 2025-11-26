@@ -36,8 +36,17 @@
 .chartHeader {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: var(--space-sm);
     margin-bottom: var(--space-md);
+}
+
+.summary {
+    display: flex;
+    gap: var(--space-md);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
 }
 
 .chartContainer {
