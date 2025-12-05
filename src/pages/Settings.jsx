@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
 import { supabase } from '../lib/supabase';
+import { notificationService } from '../services/notificationService';
+import { emailService } from '../services/emailService';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -268,16 +271,28 @@ const Settings = () => {
                             <h2>Notification Preferences</h2>
 
                             <div className={styles.toggleGroup}>
-                                <div className={styles.toggleItem}>
-                                    <div>
-                                        <h3>Injection Reminders</h3>
-                                        <p>Get notified when it's time for your next injection</p>
+                                <div className={styles.settingItem}>
+                                    <div className={styles.settingInfo}>
+                                        <span className={styles.settingLabel}>Injection Reminders</span>
+                                        <span className={styles.settingDescription}>Get notified when it's time for your next dose</span>
                                     </div>
                                     <label className={styles.toggle}>
                                         <input
                                             type="checkbox"
-                                            checked={notifications.injectionReminders}
-                                            onChange={(e) => setNotifications({ ...notifications, injectionReminders: e.target.checked })}
+                                            checked={notifications.email_reminders}
+                                            onChange={async (e) => {
+                                                if (e.target.checked) {
+                                                    const granted = await notificationService.requestPermission();
+                                                    if (granted) {
+                                                        setNotifications({ ...notifications, email_reminders: true });
+                                                        notificationService.sendNotification('Reminders Enabled', { body: 'You will now receive injection reminders.' });
+                                                    } else {
+                                                        alert('Please enable notifications in your browser settings.');
+                                                    }
+                                                } else {
+                                                    setNotifications({ ...notifications, email_reminders: false });
+                                                }
+                                            }}
                                         />
                                         <span className={styles.slider}></span>
                                     </label>
@@ -343,8 +358,23 @@ const Settings = () => {
                                         checked={darkMode}
                                         onChange={(e) => setDarkMode(e.target.checked)}
                                     />
-                                    <span className={styles.slider}></span>
+                                    <span className={styles.toggleSlider}></span>
                                 </label>
+                            </div>
+
+                            <div style={{ marginLeft: '3rem', marginBottom: '1.5rem' }}>
+                                <button
+                                    className={styles.secondaryBtn}
+                                    style={{ fontSize: '0.8rem', padding: '0.5rem 1rem' }}
+                                    onClick={async () => {
+                                        if (confirm('Send a test reminder email to ' + user.email + '?')) {
+                                            await emailService.sendTestReminder(user.email);
+                                            alert('Test email sent! (Check console for simulation)');
+                                        }
+                                    }}
+                                >
+                                    Send Test Email
+                                </button>
                             </div>
 
                             <button className="btn-primary">Save Preferences</button>
@@ -427,6 +457,7 @@ const Settings = () => {
                     )}
                 </div>
             </div>
+
         </div>
     );
 };

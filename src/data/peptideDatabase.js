@@ -1127,6 +1127,848 @@ export const PEPTIDE_DATABASE = {
         researchLinks: [
             'https://pubmed.ncbi.nlm.nih.gov/23118235/'
         ]
+    },
+
+    'Sermorelin': {
+        name: 'Sermorelin',
+        category: 'Growth Hormone Secretagogue',
+        status: 'FDA-approved (discontinued brand, available generic)',
+        halfLife: '10-20 minutes',
+        commonDosage: '200-500mcg daily',
+        description: 'A GHRH analogue used to diagnose and treat poor growth in children, and for anti-aging in adults.',
+        benefits: [
+            'Increases natural GH production',
+            'Improved sleep quality',
+            'Increased lean muscle mass',
+            'Reduced body fat',
+            'Faster recovery from exercise'
+        ],
+        sideEffects: [
+            'Injection site reactions',
+            'Flushing',
+            'Headache',
+            'Dizziness',
+            'Hyperactivity'
+        ],
+        cons: [
+            'Short half-life requiring daily injections',
+            'Results can be subtle compared to HGH',
+            'Requires consistent long-term use'
+        ],
+        warnings: [
+            'Avoid in active cancer',
+            'Monitor for potential insulin resistance',
+            'Not for pregnancy'
+        ],
+        contraindications: [
+            'Active malignancy',
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection, typically before bed',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/18607233/'
+        ]
+    },
+
+    'Tesamorelin': {
+        name: 'Tesamorelin',
+        category: 'Growth Hormone Releasing Hormone',
+        status: 'FDA-approved for HIV-associated lipodystrophy',
+        halfLife: '26-38 minutes',
+        commonDosage: '1-2mg daily',
+        description: 'A potent GHRH analogue specifically approved to reduce excess abdominal fat in HIV patients.',
+        benefits: [
+            'Significant reduction in visceral fat',
+            'Increases IGF-1 levels',
+            'Improves lipid profile',
+            'Cognitive benefits in some studies'
+        ],
+        sideEffects: [
+            'Joint pain',
+            'Injection site redness',
+            'Fluid retention',
+            'Muscle aches'
+        ],
+        cons: [
+            'Expensive compared to other GHRH peptides',
+            'Daily injections required',
+            'Potential for glucose intolerance'
+        ],
+        warnings: [
+            'May increase blood sugar',
+            'Monitor IGF-1 levels',
+            'Avoid in active cancer'
+        ],
+        contraindications: [
+            'Active malignancy',
+            'Pregnancy',
+            'Hypersensitivity to tesamorelin'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection once daily',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/20554796/'
+        ]
+    },
+
+    'Epitalon': {
+        name: 'Epitalon',
+        category: 'Anti-Aging & Longevity',
+        status: 'Research chemical',
+        halfLife: 'Unknown (short)',
+        commonDosage: '5-10mg daily (cycled)',
+        description: 'A synthetic pineal peptide known for its potential to lengthen telomeres and regulate circadian rhythms.',
+        benefits: [
+            'Telomere elongation (anti-aging)',
+            'Circadian rhythm regulation',
+            'Antioxidant effects',
+            'Improved sleep',
+            'Potential life extension (animal studies)'
+        ],
+        sideEffects: [
+            'None significantly reported',
+            'Possible mild fatigue'
+        ],
+        cons: [
+            'Human data on life extension is limited',
+            'Optimal dosing protocols are debated',
+            'Can be expensive for high-dose cycles'
+        ],
+        warnings: [
+            'Limited long-term safety data',
+            'Not for children or pregnancy'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [
+            {
+                name: 'Standard Anti-Aging Cycle',
+                level: 'Intermediate',
+                description: 'Khavinson Protocol',
+                schedule: [
+                    { week: '1-2', dose: '5-10mg', frequency: 'Daily', notes: '10-20 day course' }
+                ],
+                duration: 'Repeat every 6-12 months',
+                notes: 'Short, high-dose courses are standard for this peptide.'
+            }
+        ],
+        administration: 'Subcutaneous or intramuscular injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/12937682/'
+        ]
+    },
+
+    'Thymalin': {
+        name: 'Thymalin',
+        category: 'Immune System',
+        status: 'Research chemical (used in Russia)',
+        halfLife: 'Short',
+        commonDosage: '10mg daily for 10 days',
+        description: 'A thymus-derived peptide bioregulator that supports immune function and T-cell differentiation.',
+        benefits: [
+            'Immune system restoration',
+            'Enhanced T-cell function',
+            'Potential anti-tumor effects (adjunct)',
+            'Reduced inflammation'
+        ],
+        sideEffects: [
+            'None significantly reported',
+            'Injection site irritation'
+        ],
+        cons: [
+            'Sourcing authentic product can be difficult',
+            'Limited Western clinical data',
+            'Requires high doses (10mg)'
+        ],
+        warnings: [
+            'Consult doctor if you have autoimmune conditions',
+            'Not for pregnancy'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding',
+            'Organ transplant recipients (immune boosting)'
+        ],
+        protocols: [],
+        administration: 'Intramuscular injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/12577695/'
+        ]
+    },
+
+    'DSIP': {
+        name: 'DSIP (Delta Sleep-Inducing Peptide)',
+        category: 'Neurological & Sleep',
+        status: 'Research chemical',
+        halfLife: '15 minutes (rapid breakdown)',
+        commonDosage: '100mcg before bed',
+        description: 'A neuropeptide that promotes deep (delta) wave sleep and stress reduction.',
+        benefits: [
+            'Induces deep, restorative sleep',
+            'Reduces stress and cortisol',
+            'Potential pain relief',
+            'Normalization of blood pressure'
+        ],
+        sideEffects: [
+            'Grogginess upon waking (if dose too high)',
+            'Headache',
+            'Nausea (rare)'
+        ],
+        cons: [
+            'Effects can be inconsistent between users',
+            'Very short half-life',
+            'Optimal timing is critical'
+        ],
+        warnings: [
+            'Do not drive after administration',
+            'Start with low dose to assess tolerance'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding',
+            'Narcolepsy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection 1-2 hours before bed',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/6548967/'
+        ]
+    },
+
+    'Foxo4-DRI': {
+        name: 'Foxo4-DRI',
+        category: 'Anti-Aging (Senolytic)',
+        status: 'Experimental Research Chemical',
+        halfLife: 'Unknown',
+        commonDosage: 'Research protocols vary (e.g., 1-3mg every other day)',
+        description: 'A senolytic peptide designed to target and eliminate senescent ("zombie") cells.',
+        benefits: [
+            'Removal of senescent cells',
+            'Tissue rejuvenation',
+            'Improved kidney function (animal studies)',
+            'Coat/hair restoration (animal studies)'
+        ],
+        sideEffects: [
+            'Fatigue (common during clearing phase)',
+            'Flu-like symptoms',
+            'Muscle aches'
+        ],
+        cons: [
+            'Very expensive',
+            'Highly experimental; human safety unproven',
+            'Mechanism involves cell death (apoptosis)'
+        ],
+        warnings: [
+            'Strictly experimental',
+            'Potential for off-target effects',
+            'Do not use without medical guidance'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding',
+            'Any active medical condition'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/28340339/'
+        ]
+    },
+
+    'ARA-290': {
+        name: 'ARA-290 (Cibinetide)',
+        category: 'Healing & Neuropathy',
+        status: 'Research chemical',
+        halfLife: 'Short',
+        commonDosage: '4mg daily',
+        description: 'A non-hematopoietic EPO derivative designed to repair small nerve fibers and reduce neuropathic pain.',
+        benefits: [
+            'Small fiber neuropathy repair',
+            'Pain reduction',
+            'Anti-inflammatory',
+            'Improved HbA1c (some studies)'
+        ],
+        sideEffects: [
+            'Generally mild',
+            'Injection site reactions'
+        ],
+        cons: [
+            'Very expensive due to high daily dose (4mg)',
+            'Daily injections required',
+            'Hard to source'
+        ],
+        warnings: [
+            'Monitor blood pressure',
+            'Limited long-term safety data'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection daily',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/25613020/'
+        ]
+    },
+
+    '5-Amino-1MQ': {
+        name: '5-Amino-1MQ',
+        category: 'Metabolic & Fat Loss',
+        status: 'Research chemical',
+        halfLife: 'Unknown',
+        commonDosage: '50-150mg daily (oral)',
+        description: 'A small molecule NNMT inhibitor that increases cellular NAD+ and metabolic rate.',
+        benefits: [
+            'Increased metabolic rate',
+            'Fat loss without muscle loss',
+            'Muscle satellite cell activation',
+            'Increased NAD+ levels'
+        ],
+        sideEffects: [
+            'Insomnia (if taken late)',
+            'Headache',
+            'GI upset'
+        ],
+        cons: [
+            'Oral bioavailability issues (requires special caps)',
+            'Expensive',
+            'Not a peptide (small molecule)'
+        ],
+        warnings: [
+            'Monitor liver function',
+            'Avoid if prone to insomnia'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding',
+            'Liver disease'
+        ],
+        protocols: [],
+        administration: 'Oral capsules daily with food',
+        storage: 'Store in cool, dry place.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/31339666/'
+        ]
+    },
+
+    'SS-31': {
+        name: 'SS-31 (Elamipretide)',
+        category: 'Mitochondrial Health',
+        status: 'Clinical trials',
+        halfLife: '2-4 hours',
+        commonDosage: '40mg daily',
+        description: 'A mitochondrial-targeted peptide that restores mitochondrial bioenergetics and reduces oxidative stress.',
+        benefits: [
+            'Restores mitochondrial function',
+            'Reduces oxidative stress',
+            'Improves energy levels',
+            'Cardio and renoprotective effects'
+        ],
+        sideEffects: [
+            'Injection site irritation (common)',
+            'Dizziness',
+            'Headache'
+        ],
+        cons: [
+            'Very high dose required (40mg/day)',
+            'Extremely expensive',
+            'Injection site pain is a frequent complaint'
+        ],
+        warnings: [
+            'Monitor for allergic reactions',
+            'Limited availability outside trials'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection daily',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/27188584/'
+        ]
+    },
+
+    'NAD+': {
+        name: 'NAD+ (Nicotinamide Adenine Dinucleotide)',
+        category: 'Cellular Energy & Anti-Aging',
+        status: 'Supplement/Therapy',
+        halfLife: 'Short (rapidly metabolized)',
+        commonDosage: '100-500mg (IV/IM/SubQ)',
+        description: 'A critical coenzyme found in every cell, essential for energy production (ATP) and DNA repair.',
+        benefits: [
+            'Increased energy and stamina',
+            'Improved mental clarity and focus',
+            'DNA repair support (PARP activation)',
+            'Anti-aging (sirtuin activation)',
+            'Addiction recovery support'
+        ],
+        sideEffects: [
+            'Nausea (common with rapid IV)',
+            'Flushing/Chest pressure (IV)',
+            'Headache',
+            'Fatigue initially'
+        ],
+        cons: [
+            'IV infusions are expensive and time-consuming',
+            'SubQ injections can be painful (burns)',
+            'Oral bioavailability is poor (precursors preferred)'
+        ],
+        warnings: [
+            'Start low to assess tolerance',
+            'May interact with certain chemotherapy drugs'
+        ],
+        contraindications: [
+            'Active cancer (theoretical risk)',
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection (often burns), IM, or IV drip',
+        storage: 'Refrigerate. Protect from light.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/29514064/'
+        ]
+    },
+
+    'Glutathione': {
+        name: 'Glutathione',
+        category: 'Antioxidant & Detox',
+        status: 'Supplement/Therapy',
+        halfLife: '10-90 minutes',
+        commonDosage: '200-600mg daily or weekly',
+        description: 'The body\'s "master antioxidant," crucial for detoxification, immune function, and reducing oxidative stress.',
+        benefits: [
+            'Powerful antioxidant support',
+            'Liver detoxification',
+            'Skin brightening/lightening',
+            'Immune system boost',
+            'Reduced inflammation'
+        ],
+        sideEffects: [
+            'Rare allergic reactions',
+            'Lower zinc levels (long term)',
+            'Asthma exacerbation (inhaled form)'
+        ],
+        cons: [
+            'Poor oral bioavailability',
+            'Oxidizes quickly in solution',
+            'Frequent dosing needed for sustained levels'
+        ],
+        warnings: [
+            'Avoid if sulfite sensitive',
+            'Consult doctor if asthmatic'
+        ],
+        contraindications: [
+            'Sulfite allergy',
+            'Pregnancy (consult doctor)'
+        ],
+        protocols: [],
+        administration: 'Intramuscular, IV, or nebulized',
+        storage: 'Refrigerate. Do not use if cloudy.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/21908948/'
+        ]
+    },
+
+    'Oxytocin': {
+        name: 'Oxytocin',
+        category: 'Hormone & Mood',
+        status: 'Prescription Drug',
+        halfLife: '1-6 minutes',
+        commonDosage: '10-50 IU (Nasal) or 10-20 IU (SubQ)',
+        description: 'The "love hormone" involved in social bonding, trust, and stress reduction.',
+        benefits: [
+            'Enhanced social bonding and trust',
+            'Reduced anxiety and stress',
+            'Improved libido and orgasm',
+            'Potential autism support',
+            'Pain relief'
+        ],
+        sideEffects: [
+            'Headache',
+            'Nausea',
+            'Dizziness',
+            'Uterine contractions (women)'
+        ],
+        cons: [
+            'Very short half-life',
+            'Effects can be subtle or context-dependent',
+            'Nasal spray absorption varies'
+        ],
+        warnings: [
+            'Do not use if pregnant (induces labor)',
+            'Monitor blood pressure'
+        ],
+        contraindications: [
+            'Pregnancy (unless for labor)',
+            'Severe cardiovascular disease'
+        ],
+        protocols: [],
+        administration: 'Nasal spray or subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/20548365/'
+        ]
+    },
+
+    'KPV': {
+        name: 'KPV',
+        category: 'Anti-Inflammatory & Gut',
+        status: 'Research chemical',
+        halfLife: 'Short',
+        commonDosage: '200-500mcg daily',
+        description: 'A tripeptide (Lysine-Proline-Valine) derived from alpha-MSH, known for potent anti-inflammatory effects.',
+        benefits: [
+            'Potent anti-inflammatory',
+            'Gut health (IBD/IBS support)',
+            'Antimicrobial (Candida/Mold)',
+            'Skin health (Psoriasis/Eczema)',
+            'Non-hormonal (no tanning/libido effects)'
+        ],
+        sideEffects: [
+            'None significantly reported',
+            'Injection site irritation'
+        ],
+        cons: [
+            'Limited human clinical trials',
+            'Oral forms require special coating',
+            'Hard to source high quality'
+        ],
+        warnings: [
+            'Consult doctor for autoimmune conditions'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection or oral capsule',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/10504176/'
+        ]
+    },
+
+    'LL-37': {
+        name: 'LL-37 (Cathelicidin)',
+        category: 'Antimicrobial & Immune',
+        status: 'Research chemical',
+        halfLife: 'Short',
+        commonDosage: '100mcg daily (cycled)',
+        description: 'A powerful antimicrobial peptide produced by the body to fight bacteria, viruses, and fungi.',
+        benefits: [
+            'Broad-spectrum antimicrobial',
+            'Biofilm disruptor',
+            'Wound healing',
+            'Immune modulation',
+            'Gut health support'
+        ],
+        sideEffects: [
+            'Herxheimer reaction (die-off)',
+            'Injection site pain/redness',
+            'Inflammation (if dose too high)'
+        ],
+        cons: [
+            'Can trigger autoimmune flares in some',
+            '"Die-off" symptoms can be severe',
+            'Expensive'
+        ],
+        warnings: [
+            'Start very low to avoid Herx reaction',
+            'Avoid in autoimmune diseases (Lupus/RA) unless supervised'
+        ],
+        contraindications: [
+            'Autoimmune diseases (relative)',
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/17007963/'
+        ]
+    },
+
+    'Dihexa': {
+        name: 'Dihexa',
+        category: 'Nootropic & Cognitive',
+        status: 'Research chemical',
+        halfLife: 'Long (days)',
+        commonDosage: '10-20mg weekly (oral/transdermal)',
+        description: 'A potent angiotensin IV analog that stimulates new neural connections (synaptogenesis).',
+        benefits: [
+            'Powerful cognitive enhancement',
+            'Improved memory and learning',
+            'Neuroprotection',
+            'Potential Alzheimer\'s/Parkinson\'s support',
+            'Repair of brain damage'
+        ],
+        sideEffects: [
+            'Headache',
+            'Irritability',
+            'Insomnia',
+            'Potential tumor growth promotion (theoretical)'
+        ],
+        cons: [
+            'Potency requires careful dosing',
+            'Long-term safety unknown',
+            'Theoretical cancer risk (angiogenesis)'
+        ],
+        warnings: [
+            'Avoid in active cancer',
+            'Do not combine with other potent stimulants'
+        ],
+        contraindications: [
+            'Active malignancy',
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Oral or transdermal cream',
+        storage: 'Store in cool, dry place.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/23168565/'
+        ]
+    },
+
+    'Semax': {
+        name: 'Semax',
+        category: 'Nootropic & Cognitive',
+        status: 'Approved in Russia',
+        halfLife: 'Short (minutes to hours effect)',
+        commonDosage: '200-1000mcg daily (Nasal)',
+        description: 'A heptapeptide analog of ACTH used for cognitive enhancement and stroke recovery.',
+        benefits: [
+            'Increased focus and clarity',
+            'Improved memory',
+            'Neuroprotection',
+            'Mood elevation (BDNF increase)',
+            'Reduced mental fatigue'
+        ],
+        sideEffects: [
+            'Mild irritation (nasal)',
+            'Headache',
+            'Anxiety (if prone)'
+        ],
+        cons: [
+            'Must be kept refrigerated (fragile)',
+            'Nasal spray shelf life is short',
+            'Effects are subtle for some'
+        ],
+        warnings: [
+            'May interact with stimulants',
+            'Store properly to maintain potency'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding',
+            'History of seizures'
+        ],
+        protocols: [],
+        administration: 'Intranasal spray or subcutaneous injection',
+        storage: 'Refrigerate always.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/16996699/'
+        ]
+    },
+
+    'Cerebrolysin': {
+        name: 'Cerebrolysin',
+        category: 'Neurotrophic',
+        status: 'Approved in many countries (not US)',
+        halfLife: 'Short',
+        commonDosage: '5-10ml daily (IM/IV)',
+        description: 'A peptide mixture derived from pig brains, rich in neurotrophic factors like BDNF and NGF.',
+        benefits: [
+            'Neuroprotection and repair',
+            'Stroke and TBI recovery',
+            'Dementia/Alzheimer\'s support',
+            'Improved cognition'
+        ],
+        sideEffects: [
+            'Flu-like symptoms',
+            'Dizziness',
+            'Injection site pain (large volume)'
+        ],
+        cons: [
+            'Requires large volume injections (5ml+)',
+            'Animal derived (not vegan)',
+            'Expensive for a full cycle'
+        ],
+        warnings: [
+            'Risk of allergic reaction',
+            'Do not use if kidney failure'
+        ],
+        contraindications: [
+            'Epilepsy',
+            'Severe renal impairment',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Intramuscular (deep) or IV infusion',
+        storage: 'Room temperature (ampoules).',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/26487439/'
+        ]
+    },
+
+    'IGF-1 LR3': {
+        name: 'IGF-1 LR3',
+        category: 'Growth & Muscle',
+        status: 'Research chemical',
+        halfLife: '20-30 hours',
+        commonDosage: '20-50mcg daily (cycled)',
+        description: 'A long-acting analog of Insulin-like Growth Factor 1, potent for muscle growth and recovery.',
+        benefits: [
+            'Significant muscle hyperplasia',
+            'Enhanced recovery',
+            'Nutrient shuttling',
+            'Fat loss',
+            'Improved pumps'
+        ],
+        sideEffects: [
+            'Hypoglycemia (low blood sugar)',
+            'Gut distension ("GH gut") at high doses',
+            'Headache',
+            'Nausea'
+        ],
+        cons: [
+            'Risk of hypoglycemia is real',
+            'Receptor downregulation if not cycled',
+            'Can promote tumor growth'
+        ],
+        warnings: [
+            'Consume carbs post-injection',
+            'Avoid in active cancer',
+            'Do not use for long periods'
+        ],
+        contraindications: [
+            'Active malignancy',
+            'Hypoglycemia prone',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous or intramuscular injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/18607233/'
+        ]
+    },
+
+    'HGH Frag 176-191': {
+        name: 'HGH Frag 176-191',
+        category: 'Fat Loss',
+        status: 'Research chemical',
+        halfLife: 'Short',
+        commonDosage: '250-500mcg twice daily',
+        description: 'A fragment of the HGH molecule specifically isolated for its fat-burning properties without glycemic effects.',
+        benefits: [
+            'Targeted fat loss',
+            'No effect on blood sugar',
+            'No water retention',
+            'No effect on IGF-1 levels'
+        ],
+        sideEffects: [
+            'Injection site redness',
+            'Mild headache'
+        ],
+        cons: [
+            'Must be taken on empty stomach',
+            'Timing is critical for results',
+            'Fragile peptide'
+        ],
+        warnings: [
+            'Ensure fasted state for efficacy'
+        ],
+        contraindications: [
+            'Pregnancy or breastfeeding'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection (fasted)',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/11713213/'
+        ]
+    },
+
+    'Kisspeptin-10': {
+        name: 'Kisspeptin-10',
+        category: 'Hormone & Fertility',
+        status: 'Research chemical',
+        halfLife: 'Short',
+        commonDosage: '100mcg daily',
+        description: 'A peptide that stimulates GnRH release, boosting testosterone and fertility without shutting down natural production.',
+        benefits: [
+            'Increased testosterone',
+            'Improved fertility/sperm quality',
+            'Libido enhancement',
+            'Alternative to HCG'
+        ],
+        sideEffects: [
+            'Flushing',
+            'Headache',
+            'Injection site pain'
+        ],
+        cons: [
+            'Short half-life requiring frequent dosing',
+            'Less potent than TRT',
+            'Limited long-term data'
+        ],
+        warnings: [
+            'Monitor hormone levels'
+        ],
+        contraindications: [
+            'Hormone-sensitive cancers',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate after reconstitution.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/16260654/'
+        ]
+    },
+
+    'VIP': {
+        name: 'VIP (Vasoactive Intestinal Peptide)',
+        category: 'Immune & CIRS',
+        status: 'Prescription/Compound',
+        halfLife: 'Short',
+        commonDosage: '50mcg 4x daily (Nasal)',
+        description: 'A neuropeptide used primarily in the Shoemaker Protocol for mold toxicity and CIRS.',
+        benefits: [
+            'Reduces inflammation (CIRS)',
+            'Improves hormonal regulation',
+            'Supports brain health',
+            'Pulmonary hypertension support'
+        ],
+        sideEffects: [
+            'Low blood pressure',
+            'Palpitations',
+            'Headache',
+            'Flushing'
+        ],
+        cons: [
+            'Frequent dosing required (4x daily)',
+            'Must pass VCS test before starting (CIRS)',
+            'Expensive'
+        ],
+        warnings: [
+            'Monitor lipase levels',
+            'Monitor blood pressure'
+        ],
+        contraindications: [
+            'Failed VCS test (CIRS protocol)',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Nasal spray',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/23566056/'
+        ]
     }
 };
 
@@ -1135,7 +1977,7 @@ export const getPeptideInfo = (peptideName) => {
 };
 
 export const getAllPeptides = () => {
-    return Object.keys(PEPTIDE_DATABASE);
+    return Object.values(PEPTIDE_DATABASE);
 };
 
 export const getPeptidesByCategory = (category) => {

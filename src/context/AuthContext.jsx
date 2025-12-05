@@ -67,6 +67,15 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
     };
 
+    const mockLogin = () => {
+        setUser({
+            id: 'mock-user-id',
+            email: 'demo@example.com',
+            user_metadata: { full_name: 'Demo User' }
+        });
+        setLoading(false);
+    };
+
     const value = {
         user,
         loading,
@@ -74,7 +83,8 @@ export const AuthProvider = ({ children }) => {
         signIn,
         signOut,
         resetPassword,
-        updatePassword
+        updatePassword,
+        mockLogin
     };
 
     return (

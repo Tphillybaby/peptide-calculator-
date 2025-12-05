@@ -8,7 +8,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { signIn } = useAuth();
+    const { signIn, mockLogin } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -128,6 +128,18 @@ const Login = () => {
                     >
                         <span>{loading ? 'Signing in...' : 'Sign In'}</span>
                         {!loading && <LogIn size={18} />}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => {
+                            mockLogin();
+                            navigate('/');
+                        }}
+                        className="btn-secondary"
+                        style={{ width: '100%', marginTop: '0.5rem' }}
+                    >
+                        Demo Login (No Auth Required)
                     </button>
                 </form>
             </div>

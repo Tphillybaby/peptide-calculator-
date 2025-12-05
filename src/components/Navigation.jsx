@@ -62,6 +62,15 @@ const Navigation = () => {
         </NavLink>
 
         <NavLink
+          to="/guides"
+          aria-label="Peptide Guides"
+          className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+        >
+          <BookOpen size={24} />
+          <span className={styles.label}>Guides</span>
+        </NavLink>
+
+        <NavLink
           to="/price-checker"
           aria-label="Price Checker"
           className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}

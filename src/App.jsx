@@ -21,8 +21,20 @@ const HalfLife = lazy(() => import('./pages/HalfLife'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const PriceChecker = lazy(() => import('./pages/PriceChecker'));
 const Encyclopedia = lazy(() => import('./pages/Encyclopedia'));
+const PeptideDetail = lazy(() => import('./pages/PeptideDetail'));
+const Guides = lazy(() => import('./pages/Guides'));
+const Safety = lazy(() => import('./pages/Safety'));
+const BeginnerGuide = lazy(() => import('./pages/guides/BeginnerGuide'));
+const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
+
+
+import { initAnalytics } from './lib/analytics';
 
 function App() {
+  React.useEffect(() => {
+    initAnalytics();
+  }, []);
+
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -58,6 +70,31 @@ function App() {
             <Route path="encyclopedia" element={
               <Suspense fallback={<div style={{ padding: '20px' }}>Loading encyclopedia...</div>}>
                 <Encyclopedia />
+              </Suspense>
+            } />
+            <Route path="encyclopedia/:name" element={
+              <Suspense fallback={<div style={{ padding: '20px' }}>Loading...</div>}>
+                <PeptideDetail />
+              </Suspense>
+            } />
+            <Route path="guides" element={
+              <Suspense fallback={<div style={{ padding: '20px' }}>Loading guides...</div>}>
+                <Guides />
+              </Suspense>
+            } />
+            <Route path="guides/beginner" element={
+              <Suspense fallback={<div style={{ padding: '20px' }}>Loading guide...</div>}>
+                <BeginnerGuide />
+              </Suspense>
+            } />
+            <Route path="guides/injection" element={
+              <Suspense fallback={<div style={{ padding: '20px' }}>Loading guide...</div>}>
+                <InjectionGuide />
+              </Suspense>
+            } />
+            <Route path="safety" element={
+              <Suspense fallback={<div style={{ padding: '20px' }}>Loading safety info...</div>}>
+                <Safety />
               </Suspense>
             } />
             <Route path="settings" element={

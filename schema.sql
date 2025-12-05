@@ -111,3 +111,31 @@ $$ language plpgsql security definer;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Create reviews table
+create table public.reviews (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  peptide_name text not null,
+  rating integer not null check (rating >= 1 and rating <= 5),
+  comment text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.reviews enable row level security;
+
+create policy "Reviews are viewable by everyone."
+  on reviews for select
+  using ( true );
+
+create policy "Users can insert their own reviews."
+  on reviews for insert
+  with check ( auth.uid() = user_id );
+
+create policy "Users can update their own reviews."
+  on reviews for update
+  using ( auth.uid() = user_id );
+
+create policy "Users can delete their own reviews."
+  on reviews for delete
+  using ( auth.uid() = user_id );
