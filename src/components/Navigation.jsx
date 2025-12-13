@@ -1,9 +1,25 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Syringe, Calculator, Activity, Calendar, TrendingDown, BookOpen } from 'lucide-react';
+import { LayoutDashboard, Syringe, Calculator, Activity, Calendar, TrendingDown, BookOpen, User, LogIn } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import styles from './Navigation.module.css';
 
 const Navigation = () => {
+  const { user } = useAuth();
+
+  // Get user initials for the avatar
+  const getUserInitials = () => {
+    if (!user) return '';
+    const name = user.user_metadata?.full_name || user.email || '';
+    if (user.user_metadata?.full_name) {
+      const parts = name.split(' ');
+      return parts.length > 1
+        ? `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+        : name[0]?.toUpperCase() || 'U';
+    }
+    return name[0]?.toUpperCase() || 'U';
+  };
+
   return (
     <nav className={styles.nav}>
       <div className={styles.navContent}>
@@ -79,27 +95,38 @@ const Navigation = () => {
           <span className={styles.label}>Prices</span>
         </NavLink>
 
-        <NavLink
-          to="/login"
-          aria-label="Login"
-          className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-        >
-          <div style={{
-            width: '24px',
-            height: '24px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            color: 'white'
-          }}>
-            T
-          </div>
-          <span className={styles.label}>Login</span>
-        </NavLink>
+        {user ? (
+          <NavLink
+            to="/settings"
+            aria-label="Profile Settings"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+          >
+            <div style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              color: 'white'
+            }}>
+              {getUserInitials()}
+            </div>
+            <span className={styles.label}>Profile</span>
+          </NavLink>
+        ) : (
+          <NavLink
+            to="/login"
+            aria-label="Login"
+            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+          >
+            <LogIn size={24} />
+            <span className={styles.label}>Login</span>
+          </NavLink>
+        )}
       </div>
     </nav>
   );

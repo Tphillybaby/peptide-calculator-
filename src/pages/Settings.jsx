@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2 } from 'lucide-react';
+import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { notificationService } from '../services/notificationService';
 import { emailService } from '../services/emailService';
+import { getUserReviews, deleteReview } from '../services/reviewService';
 import styles from './Settings.module.css';
 
 const Settings = () => {
@@ -30,11 +31,36 @@ const Settings = () => {
         priceAlerts: false
     });
 
+    const [userReviews, setUserReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+
     useEffect(() => {
         if (user) {
             fetchProfile();
+            fetchUserReviews();
         }
     }, [user]);
+
+    const fetchUserReviews = async () => {
+        if (!user) return;
+        setReviewsLoading(true);
+        try {
+            const reviews = await getUserReviews(user.id);
+            setUserReviews(reviews);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        } finally {
+            setReviewsLoading(false);
+        }
+    };
+
+    const handleDeleteReview = async (reviewId) => {
+        if (!confirm('Are you sure you want to delete this review?')) return;
+        const success = await deleteReview(reviewId);
+        if (success) {
+            setUserReviews(userReviews.filter(r => r.id !== reviewId));
+        }
+    };
 
     const fetchProfile = async () => {
         try {
@@ -96,6 +122,7 @@ const Settings = () => {
 
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User },
+        { id: 'activity', label: 'Activity', icon: Activity },
         { id: 'security', label: 'Security', icon: Lock },
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'privacy', label: 'Privacy & Data', icon: Shield }
@@ -208,6 +235,157 @@ const Settings = () => {
                             <button className="btn-primary" onClick={updateProfile} disabled={saving}>
                                 {saving ? 'Saving...' : 'Save Changes'}
                             </button>
+                        </div>
+                    )}
+
+                    {activeTab === 'activity' && (
+                        <div className={styles.section}>
+                            <h2>Your Activity</h2>
+                            <p className={styles.subtitle} style={{ marginBottom: '1.5rem' }}>View your reviews, ratings, and contributions</p>
+
+                            {/* Reviews Section */}
+                            <div style={{ marginBottom: '2rem' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <MessageSquare size={20} color="var(--accent-primary)" />
+                                    Your Reviews ({userReviews.length})
+                                </h3>
+
+                                {reviewsLoading ? (
+                                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                                        <Loader className="animate-spin" size={24} />
+                                        <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Loading reviews...</p>
+                                    </div>
+                                ) : userReviews.length === 0 ? (
+                                    <div style={{
+                                        padding: '2rem',
+                                        textAlign: 'center',
+                                        background: 'rgba(15, 23, 42, 0.3)',
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--glass-border)'
+                                    }}>
+                                        <MessageSquare size={32} color="var(--text-tertiary)" style={{ marginBottom: '0.5rem' }} />
+                                        <p style={{ color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>No reviews yet</p>
+                                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>
+                                            Share your experience with peptides by leaving reviews on their detail pages.
+                                        </p>
+                                        <Link to="/encyclopedia" className="btn-primary" style={{ marginTop: '1rem', display: 'inline-block' }}>
+                                            Browse Peptides
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        {userReviews.map((review) => (
+                                            <div
+                                                key={review.id}
+                                                className="card glass-panel"
+                                                style={{
+                                                    padding: '1.25rem',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: '0.75rem'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                                    <div>
+                                                        <Link
+                                                            to={`/encyclopedia/${encodeURIComponent(review.peptide_name)}`}
+                                                            style={{
+                                                                fontSize: '1.1rem',
+                                                                fontWeight: '600',
+                                                                color: 'var(--accent-primary)',
+                                                                textDecoration: 'none',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.5rem'
+                                                            }}
+                                                        >
+                                                            {review.peptide_name}
+                                                            <ExternalLink size={14} />
+                                                        </Link>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
+                                                            <div style={{ display: 'flex', gap: '2px' }}>
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <Star
+                                                                        key={star}
+                                                                        size={14}
+                                                                        fill={star <= review.rating ? '#fbbf24' : 'none'}
+                                                                        color={star <= review.rating ? '#fbbf24' : '#4b5563'}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '0.75rem' }}>
+                                                                {new Date(review.created_at).toLocaleDateString('en-US', {
+                                                                    year: 'numeric',
+                                                                    month: 'short',
+                                                                    day: 'numeric'
+                                                                })}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleDeleteReview(review.id)}
+                                                        style={{
+                                                            background: 'rgba(239, 68, 68, 0.1)',
+                                                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                                                            borderRadius: '6px',
+                                                            padding: '0.5rem',
+                                                            cursor: 'pointer',
+                                                            color: '#ef4444',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center'
+                                                        }}
+                                                        title="Delete review"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                                {review.comment && (
+                                                    <p style={{
+                                                        color: 'var(--text-secondary)',
+                                                        fontSize: '0.9rem',
+                                                        lineHeight: '1.5',
+                                                        margin: 0
+                                                    }}>
+                                                        "{review.comment}"
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className={styles.divider}></div>
+
+                            {/* Stats Overview */}
+                            <h3 style={{ marginBottom: '1rem' }}>Activity Summary</h3>
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                                gap: '1rem'
+                            }}>
+                                <div className="card glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--accent-primary)' }}>
+                                        {userReviews.length}
+                                    </div>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Reviews Written</div>
+                                </div>
+                                <div className="card glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: '700', color: '#fbbf24' }}>
+                                        {userReviews.length > 0
+                                            ? (userReviews.reduce((acc, r) => acc + r.rating, 0) / userReviews.length).toFixed(1)
+                                            : '—'}
+                                    </div>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Avg Rating Given</div>
+                                </div>
+                                <div className="card glass-panel" style={{ padding: '1.25rem', textAlign: 'center' }}>
+                                    <div style={{ fontSize: '2rem', fontWeight: '700', color: 'var(--success)' }}>
+                                        {new Set(userReviews.map(r => r.peptide_name)).size}
+                                    </div>
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Peptides Reviewed</div>
+                                </div>
+                            </div>
                         </div>
                     )}
 

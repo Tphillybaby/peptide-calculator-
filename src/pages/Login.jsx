@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { LogIn, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link, useLocation, Navigate } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -9,12 +9,17 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { signIn } = useAuth();
+    const { signIn, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
     // Get the page user was trying to access before being redirected to login
-    const from = location.state?.from?.pathname || '/';
+    const from = location.state?.from?.pathname || '/settings';
+
+    // If user is already logged in, redirect them to settings or where they came from
+    if (user) {
+        return <Navigate to={from} replace />;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();

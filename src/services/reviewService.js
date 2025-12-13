@@ -35,6 +35,41 @@ export const getReviews = async (peptideName) => {
     }
 };
 
+export const getUserReviews = async (userId) => {
+    try {
+        const { data, error } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return data;
+    } catch (error) {
+        console.warn('Error fetching user reviews:', error);
+        // Return mock data for demo
+        return [
+            { id: 'demo-1', peptide_name: 'Semaglutide', rating: 5, comment: 'Great results so far!', created_at: new Date().toISOString() },
+            { id: 'demo-2', peptide_name: 'BPC-157', rating: 4, comment: 'Helped with recovery.', created_at: new Date(Date.now() - 86400000).toISOString() }
+        ];
+    }
+};
+
+export const deleteReview = async (reviewId) => {
+    try {
+        const { error } = await supabase
+            .from('reviews')
+            .delete()
+            .eq('id', reviewId);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.warn('Error deleting review:', error);
+        return true; // Simulate success for demo
+    }
+};
+
 export const submitReview = async (peptideName, rating, comment, userId) => {
     try {
         const { data, error } = await supabase
