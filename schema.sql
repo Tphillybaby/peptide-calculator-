@@ -139,3 +139,35 @@ create policy "Users can update their own reviews."
 create policy "Users can delete their own reviews."
   on reviews for delete
   using ( auth.uid() = user_id );
+
+-- Create schedules table for injection scheduling
+create table public.schedules (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  peptide_name text not null,
+  dosage numeric not null,
+  unit text not null default 'mg',
+  scheduled_date date not null,
+  scheduled_time time not null,
+  completed boolean default false,
+  notes text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.schedules enable row level security;
+
+create policy "Users can view own schedules."
+  on schedules for select
+  using ( auth.uid() = user_id );
+
+create policy "Users can insert own schedules."
+  on schedules for insert
+  with check ( auth.uid() = user_id );
+
+create policy "Users can update own schedules."
+  on schedules for update
+  using ( auth.uid() = user_id );
+
+create policy "Users can delete own schedules."
+  on schedules for delete
+  using ( auth.uid() = user_id );
