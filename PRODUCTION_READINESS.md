@@ -353,20 +353,20 @@ This document tracks all essential components needed for production deployment o
 
 ### Pre-Launch
 - [x] **Connect Real Backend**: Supabase project connected and linked.
-- [x] **Database Migration**: All 7 migrations applied via `supabase db push`.
+- [x] **Database Migration**: All 10 migrations applied via `supabase db push`.
 - [x] **Environment Variables**: Configured in `.env` file.
-- [ ] **Domain Setup**: Purchase and configure custom domain.
+- [x] **Domain Setup**: ✅ peptidelog.net configured on Vercel.
 - [x] **Email Provider**: Templates configured in Supabase Dashboard.
 - [x] **Analytics ID**: Google Analytics configured (G-2V2TNJFR16).
 
 ### Launch Day
-- [ ] Deploy to production (Vercel recommended)
-- [ ] Verify SSL/HTTPS
-- [ ] Test all flows (Sign up, Log in, Add Injection, Review)
-- [ ] Check mobile responsiveness on real devices
+- [x] Deploy to production (Vercel) ✅
+- [x] Verify SSL/HTTPS ✅
+- [x] Test all flows (Sign up, Log in, Add Injection, Review)
+- [x] Check mobile responsiveness on real devices
 
 ### Post-Launch
-- [ ] Monitor Sentry/Analytics
+- [x] Monitor Sentry/Analytics ✅ (Monitoring dashboard at /admin/monitoring)
 - [ ] Gather user feedback
 - [ ] Plan for native mobile app
 
