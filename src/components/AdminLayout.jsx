@@ -114,6 +114,23 @@ const AdminLayout = () => {
                         <Activity size={20} />
                         Audit Logs
                     </NavLink>
+                    <NavLink
+                        to="/admin/monitoring"
+                        style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '0.75rem',
+                            borderRadius: '0.5rem',
+                            color: isActive ? 'white' : 'var(--text-secondary)',
+                            background: isActive ? 'var(--accent-primary)' : 'transparent',
+                            textDecoration: 'none',
+                            transition: 'all 0.2s'
+                        })}
+                    >
+                        <Activity size={20} />
+                        Monitoring
+                    </NavLink>
                 </nav>
 
                 <button
