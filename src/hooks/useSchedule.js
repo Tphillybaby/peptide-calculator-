@@ -1,28 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { addDays, eachDayOfInterval, getDay, startOfDay, format, isAfter, isBefore, isSameDay } from 'date-fns';
 
 const STORAGE_KEY = 'peptide_tracker_schedule';
+const TEMPLATES_KEY = 'peptide_tracker_templates';
 
 export const useSchedule = () => {
     const [schedules, setSchedules] = useState([]);
+    const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
     useEffect(() => {
         if (user) {
             fetchSchedules();
+            fetchTemplates();
         } else {
-            // Fallback to localStorage for non-logged in users
             loadFromLocalStorage();
         }
     }, [user]);
 
     const loadFromLocalStorage = () => {
         try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                setSchedules(JSON.parse(stored));
+            const storedSchedules = localStorage.getItem(STORAGE_KEY);
+            const storedTemplates = localStorage.getItem(TEMPLATES_KEY);
+            if (storedSchedules) {
+                setSchedules(JSON.parse(storedSchedules));
+            }
+            if (storedTemplates) {
+                setTemplates(JSON.parse(storedTemplates));
             }
         } catch (error) {
             console.error('Error loading from localStorage:', error);
@@ -30,9 +37,9 @@ export const useSchedule = () => {
         setLoading(false);
     };
 
-    const saveToLocalStorage = (data) => {
+    const saveToLocalStorage = (data, key = STORAGE_KEY) => {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(key, JSON.stringify(data));
         } catch (error) {
             console.error('Error saving to localStorage:', error);
         }
@@ -48,28 +55,58 @@ export const useSchedule = () => {
 
             if (error) throw error;
 
-            // Map database fields to frontend model
             const formattedData = data.map(item => ({
                 id: item.id,
                 date: new Date(`${item.scheduled_date}T${item.scheduled_time}`).toISOString(),
                 peptide: item.peptide_name,
                 dosage: item.dosage,
                 unit: item.unit,
-                time: item.scheduled_time.slice(0, 5), // HH:MM format
+                time: item.scheduled_time?.slice(0, 5) || '08:00',
                 completed: item.completed,
-                notes: item.notes
+                notes: item.notes,
+                isRecurring: item.is_recurring || false,
+                parentTemplateId: item.parent_schedule_id
             }));
 
             setSchedules(formattedData);
         } catch (error) {
             console.error('Error fetching schedules:', error);
-            // Fallback to localStorage if Supabase fails
             loadFromLocalStorage();
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchTemplates = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('schedule_templates')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+
+            const formattedTemplates = data.map(item => ({
+                id: item.id,
+                name: item.name,
+                peptide: item.peptide_name,
+                dosage: item.dosage,
+                unit: item.unit,
+                time: item.time?.slice(0, 5) || '08:00',
+                recurrenceDays: item.recurrence_days || [],
+                isActive: item.is_active,
+                notes: item.notes
+            }));
+
+            setTemplates(formattedTemplates);
+        } catch (error) {
+            console.error('Error fetching templates:', error);
+            // Silent fail - templates are optional
+        }
+    };
+
+    // Add a single schedule entry
     const addSchedule = async (schedule) => {
         const newSchedule = {
             id: 'temp-' + Date.now(),
@@ -77,7 +114,6 @@ export const useSchedule = () => {
             ...schedule
         };
 
-        // Optimistic update
         const updated = [...schedules, newSchedule];
         setSchedules(updated);
 
@@ -94,33 +130,219 @@ export const useSchedule = () => {
                         scheduled_date: scheduleDate.toISOString().split('T')[0],
                         scheduled_time: schedule.time + ':00',
                         completed: false,
-                        notes: schedule.notes || null
+                        notes: schedule.notes || null,
+                        is_recurring: false
                     }])
                     .select()
                     .single();
 
                 if (error) throw error;
 
-                // Replace temp ID with real one
                 setSchedules(prev => prev.map(s =>
-                    s.id === newSchedule.id ? {
-                        ...s,
-                        id: data.id
-                    } : s
+                    s.id === newSchedule.id ? { ...s, id: data.id } : s
                 ));
             } catch (error) {
                 console.error('Error adding schedule:', error);
-                // Revert optimistic update on error
                 fetchSchedules();
             }
         } else {
-            // Save to localStorage for non-logged in users
             saveToLocalStorage(updated);
         }
     };
 
-    const deleteSchedule = async (id) => {
+    // Create a recurring schedule template and generate schedules
+    const createRecurringSchedule = async (template, startDate, endDate) => {
+        const { peptide, dosage, unit, time, recurrenceDays, notes, name } = template;
+
+        // Generate schedule entries for the date range
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        const schedulesToAdd = days
+            .filter(day => recurrenceDays.includes(getDay(day)))
+            .map(day => ({
+                id: 'temp-' + Date.now() + '-' + day.getTime(),
+                date: day.toISOString(),
+                peptide,
+                dosage,
+                unit,
+                time,
+                completed: false,
+                notes,
+                isRecurring: true
+            }));
+
         // Optimistic update
+        setSchedules(prev => [...prev, ...schedulesToAdd]);
+
+        if (user) {
+            try {
+                // First, save the template
+                const { data: templateData, error: templateError } = await supabase
+                    .from('schedule_templates')
+                    .insert([{
+                        user_id: user.id,
+                        name: name || `${peptide} Protocol`,
+                        peptide_name: peptide,
+                        dosage,
+                        unit,
+                        time: time + ':00',
+                        recurrence_days: recurrenceDays,
+                        is_active: true,
+                        notes
+                    }])
+                    .select()
+                    .single();
+
+                if (templateError) throw templateError;
+
+                // Then, insert all the schedule entries
+                const scheduleInserts = schedulesToAdd.map(s => ({
+                    user_id: user.id,
+                    peptide_name: s.peptide,
+                    dosage: s.dosage,
+                    unit: s.unit,
+                    scheduled_date: new Date(s.date).toISOString().split('T')[0],
+                    scheduled_time: s.time + ':00',
+                    completed: false,
+                    notes: s.notes,
+                    is_recurring: true,
+                    parent_schedule_id: templateData.id
+                }));
+
+                const { error: schedulesError } = await supabase
+                    .from('schedules')
+                    .insert(scheduleInserts);
+
+                if (schedulesError) throw schedulesError;
+
+                // Refresh to get real IDs
+                await fetchSchedules();
+                await fetchTemplates();
+
+                return templateData;
+            } catch (error) {
+                console.error('Error creating recurring schedule:', error);
+                fetchSchedules();
+                return null;
+            }
+        } else {
+            // Local storage fallback
+            saveToLocalStorage([...schedules, ...schedulesToAdd]);
+            const newTemplate = {
+                id: 'local-' + Date.now(),
+                name: name || `${peptide} Protocol`,
+                peptide,
+                dosage,
+                unit,
+                time,
+                recurrenceDays,
+                isActive: true,
+                notes
+            };
+            const updatedTemplates = [...templates, newTemplate];
+            setTemplates(updatedTemplates);
+            saveToLocalStorage(updatedTemplates, TEMPLATES_KEY);
+            return newTemplate;
+        }
+    };
+
+    // Delete a template and optionally all its generated schedules
+    const deleteTemplate = async (templateId, deleteSchedules = false) => {
+        if (user) {
+            try {
+                if (deleteSchedules) {
+                    // Delete all schedules linked to this template
+                    await supabase
+                        .from('schedules')
+                        .delete()
+                        .eq('parent_schedule_id', templateId);
+                }
+
+                // Delete the template
+                const { error } = await supabase
+                    .from('schedule_templates')
+                    .delete()
+                    .eq('id', templateId);
+
+                if (error) throw error;
+
+                await fetchTemplates();
+                if (deleteSchedules) await fetchSchedules();
+            } catch (error) {
+                console.error('Error deleting template:', error);
+            }
+        } else {
+            const updated = templates.filter(t => t.id !== templateId);
+            setTemplates(updated);
+            saveToLocalStorage(updated, TEMPLATES_KEY);
+            if (deleteSchedules) {
+                const updatedSchedules = schedules.filter(s => s.parentTemplateId !== templateId);
+                setSchedules(updatedSchedules);
+                saveToLocalStorage(updatedSchedules);
+            }
+        }
+    };
+
+    // Extend a recurring schedule for more weeks
+    const extendRecurringSchedule = async (templateId, additionalDays = 28) => {
+        const template = templates.find(t => t.id === templateId);
+        if (!template) return;
+
+        // Find the last scheduled date for this template
+        const templateSchedules = schedules.filter(s => s.parentTemplateId === templateId);
+        const lastDate = templateSchedules.reduce((max, s) => {
+            const d = new Date(s.date);
+            return d > max ? d : max;
+        }, new Date());
+
+        const startDate = addDays(lastDate, 1);
+        const endDate = addDays(startDate, additionalDays);
+
+        // Generate new schedules
+        const days = eachDayOfInterval({ start: startDate, end: endDate });
+        const schedulesToAdd = days
+            .filter(day => template.recurrenceDays.includes(getDay(day)))
+            .map(day => ({
+                id: 'temp-' + Date.now() + '-' + day.getTime(),
+                date: day.toISOString(),
+                peptide: template.peptide,
+                dosage: template.dosage,
+                unit: template.unit,
+                time: template.time,
+                completed: false,
+                notes: template.notes,
+                isRecurring: true,
+                parentTemplateId: templateId
+            }));
+
+        setSchedules(prev => [...prev, ...schedulesToAdd]);
+
+        if (user) {
+            try {
+                const scheduleInserts = schedulesToAdd.map(s => ({
+                    user_id: user.id,
+                    peptide_name: s.peptide,
+                    dosage: s.dosage,
+                    unit: s.unit,
+                    scheduled_date: new Date(s.date).toISOString().split('T')[0],
+                    scheduled_time: s.time + ':00',
+                    completed: false,
+                    notes: s.notes,
+                    is_recurring: true,
+                    parent_schedule_id: templateId
+                }));
+
+                await supabase.from('schedules').insert(scheduleInserts);
+                await fetchSchedules();
+            } catch (error) {
+                console.error('Error extending schedule:', error);
+                fetchSchedules();
+            }
+        } else {
+            saveToLocalStorage([...schedules, ...schedulesToAdd]);
+        }
+    };
+
+    const deleteSchedule = async (id) => {
         const updated = schedules.filter(s => s.id !== id);
         setSchedules(updated);
 
@@ -146,8 +368,6 @@ export const useSchedule = () => {
         if (!schedule) return;
 
         const newCompleted = !schedule.completed;
-
-        // Optimistic update
         const updated = schedules.map(s =>
             s.id === id ? { ...s, completed: newCompleted } : s
         );
@@ -170,11 +390,42 @@ export const useSchedule = () => {
         }
     };
 
+    // Get upcoming schedules (next N days)
+    const getUpcomingSchedules = useCallback((days = 7) => {
+        const today = startOfDay(new Date());
+        const endDate = addDays(today, days);
+
+        return schedules.filter(s => {
+            const date = new Date(s.date);
+            return (isAfter(date, today) || isSameDay(date, today)) && isBefore(date, endDate);
+        }).sort((a, b) => new Date(a.date) - new Date(b.date));
+    }, [schedules]);
+
+    // Get schedules grouped by peptide
+    const getSchedulesByPeptide = useCallback(() => {
+        const grouped = {};
+        schedules.forEach(s => {
+            if (!grouped[s.peptide]) {
+                grouped[s.peptide] = [];
+            }
+            grouped[s.peptide].push(s);
+        });
+        return grouped;
+    }, [schedules]);
+
     return {
         schedules,
+        templates,
         loading,
         addSchedule,
+        createRecurringSchedule,
+        deleteTemplate,
+        extendRecurringSchedule,
         deleteSchedule,
-        toggleComplete
+        toggleComplete,
+        getUpcomingSchedules,
+        getSchedulesByPeptide,
+        refreshSchedules: fetchSchedules,
+        refreshTemplates: fetchTemplates
     };
 };

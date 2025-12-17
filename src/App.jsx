@@ -35,6 +35,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Safety = lazy(() => import('./pages/Safety'));
 const BeginnerGuide = lazy(() => import('./pages/guides/BeginnerGuide'));
 const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
+const ForumPage = lazy(() => import('./pages/Forum'));
 
 
 import { initAnalytics } from './lib/analytics';
@@ -107,6 +108,11 @@ function App() {
               <Route path="safety" element={
                 <Suspense fallback={<div style={{ padding: '20px' }}>Loading safety info...</div>}>
                   <Safety />
+                </Suspense>
+              } />
+              <Route path="forum" element={
+                <Suspense fallback={<div style={{ padding: '20px' }}>Loading forum...</div>}>
+                  <ForumPage />
                 </Suspense>
               } />
               <Route path="settings" element={

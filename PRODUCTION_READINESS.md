@@ -126,6 +126,7 @@ This document tracks all essential components needed for production deployment o
 - [x] `/terms` - Terms of Service
 - [x] `/privacy` - Privacy Policy
 - [x] `/login` - Authentication
+- [x] `/forum` - Community Forum ✅ NEW
 
 ---
 
@@ -332,8 +333,8 @@ This document tracks all essential components needed for production deployment o
 - [x] Protocol guides (Beginner's Guide)
 - [x] Safety guides (Safety & Storage)
 - [ ] Video tutorials
-- [ ] Blog/articles section
-- [ ] Community forum
+- [x] Blog/articles section ✅ (Guides)
+- [x] Community forum ✅ NEW
 - [x] FAQ section (in Guides)
 
 ---
@@ -433,6 +434,7 @@ This document tracks all essential components needed for production deployment o
 - ✅ Added Backup & Data Export features
 - ✅ Added "Data & Backup" tab in Settings
 - ✅ Applied 10 database migrations
+- ✅ **Community Forum** with categories, topics, posts, search, and likes ✅ NEW
 
 ---
 
