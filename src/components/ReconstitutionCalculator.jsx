@@ -31,13 +31,18 @@ const getSavedCalculations = () => {
 };
 
 const ReconstitutionCalculator = () => {
-  // Form state
+  // Form state - use strings to allow empty input and prevent leading zeros
   const [selectedPeptide, setSelectedPeptide] = useState('');
-  const [vialAmount, setVialAmount] = useState(5);
-  const [waterAmount, setWaterAmount] = useState(2);
-  const [doseAmount, setDoseAmount] = useState(250);
+  const [vialAmount, setVialAmount] = useState('5');
+  const [waterAmount, setWaterAmount] = useState('2');
+  const [doseAmount, setDoseAmount] = useState('250');
   const [doseUnit, setDoseUnit] = useState('mcg'); // 'mcg' or 'mg'
   const [syringeType, setSyringeType] = useState('u100');
+
+  // Helper to get numeric values for calculations
+  const numVialAmount = parseFloat(vialAmount) || 0;
+  const numWaterAmount = parseFloat(waterAmount) || 0;
+  const numDoseAmount = parseFloat(doseAmount) || 0;
 
   // UI state
   const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -91,20 +96,20 @@ const ReconstitutionCalculator = () => {
 
   // Calculate result
   const result = useMemo(() => {
-    if (vialAmount <= 0 || waterAmount <= 0 || doseAmount <= 0) return null;
+    if (numVialAmount <= 0 || numWaterAmount <= 0 || numDoseAmount <= 0) return null;
 
     const syringe = SYRINGE_TYPES.find(s => s.id === syringeType);
     const unitsPerMl = syringe?.unitsPerMl || 100;
     const maxUnits = syringe?.maxUnits || 100;
 
     // Convert dose to mcg if needed
-    const doseMcg = doseUnit === 'mg' ? doseAmount * 1000 : doseAmount;
+    const doseMcg = doseUnit === 'mg' ? numDoseAmount * 1000 : numDoseAmount;
 
     // Convert vial mg to mcg
-    const totalMcg = vialAmount * 1000;
+    const totalMcg = numVialAmount * 1000;
 
     // Concentration (mcg per ml)
-    const concentration = totalMcg / waterAmount;
+    const concentration = totalMcg / numWaterAmount;
 
     // Volume to draw (ml)
     const drawMl = doseMcg / concentration;
@@ -126,7 +131,7 @@ const ReconstitutionCalculator = () => {
       isOverMax,
       maxUnits
     };
-  }, [vialAmount, waterAmount, doseAmount, doseUnit, syringeType]);
+  }, [numVialAmount, numWaterAmount, numDoseAmount, doseUnit, syringeType]);
 
   // Select peptide and auto-fill common values
   const selectPeptide = (name) => {
@@ -141,10 +146,10 @@ const ReconstitutionCalculator = () => {
       if (matches && matches.length > 0) {
         const dose = parseFloat(matches[0]);
         if (dosageStr.toLowerCase().includes('mg') && dose < 10) {
-          setDoseAmount(dose);
+          setDoseAmount(String(dose));
           setDoseUnit('mg');
         } else {
-          setDoseAmount(dose);
+          setDoseAmount(String(dose));
           setDoseUnit('mcg');
         }
       }
@@ -156,9 +161,9 @@ const ReconstitutionCalculator = () => {
     const newCalc = {
       id: Date.now(),
       peptide: selectedPeptide || 'Custom',
-      vialAmount,
-      waterAmount,
-      doseAmount,
+      vialAmount: numVialAmount,
+      waterAmount: numWaterAmount,
+      doseAmount: numDoseAmount,
       doseUnit,
       syringeType
     };
@@ -171,9 +176,9 @@ const ReconstitutionCalculator = () => {
   // Load saved calculation
   const loadCalculation = (calc) => {
     setSelectedPeptide(calc.peptide);
-    setVialAmount(calc.vialAmount);
-    setWaterAmount(calc.waterAmount);
-    setDoseAmount(calc.doseAmount);
+    setVialAmount(String(calc.vialAmount));
+    setWaterAmount(String(calc.waterAmount));
+    setDoseAmount(String(calc.doseAmount));
     setDoseUnit(calc.doseUnit || 'mcg');
     setSyringeType(calc.syringeType || 'u100');
     setShowSaved(false);
@@ -189,9 +194,9 @@ const ReconstitutionCalculator = () => {
   // Reset to defaults
   const resetCalculator = () => {
     setSelectedPeptide('');
-    setVialAmount(5);
-    setWaterAmount(2);
-    setDoseAmount(250);
+    setVialAmount('5');
+    setWaterAmount('2');
+    setDoseAmount('250');
     setDoseUnit('mcg');
     setSyringeType('u100');
   };
@@ -305,7 +310,7 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={vialAmount}
-              onChange={(e) => setVialAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setVialAmount(e.target.value)}
               onWheel={(e) => e.target.blur()}
               step="1"
               min="0"
@@ -317,8 +322,8 @@ const ReconstitutionCalculator = () => {
             {[5, 10, 15, 20].map(v => (
               <button
                 key={v}
-                className={`${styles.quickBtn} ${vialAmount === v ? styles.quickBtnActive : ''}`}
-                onClick={() => setVialAmount(v)}
+                className={`${styles.quickBtn} ${numVialAmount === v ? styles.quickBtnActive : ''}`}
+                onClick={() => setVialAmount(String(v))}
               >
                 {v}mg
               </button>
@@ -336,7 +341,7 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={waterAmount}
-              onChange={(e) => setWaterAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setWaterAmount(e.target.value)}
               onWheel={(e) => e.target.blur()}
               step="0.5"
               min="0"
@@ -348,8 +353,8 @@ const ReconstitutionCalculator = () => {
             {COMMON_WATER_AMOUNTS.map(w => (
               <button
                 key={w}
-                className={`${styles.quickBtn} ${waterAmount === w ? styles.quickBtnActive : ''}`}
-                onClick={() => setWaterAmount(w)}
+                className={`${styles.quickBtn} ${numWaterAmount === w ? styles.quickBtnActive : ''}`}
+                onClick={() => setWaterAmount(String(w))}
               >
                 {w}ml
               </button>
@@ -367,7 +372,7 @@ const ReconstitutionCalculator = () => {
             <input
               type="number"
               value={doseAmount}
-              onChange={(e) => setDoseAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => setDoseAmount(e.target.value)}
               onWheel={(e) => e.target.blur()}
               step={doseUnit === 'mg' ? '0.1' : '50'}
               min="0"
@@ -392,8 +397,8 @@ const ReconstitutionCalculator = () => {
             {commonDoses.map(d => (
               <button
                 key={d}
-                className={`${styles.quickBtn} ${doseAmount === d && doseUnit === 'mcg' ? styles.quickBtnActive : ''}`}
-                onClick={() => { setDoseAmount(d); setDoseUnit('mcg'); }}
+                className={`${styles.quickBtn} ${numDoseAmount === d && doseUnit === 'mcg' ? styles.quickBtnActive : ''}`}
+                onClick={() => { setDoseAmount(String(d)); setDoseUnit('mcg'); }}
               >
                 {d >= 1000 ? `${d / 1000}mg` : `${d}mcg`}
               </button>

@@ -1,7 +1,7 @@
 // Simple analytics wrapper
 // In a real app, this would wrap Google Analytics (gtag) or similar
 
-const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // Replace with your actual Measurement ID
+const GA_MEASUREMENT_ID = 'G-2V2TNJFR16';
 
 export const initAnalytics = () => {
     console.log('Analytics initialized');
