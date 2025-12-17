@@ -1,7 +1,14 @@
 # Production Readiness Checklist - COMPLETED ✅
 
+## 🌐 LIVE: https://peptidelog.net
+
 ## Overview
 This document tracks all essential components needed for production deployment of the Peptide Tracker application.
+
+**Domain:** peptidelog.net  
+**Hosting:** Vercel  
+**Backend:** Supabase (Project: nhiwjerqyhtpienorzky)  
+**Analytics:** Google Analytics (G-2V2TNJFR16)
 
 ---
 
