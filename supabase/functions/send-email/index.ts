@@ -37,6 +37,24 @@ serve(async (req) => {
           <p>Thanks for joining. We're here to help you track your protocols safely.</p>
         `
                 break
+            case 'injection_reminder':
+                subject = 'Reminder: Upcoming Injection'
+                const time = data.scheduledTime ? new Date(data.scheduledTime).toLocaleString() : 'Now';
+                html = `
+          <h1>Time for your injection</h1>
+          <p>This is a reminder for your scheduled injection of <strong>${data.peptideName || 'Peptide'}</strong>.</p>
+          <p>Scheduled time: ${time}</p>
+          <a href="https://peptidelog.net/dashboard">Log Injection</a>
+        `
+                break
+            case 'ticket_update':
+                subject = `Update on ticket: ${data.ticketSubject}`
+                html = `
+          <h1>Support Ticket Updated</h1>
+          <p>Your support ticket has been updated to status: <strong>${data.status}</strong>.</p>
+          <p>Log in to view the response.</p>
+        `
+                break
             case 'test':
                 subject = 'Test Email from Peptide Tracker'
                 html = `
