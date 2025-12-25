@@ -1,0 +1,633 @@
+/* =========================================
+   Mobile Optimizations for Native Apps
+   iOS & Android Capacitor App Styles
+   ========================================= */
+
+/* ==========================================
+   1. SAFE AREA HANDLING
+   ========================================== */
+
+/* Root safe area variables */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+
+    /* Navigation heights */
+    --nav-height: 64px;
+    --nav-total-height: calc(var(--nav-height) + var(--safe-area-bottom));
+
+    /* Header heights for iOS status bar */
+    --header-padding-top: max(var(--space-lg), var(--safe-area-top));
+}
+
+/* Apply safe area to body */
+body {
+    padding-top: var(--safe-area-top);
+    padding-left: var(--safe-area-left);
+    padding-right: var(--safe-area-right);
+}
+
+/* ==========================================
+   2. TOUCH OPTIMIZATIONS
+   ========================================== */
+
+/* Prevent text selection on interactive elements */
+button,
+a,
+.clickable,
+[role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Improve tap responsiveness */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-friendly tap targets (minimum 44px) */
+@media (max-width: 768px) {
+
+    button,
+    a,
+    input[type="button"],
+    input[type="submit"],
+    .nav-item,
+    .clickable {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Larger touch targets for form elements */
+    input,
+    select,
+    textarea {
+        min-height: 48px;
+        font-size: 16px !important;
+        /* Prevent zoom on iOS */
+    }
+}
+
+/* Active state feedback for touch */
+@media (hover: none) and (pointer: coarse) {
+
+    button:active,
+    a:active,
+    .card:active,
+    .actionCard:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+
+    /* Faster transitions for touch devices */
+    * {
+        transition-duration: 150ms !important;
+    }
+}
+
+/* ==========================================
+   3. MOMENTUM SCROLLING
+   ========================================== */
+
+/* Enable momentum scrolling on iOS */
+.scrollable,
+main,
+.modal-content,
+.drawer-content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+    }
+}
+
+/* ==========================================
+   4. PULL TO REFRESH SUPPORT
+   ========================================== */
+
+/* Disable browser's pull-to-refresh, we use native */
+body {
+    overscroll-behavior-y: none;
+}
+
+.ptr-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+}
+
+.ptr-refreshing .ptr-element {
+    transform: translateY(0);
+}
+
+/* ==========================================
+   5. STATUS BAR INTEGRATION
+   ========================================== */
+
+/* iOS status bar background for dark theme */
+.status-bar-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--safe-area-top);
+    background: var(--bg-nav);
+    z-index: 9999;
+}
+
+/* ==========================================
+   6. KEYBOARD HANDLING
+   ========================================== */
+
+/* When keyboard is open, adjust bottom navigation */
+body.keyboard-open .bottom-nav,
+body.keyboard-open .mobileStats {
+    display: none !important;
+}
+
+body.keyboard-open main {
+    padding-bottom: 0 !important;
+}
+
+/* Scroll input into view when focused */
+@media (max-width: 768px) {
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+        scroll-margin-top: 100px;
+        scroll-margin-bottom: 200px;
+    }
+}
+
+/* ==========================================
+   7. NATIVE-LIKE ANIMATIONS
+   ========================================== */
+
+/* Page transitions */
+.page-enter {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.page-exit {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.page-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* iOS-style modal presentation */
+.modal-overlay {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    border-radius: 16px 16px 0 0;
+    transform-origin: bottom center;
+}
+
+/* Sheet modal animation */
+.sheet-enter {
+    transform: translateY(100%);
+}
+
+.sheet-enter-active {
+    transform: translateY(0);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-exit-active {
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ==========================================
+   8. MOBILE NAVIGATION ENHANCEMENTS
+   ========================================== */
+
+/* Bottom navigation with safe area */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding-bottom: var(--safe-area-bottom);
+    background: var(--bg-nav);
+    border-top: 1px solid var(--glass-border);
+    z-index: 1000;
+}
+
+/* Floating action button positioning */
+.fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--nav-total-height) + 16px);
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--gradient-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+    z-index: 999;
+    transition: all 0.2s ease;
+}
+
+.fab:active {
+    transform: scale(0.92);
+}
+
+/* ==========================================
+   9. CARDS & LISTS - MOBILE OPTIMIZED
+   ========================================== */
+
+@media (max-width: 768px) {
+
+    /* Full-width cards on mobile */
+    .card,
+    .glass-panel {
+        border-radius: var(--radius-md);
+        margin-left: calc(var(--space-md) * -1);
+        margin-right: calc(var(--space-md) * -1);
+        border-left: none;
+        border-right: none;
+        border-radius: 0;
+    }
+
+    /* Restore border radius for cards inside containers */
+    .container .card,
+    .container .glass-panel {
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+    }
+
+    /* Swipeable list items */
+    .swipeable-item {
+        position: relative;
+        overflow: hidden;
+        touch-action: pan-y;
+    }
+
+    .swipe-action {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent-danger);
+        color: white;
+        font-weight: 600;
+    }
+
+    .swipe-action-left {
+        left: 0;
+        transform: translateX(-100%);
+    }
+
+    .swipe-action-right {
+        right: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* ==========================================
+   10. LOADING STATES
+   ========================================== */
+
+/* Skeleton loading for mobile */
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--bg-card) 0%,
+            var(--bg-card-hover) 50%,
+            var(--bg-card) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.skeleton-text {
+    height: 1em;
+    margin-bottom: 0.5em;
+}
+
+.skeleton-circle {
+    border-radius: 50%;
+}
+
+.skeleton-button {
+    height: 44px;
+    width: 120px;
+    border-radius: var(--radius-full);
+}
+
+/* ==========================================
+   11. FORMS - MOBILE OPTIMIZED
+   ========================================== */
+
+@media (max-width: 768px) {
+
+    /* Larger form elements */
+    .form-group {
+        margin-bottom: var(--space-lg);
+    }
+
+    label {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        margin-bottom: var(--space-sm);
+        display: block;
+    }
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+        /* Prevent iOS zoom */
+        padding: 14px 16px;
+        border-radius: var(--radius-md);
+    }
+
+    /* iOS-style toggle switches */
+    .toggle-switch {
+        width: 50px;
+        height: 30px;
+        border-radius: 15px;
+        padding: 2px;
+    }
+
+    .toggle-switch::after {
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+    }
+
+    /* Full-width buttons on mobile */
+    .btn-primary,
+    .btn-secondary,
+    button[type="submit"] {
+        width: 100%;
+        padding: 16px 24px;
+        font-size: 1rem;
+    }
+}
+
+/* ==========================================
+   12. MODALS & SHEETS - MOBILE NATIVE FEEL
+   ========================================== */
+
+@media (max-width: 768px) {
+    .modal {
+        align-items: flex-end;
+    }
+
+    .modal-content {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 20px 20px 0 0;
+        padding: 20px;
+        padding-bottom: calc(20px + var(--safe-area-bottom));
+    }
+
+    /* Drag handle for sheet modals */
+    .modal-handle {
+        width: 36px;
+        height: 5px;
+        background: var(--text-muted);
+        border-radius: 3px;
+        margin: -8px auto 16px;
+    }
+}
+
+/* ==========================================
+   13. IMAGES - OPTIMIZED LOADING
+   ========================================== */
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Lazy loading placeholder */
+img[loading="lazy"] {
+    background: var(--bg-card);
+    min-height: 100px;
+}
+
+img.loaded {
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==========================================
+   14. TYPOGRAPHY - MOBILE READABLE
+   ========================================== */
+
+@media (max-width: 768px) {
+    html {
+        font-size: 15px;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+        line-height: 1.2;
+    }
+
+    h2 {
+        font-size: 1.375rem;
+        line-height: 1.25;
+    }
+
+    h3 {
+        font-size: 1.125rem;
+        line-height: 1.3;
+    }
+
+    p,
+    li {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+    }
+}
+
+/* ==========================================
+   15. PERFORMANCE OPTIMIZATIONS
+   ========================================== */
+
+/* GPU acceleration for animations */
+.animated,
+.card,
+.btn-primary,
+.nav-item,
+[class*="action"] {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ==========================================
+   16. DARK MODE ENHANCEMENTS FOR OLED
+   ========================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-app: #000000;
+        --bg-card: #0a0a0a;
+        --bg-card-hover: #141414;
+    }
+}
+
+/* ==========================================
+   17. LANDSCAPE MODE OPTIMIZATIONS
+   ========================================== */
+
+@media (max-height: 500px) and (orientation: landscape) {
+
+    /* Compact navigation in landscape */
+    .bottom-nav {
+        height: 48px;
+    }
+
+    .nav-item {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .nav-item span {
+        display: inline;
+        font-size: 0.75rem;
+    }
+
+    /* Reduce page padding */
+    .container {
+        padding: var(--space-sm) var(--space-md);
+        padding-bottom: 60px;
+    }
+
+    /* Side-by-side layout */
+    .statsGrid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-sm);
+    }
+}
+
+/* ==========================================
+   18. NOTCH & CUTOUT HANDLING (SPECIFIC DEVICES)
+   ========================================== */
+
+/* iPhone with notch */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .header-with-notch {
+        padding-top: max(16px, env(safe-area-inset-top));
+    }
+}
+
+/* Android camera cutout */
+@supports (padding-top: env(display-cutout)) {
+    .header-with-cutout {
+        padding-top: max(16px, env(display-cutout));
+    }
+}
+
+/* ==========================================
+   19. HAPTIC FEEDBACK VISUAL CUES
+   ========================================== */
+
+/* Visual feedback when haptics trigger */
+.haptic-light:active {
+    transform: scale(0.99);
+}
+
+.haptic-medium:active {
+    transform: scale(0.97);
+}
+
+.haptic-heavy:active {
+    transform: scale(0.95);
+}
+
+/* ==========================================
+   20. ACCESSIBILITY IMPROVEMENTS
+   ========================================== */
+
+/* Focus states for keyboard/switch navigation */
+@media (max-width: 768px) {
+    :focus-visible {
+        outline: 2px solid var(--accent-primary);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+    }
+
+    /* Large text mode support */
+    @media (min-resolution: 2dppx) {
+        html {
+            font-size: clamp(14px, 4vw, 18px);
+        }
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    :root {
+        --glass-border: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-primary {
+        border: 2px solid white;
+    }
+}

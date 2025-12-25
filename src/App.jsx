@@ -37,10 +37,13 @@ const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
 const ForumPage = lazy(() => import('./pages/Forum'));
 
 import { initAnalytics } from './lib/analytics';
+import { initializeNativeServices } from './services/nativeService';
 
 function App() {
   React.useEffect(() => {
     initAnalytics();
+    // Initialize native mobile features (only runs on iOS/Android)
+    initializeNativeServices();
   }, []);
 
   return (

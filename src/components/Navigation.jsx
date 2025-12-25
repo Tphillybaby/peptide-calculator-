@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Syringe, Calculator, Activity, TrendingDown, BookOpen, User, LogIn, MoreHorizontal, X, MessageCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { haptics } from '../services/nativeService';
 import styles from './Navigation.module.css';
 
 const Navigation = () => {
@@ -49,6 +50,11 @@ const Navigation = () => {
 
   // Check if any "more" menu item is active
   const isMoreItemActive = ['/half-life', '/guides', '/price-checker', '/forum'].includes(location.pathname);
+
+  // Haptic feedback on navigation tap
+  const handleNavClick = () => {
+    haptics.impact('light');
+  };
 
   // Secondary navigation items (shown in More menu on mobile)
   const secondaryItems = [
@@ -105,6 +111,7 @@ const Navigation = () => {
           <NavLink
             to="/"
             aria-label="Home"
+            onClick={handleNavClick}
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
           >
             <LayoutDashboard size={22} />
@@ -114,6 +121,7 @@ const Navigation = () => {
           <NavLink
             to="/log"
             aria-label="Injection Log"
+            onClick={handleNavClick}
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
           >
             <Syringe size={22} />
@@ -123,6 +131,7 @@ const Navigation = () => {
           <NavLink
             to="/calculator"
             aria-label="Reconstitution Calculator"
+            onClick={handleNavClick}
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
           >
             <Calculator size={22} />
@@ -132,6 +141,7 @@ const Navigation = () => {
           <NavLink
             to="/encyclopedia"
             aria-label="Peptide Encyclopedia"
+            onClick={handleNavClick}
             className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
           >
             <BookOpen size={22} />
@@ -154,7 +164,10 @@ const Navigation = () => {
           {/* More Button - Mobile Only */}
           <button
             className={`${styles.navItem} ${styles.moreButton} ${styles.mobileOnly} ${isMoreItemActive ? styles.active : ''}`}
-            onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+            onClick={() => {
+              handleNavClick();
+              setMoreMenuOpen(!moreMenuOpen);
+            }}
             aria-label="More options"
             aria-expanded={moreMenuOpen}
           >
