@@ -15,6 +15,25 @@ class ErrorBoundary extends React.Component {
     // Basic console logging to help during development
     console.error('ErrorBoundary caught', error, errorInfo);
     trackError(error, errorInfo);
+
+    // Auto-recovery for ChunkLoadErrors (updates/network issues)
+    // These happen when a user is on an old version and clicking a link tries to load a deleted chunk
+    const isChunkError = error.message && (
+      error.message.includes('Failed to fetch dynamically imported module') ||
+      error.message.includes('Importing a module script failed') ||
+      error.name === 'ChunkLoadError'
+    );
+
+    if (isChunkError) {
+      const lastReload = sessionStorage.getItem('chunk_reload_time');
+      // If we haven't reloaded in the last 10 seconds, try reloading
+      if (!lastReload || Date.now() - parseInt(lastReload) > 10000) {
+        console.log('Chunk load error detected, reloading page...');
+        sessionStorage.setItem('chunk_reload_time', Date.now().toString());
+        window.location.reload();
+        return;
+      }
+    }
   }
 
   render() {

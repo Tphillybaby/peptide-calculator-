@@ -19,7 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_reviews_rating ON public.reviews(rating);
 
 -- Schedules
 CREATE INDEX IF NOT EXISTS idx_schedules_user_id ON public.schedules(user_id);
-CREATE INDEX IF NOT EXISTS idx_schedules_date ON public.schedules(date);
+CREATE INDEX IF NOT EXISTS idx_schedules_date ON public.schedules(scheduled_date);
 CREATE INDEX IF NOT EXISTS idx_schedules_completed ON public.schedules(completed);
 
 -- Support Tickets
