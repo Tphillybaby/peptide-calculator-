@@ -1853,6 +1853,393 @@ export const PEPTIDE_DATABASE = {
         researchLinks: [
             'https://pubmed.ncbi.nlm.nih.gov/23566056/'
         ]
+    },
+
+    'Melanotan 1 (Afamelanotide)': {
+        name: 'Melanotan 1 (Afamelanotide)',
+        category: 'Melanocortin Agonist',
+        status: 'FDA-approved (Implants)',
+        halfLife: 'Short (minutes) / Implants (months)',
+        commonDosage: '1-2mg daily (Injection)',
+        description: 'A synthetic analog of alpha-MSH that induces tanning with fewer side effects than Melanotan II.',
+        benefits: [
+            'Increased melanin production (tanning)',
+            'Photoprotection from UV damage',
+            'Less nausea/flushing than Melanotan II',
+            'Used for Erythropoietic Protoporphyria (EPP)'
+        ],
+        sideEffects: [
+            'Nausea (mild)',
+            'Flushing',
+            'Injection site reactions'
+        ],
+        cons: [
+            'Requires daily dosing (injectable)',
+            'Less libido effect than MT2 (pro/con)',
+            'Suppliers less common than MT2'
+        ],
+        warnings: [
+            'Monitor moles/freckles for changes',
+            'Not FDA approved as injectable'
+        ],
+        contraindications: [
+            'Melanoma history',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/15056820/'
+        ]
+    },
+
+    'HGH Fragment 176-191': {
+        name: 'HGH Fragment 176-191',
+        category: 'Fat Loss',
+        status: 'Research chemical',
+        halfLife: '< 1 hour',
+        commonDosage: '250-500mcg twice daily',
+        description: 'A stabilized fragment of the GH molecule (C-terminus) that specifically targets fat loss (lipolysis) without affecting insulin or IGF-1.',
+        benefits: [
+            'Potent fat loss aid',
+            'No effect on blood glucose',
+            'No water retention',
+            'Does not impact IGF-1 levels'
+        ],
+        sideEffects: [
+            'Injection site redness',
+            'Rare feeling of flushing'
+        ],
+        cons: [
+            'Very fragile peptide',
+            'Must be taken on empty stomach (fasted)',
+            'Short duration of action'
+        ],
+        warnings: [
+            'Ensure purity (often faked)',
+            'Avoid eating 2 hours before/after'
+        ],
+        contraindications: [
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection (AM fasted / Pre-bed fasted)',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/11713213/'
+        ]
+    },
+
+    'GHRP-6': {
+        name: 'GHRP-6',
+        category: 'Growth Hormone Secretagogue',
+        status: 'Research chemical',
+        halfLife: '2-3 hours',
+        commonDosage: '100-200mcg 3x daily',
+        description: 'A powerful GH secretagogue known for stimulating significant appetite and growth hormone release.',
+        benefits: [
+            'Increases Growth Hormone',
+            'Stimulates appetite (bulking)',
+            'Improved recovery',
+            'Anti-inflammatory'
+        ],
+        sideEffects: [
+            'Intense hunger',
+            'Water retention',
+            'Prolactin increase (dose dependent)',
+            'Cortisol increase (mild)'
+        ],
+        cons: [
+            'Hunger can be uncontrollable',
+            'Requires multiple daily injections',
+            'Water weight gain'
+        ],
+        warnings: [
+            'Monitor prolactin',
+            'Monitor blood glucose'
+        ],
+        contraindications: [
+            'History of prolactinoma',
+            'Active cancer'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/8492102/'
+        ]
+    },
+
+    'GHRP-2 (Pralmorelin)': {
+        name: 'GHRP-2 (Pralmorelin)',
+        category: 'Growth Hormone Secretagogue',
+        status: 'Research chemical',
+        halfLife: '2-3 hours',
+        commonDosage: '100mcg 3x daily',
+        description: 'A potent GH secretagogue, releasing more GH than GHRP-6 with less appetite stimulation.',
+        benefits: [
+            'Strong GH release',
+            'Moderate appetite increase (less than GHRP-6)',
+            'Muscle preservation',
+            'Fat loss support'
+        ],
+        sideEffects: [
+            'Cortisol elevation',
+            'Prolactin elevation',
+            'Water retention',
+            'Lethargy'
+        ],
+        cons: [
+            'Higher cortisol/prolactin risk than Ipamorelin',
+            'Desensitization possible without breaks'
+        ],
+        warnings: [
+            'Monitor cortisol and prolactin',
+            'Cycle use'
+        ],
+        contraindications: [
+            'Prolactinoma / Pituitary issues',
+            'Active malignancy'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/8883203/'
+        ]
+    },
+
+    'Hexarelin': {
+        name: 'Hexarelin',
+        category: 'Growth Hormone Secretagogue',
+        status: 'Research chemical',
+        halfLife: '70 minutes',
+        commonDosage: '100-200mcg daily',
+        description: 'The strongest of the GHRPs for GH release, but prone to rapid desensitization.',
+        benefits: [
+            'Massive GH pulse',
+            'Potential cardioprotective effects',
+            'Muscle strength gains',
+            'Fat loss'
+        ],
+        sideEffects: [
+            'High prolactin spike',
+            'Cortisol spike',
+            'Water retention',
+            'Carpal tunnel symptoms'
+        ],
+        cons: [
+            'Rapid receptor downregulation (max 2-4 weeks use)',
+            'Harsh side effect profile',
+            'Requires breaks'
+        ],
+        warnings: [
+            'Short cycle only',
+            'Monitor heart health (beneficial but potent)'
+        ],
+        contraindications: [
+            'Prolactin sensitive individuals',
+            'Daily long-term use'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/9583277/'
+        ]
+    },
+
+    'PEG-MGF': {
+        name: 'PEG-MGF',
+        category: 'Growth & Muscle',
+        status: 'Research chemical',
+        halfLife: '48-72 hours',
+        commonDosage: '200-400mcg post-workout',
+        description: 'Pegylated Mechano Growth Factor, a variant of IGF-1 that promotes satellite cell activation and muscle repair.',
+        benefits: [
+            'Localized muscle growth (site enhancement)',
+            'Satellite cell activation',
+            'Systemic recovery',
+            'Neuroprotection'
+        ],
+        sideEffects: [
+            'Hypoglycemia (mild risk)',
+            'Injection site pain',
+            'Itchiness'
+        ],
+        cons: [
+            'Best used post-workout only',
+            'Long half-life means systemic effect dominates site effect',
+            'Limited human data'
+        ],
+        warnings: [
+            'Do not use pre-workout',
+            'Potential for hypoglycemia'
+        ],
+        contraindications: [
+            'Active cancer',
+            'Hypoglycemia prone'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous or Intramuscular (into trained muscle)',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/22020228/'
+        ]
+    },
+
+    'Foxo4-DRI': {
+        name: 'Foxo4-DRI',
+        category: 'Senolytic (Anti-Aging)',
+        status: 'Research chemical (Experimental)',
+        halfLife: 'Unknown (Short)',
+        commonDosage: 'Experimental protocols (e.g. 3-10mg/cycle)',
+        description: 'A peptide designed to target and eliminate senescent ("zombie") cells to rejuvenate tissues.',
+        benefits: [
+            'Eliminates senescent cells',
+            'Improves tissue function',
+            'Coat condition improvement (mice)',
+            'Kidney function restoration (mice)'
+        ],
+        sideEffects: [
+            'Fatigue (during clearance)',
+            'Flu-like symptoms',
+            'Muscle aches'
+        ],
+        cons: [
+            'Extremely expensive',
+            'Very limited human data',
+            'Hard to synthesize correctly'
+        ],
+        warnings: [
+            'Highly experimental',
+            'Clearance of too many cells at once can be stressful'
+        ],
+        contraindications: [
+            'Unknown',
+            'Caution advised'
+        ],
+        protocols: [],
+        administration: 'Subcutaneous injection',
+        storage: 'Freeze or Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/28340339/'
+        ]
+    },
+
+    '5-Amino-1MQ': {
+        name: '5-Amino-1MQ',
+        category: 'Metabolic & Fat Loss',
+        status: 'Research chemical (small molecule)',
+        halfLife: 'Oral bioavailability',
+        commonDosage: '50-150mg daily (Oral)',
+        description: 'Small molecule NNMT inhibitor that increases cellular NAD+ and metabolic rate.',
+        benefits: [
+            'Increased metabolic rate',
+            'Fat loss without CNS stimulation',
+            'Increases NAD+ levels',
+            'Muscle preservation'
+        ],
+        sideEffects: [
+            'Insomnia (if taken late)',
+            'Mild GI upset'
+        ],
+        cons: [
+            'Expensive',
+            'Oral bioavailability issues if not formulated well',
+            'New compound'
+        ],
+        warnings: [
+            'Don\'t take before bed'
+        ],
+        contraindications: [
+            'Pregnancy',
+            'Severe liver disease'
+        ],
+        protocols: [],
+        administration: 'Oral capsule',
+        storage: 'Cool, dry place.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/29969636/'
+        ]
+    },
+
+    'Dihexa': {
+        name: 'Dihexa',
+        category: 'Nootropic & Cognitive',
+        status: 'Research chemical',
+        halfLife: 'Long (days)',
+        commonDosage: '10-20mg Ora/Transdermal',
+        description: 'A potent angiotensin IV analog derived peptide promoting synaptogenesis (brain connection growth).',
+        benefits: [
+            'Powerful neurogenesis',
+            'Cognitive enhancement',
+            'Memory repair',
+            'Stroke/TBI recovery potential'
+        ],
+        sideEffects: [
+            'Autism-like overstimulation (rare)',
+            'Irritability',
+            'Headache'
+        ],
+        cons: [
+            'Concern about cancer growth (angiogenesis)',
+            'Very potent; easy to overdose',
+            'Limited long-term safety'
+        ],
+        warnings: [
+            'Monitor for cancerous growths (theoretical risk due to growth factors)',
+            'Do not combine with other potent growth agents'
+        ],
+        contraindications: [
+            'History of cancer',
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Oral or Transdermal (DMSO)',
+        storage: 'Room temperature.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/23168565/'
+        ]
+    },
+
+    'Oxytocin': {
+        name: 'Oxytocin',
+        category: 'Hormone & Wellness',
+        status: 'Prescription/Compound',
+        halfLife: '3-5 minutes',
+        commonDosage: '10-20IU (Nasal) or 5-10IU (SubQ)',
+        description: 'The "love hormone" involved in bonding, stress reduction, and sexual arousal.',
+        benefits: [
+            'Improved social bonding',
+            'Stress/Cortisol reduction',
+            'Enhanced orgasm/libido',
+            'Mood elevation'
+        ],
+        sideEffects: [
+            'Headache',
+            'Nausea',
+            'Uterine contractions (females)'
+        ],
+        cons: [
+            'Very short duration',
+            'Nasal absorption varies',
+            'Can induce labor in pregnancy'
+        ],
+        warnings: [
+            'Do not use if pregnant (induces labor)',
+            'Monitor blood pressure'
+        ],
+        contraindications: [
+            'Pregnancy'
+        ],
+        protocols: [],
+        administration: 'Nasal spray or Subcutaneous injection',
+        storage: 'Refrigerate.',
+        researchLinks: [
+            'https://pubmed.ncbi.nlm.nih.gov/1601267/'
+        ]
     }
 };
 
