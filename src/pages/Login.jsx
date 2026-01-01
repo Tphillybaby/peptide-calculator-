@@ -2,6 +2,7 @@ import { useNavigate, Link, useLocation, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import React, { useState, useEffect } from 'react';
 import { LogIn, AlertCircle, Eye, EyeOff, Shield } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
