@@ -1,135 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { TrendingDown, RefreshCw, DollarSign, ExternalLink, Award, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+    TrendingDown, RefreshCw, DollarSign, ExternalLink, Award,
+    AlertCircle, Star, Check, Package, Truck, Shield, Clock,
+    ChevronDown, ChevronUp, Info
+} from 'lucide-react';
 import styles from './PriceChecker.module.css';
-import { BASE_PEPTIDE_PRICES, VENDORS, SHIPPING_OPTIONS } from '../data/mockPriceData';
-
-const PEPTIDE_CATEGORIES = {
-    'GLP-1 Agonists & Weight Loss': [
-        'Semaglutide',
-        'Tirzepatide',
-        'Retatrutide',
-        'Liraglutide',
-        'Dulaglutide',
-        'Exenatide'
-    ],
-    'Growth Hormone Secretagogues': [
-        'CJC-1295 (no DAC)',
-        'CJC-1295 (DAC)',
-        'Ipamorelin',
-        'GHRP-2',
-        'GHRP-6',
-        'Hexarelin',
-        'MK-677 (Ibutamoren)'
-    ],
-    'Healing & Recovery': [
-        'BPC-157',
-        'TB-500',
-        'Thymosin Alpha-1',
-        'Thymosin Beta-4',
-        'GHK-Cu'
-    ],
-    'Cosmetic & Skin': [
-        'Melanotan I',
-        'Melanotan II',
-        'PT-141 (Bremelanotide)',
-        'GHK-Cu (Copper Peptide)'
-    ],
-    'Performance & Muscle': [
-        'IGF-1 LR3',
-        'IGF-1 DES',
-        'Follistatin 344',
-        'ACE-031',
-        'YK-11'
-    ],
-    'Cognitive & Nootropic': [
-        'Semax',
-        'Selank',
-        'Cerebrolysin',
-        'P21',
-        'Dihexa'
-    ],
-    'Metabolic & Other': [
-        'AOD-9604',
-        'MOTS-c',
-        'Epithalon',
-        'Pinealon',
-        'SS-31 (Elamipretide)'
-    ]
-};
-
-const priceCache = new Map(); // cache per peptide for 5 minutes
-
-const mockFetchPrices = (peptide) => {
-    const base = BASE_PEPTIDE_PRICES[peptide] || 120;
-
-    const response = VENDORS.map(vendor => {
-        const variance = (Math.random() * 0.08) - 0.04; // +/-4% variance
-        const priceValue = base * vendor.modifier * (1 + variance);
-        const discount = Math.max(0, Math.round((1 - priceValue / (base * 1.15)) * 100));
-        const originalPrice = priceValue / (1 - discount / 100 || 1);
-
-        return {
-            vendor: vendor.name,
-            vendorUrl: vendor.url,
-            price: priceValue.toFixed(2),
-            originalPrice: originalPrice.toFixed(2),
-            discount: discount.toFixed(0),
-            inStock: Math.random() > 0.12,
-            shipping: SHIPPING_OPTIONS[Math.floor(Math.random() * SHIPPING_OPTIONS.length)],
-            rating: (Math.random() * 0.6 + 4.1).toFixed(1),
-            lastUpdated: new Date()
-        };
-    }).sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (Math.random() < 0.03) {
-                reject(new Error('Simulated fetch failure'));
-                return;
-            }
-            resolve(response);
-        }, 600 + Math.random() * 400);
-    });
-};
+import { VENDORS, PEPTIDE_PRICES, PEPTIDE_CATEGORIES, getVendorPrices } from '../data/vendorData';
 
 const PriceChecker = () => {
     const [selectedPeptide, setSelectedPeptide] = useState('Semaglutide');
     const [prices, setPrices] = useState([]);
     const [loading, setLoading] = useState(false);
     const [lastUpdate, setLastUpdate] = useState(null);
-    const [error, setError] = useState(null);
-    const [statusMessage, setStatusMessage] = useState('Loading prices...');
+    const [expandedVendor, setExpandedVendor] = useState(null);
+    const [showInfo, setShowInfo] = useState(false);
 
     const loadPrices = () => {
-        const cacheHit = priceCache.get(selectedPeptide);
-        const now = Date.now();
-        if (cacheHit && now - cacheHit.timestamp < 5 * 60 * 1000) {
-            setPrices(cacheHit.data);
-            setLastUpdate(new Date(cacheHit.timestamp));
-            setStatusMessage('Loaded from cache.');
-            return;
-        }
-
         setLoading(true);
-        setError(null);
-        setStatusMessage('Fetching prices...');
-        mockFetchPrices(selectedPeptide)
-            .then((newPrices) => {
-                setPrices(newPrices);
-                const ts = Date.now();
-                setLastUpdate(new Date(ts));
-                priceCache.set(selectedPeptide, { data: newPrices, timestamp: ts });
-                setStatusMessage('Updated just now.');
-            })
-            .catch((err) => {
-                console.error(err);
-                setPrices([]);
-                setError('Unable to load prices right now. Please retry.');
-                setStatusMessage('Failed to update.');
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+
+        // Simulate network delay for better UX
+        setTimeout(() => {
+            const vendorPrices = getVendorPrices(selectedPeptide);
+            setPrices(vendorPrices);
+            setLastUpdate(new Date());
+            setLoading(false);
+        }, 300);
     };
 
     useEffect(() => {
@@ -137,28 +32,69 @@ const PriceChecker = () => {
     }, [selectedPeptide]);
 
     const bestDeal = prices.length > 0 ? prices[0] : null;
-    const avgPrice = prices.length > 0
-        ? (prices.reduce((sum, p) => sum + parseFloat(p.price), 0) / prices.length).toFixed(2)
-        : 0;
+    const avgPrice = useMemo(() => {
+        if (prices.length === 0) return 0;
+        return (prices.reduce((sum, p) => sum + p.price, 0) / prices.length).toFixed(2);
+    }, [prices]);
+
+    const peptideInfo = PEPTIDE_PRICES[selectedPeptide];
+
+    const renderStars = (rating) => {
+        const fullStars = Math.floor(rating);
+        const hasHalf = rating % 1 >= 0.5;
+        return (
+            <div className={styles.starRating}>
+                {[...Array(5)].map((_, i) => (
+                    <Star
+                        key={i}
+                        size={14}
+                        fill={i < fullStars ? '#f59e0b' : (i === fullStars && hasHalf ? '#f59e0b' : 'transparent')}
+                        color={i < fullStars || (i === fullStars && hasHalf) ? '#f59e0b' : '#6b7280'}
+                    />
+                ))}
+                <span>{rating}</span>
+            </div>
+        );
+    };
 
     return (
         <div className={styles.container}>
+            {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerContent}>
                     <div className={styles.iconWrapper}>
                         <TrendingDown size={32} />
                     </div>
                     <div>
-                        <h1 className={styles.title}>Live Price Checker</h1>
-                        <p className={styles.subtitle}>Find the best deals on peptides from trusted vendors</p>
+                        <h1 className={styles.title}>Peptide Price Comparison</h1>
+                        <p className={styles.subtitle}>Compare prices from trusted vendors and find the best deals</p>
                     </div>
                 </div>
-                <div className={styles.simNote}>
-                    <AlertCircle size={16} />
-                    <span>Simulation only — randomized demo data, not live prices.</span>
-                </div>
+                <button
+                    className={styles.infoBtn}
+                    onClick={() => setShowInfo(!showInfo)}
+                    title="How this works"
+                >
+                    <Info size={20} />
+                </button>
             </div>
 
+            {/* Info Panel */}
+            {showInfo && (
+                <div className={styles.infoPanel}>
+                    <h4>💡 How Price Comparison Works</h4>
+                    <p>
+                        We compile pricing data from trusted peptide vendors to help you find the best deals.
+                        Prices are approximate and may vary. Always verify on the vendor's website before purchasing.
+                    </p>
+                    <p>
+                        <strong>Affiliate Disclosure:</strong> We may earn a commission when you purchase through our links,
+                        at no extra cost to you. This helps support our free tools and resources.
+                    </p>
+                </div>
+            )}
+
+            {/* Peptide Selector */}
             <div className={styles.controls}>
                 <div className={styles.selectWrapper}>
                     <label htmlFor="peptide-select" className={styles.label}>
@@ -190,158 +126,217 @@ const PriceChecker = () => {
                 </button>
             </div>
 
-            <div className={styles.updateInfo} aria-live="polite">
-                {lastUpdate ? `Last updated: ${lastUpdate.toLocaleTimeString()}` : 'Fetching prices...'}
-            </div>
-            {error && (
-                <div className={styles.errorBanner} aria-live="assertive">
-                    <AlertCircle size={18} />
-                    <span>{error}</span>
+            {/* Selected Peptide Info */}
+            {peptideInfo && (
+                <div className={styles.peptideInfo}>
+                    <h2>{selectedPeptide}</h2>
+                    <span className={styles.unitBadge}>{peptideInfo.unit}</span>
                 </div>
             )}
 
+            {/* Stats Row */}
+            <div className={styles.statsGrid}>
+                <div className={`card ${styles.statCard}`}>
+                    <Award size={20} className={styles.statIcon} />
+                    <div>
+                        <span className={styles.statLabel}>Best Price</span>
+                        <span className={styles.statValue}>
+                            {bestDeal ? `$${bestDeal.price}` : '--'}
+                        </span>
+                    </div>
+                </div>
+                <div className={`card ${styles.statCard}`}>
+                    <DollarSign size={20} className={styles.statIcon} />
+                    <div>
+                        <span className={styles.statLabel}>Average</span>
+                        <span className={styles.statValue}>${avgPrice}</span>
+                    </div>
+                </div>
+                <div className={`card ${styles.statCard}`}>
+                    <Package size={20} className={styles.statIcon} />
+                    <div>
+                        <span className={styles.statLabel}>Vendors</span>
+                        <span className={styles.statValue}>{prices.length}</span>
+                    </div>
+                </div>
+                <div className={`card ${styles.statCard}`}>
+                    <TrendingDown size={20} className={styles.statIcon} />
+                    <div>
+                        <span className={styles.statLabel}>You Save</span>
+                        <span className={styles.statValue} style={{ color: '#10b981' }}>
+                            ${bestDeal ? (avgPrice - bestDeal.price).toFixed(2) : '0.00'}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Best Deal Highlight */}
             {bestDeal && (
-                <div className={`glass-panel ${styles.bestDeal}`}>
+                <div className={styles.bestDeal}>
                     <div className={styles.bestDealBadge}>
-                        <Award size={20} />
+                        <Award size={18} />
                         <span>Best Deal</span>
                     </div>
                     <div className={styles.bestDealContent}>
-                        <div className={styles.vendorInfo}>
-                            <h3>{bestDeal.vendor}</h3>
-                            <div className={styles.rating}>
-                                ⭐ {bestDeal.rating}
+                        <div className={styles.bestDealVendor}>
+                            <span className={styles.vendorLogo}>{bestDeal.logo}</span>
+                            <div>
+                                <h3>{bestDeal.name}</h3>
+                                {renderStars(bestDeal.rating)}
                             </div>
                         </div>
-                        <div className={styles.priceInfo}>
-                            <div className={styles.currentPrice}>
-                                <DollarSign size={24} />
-                                <span className={styles.priceValue}>{bestDeal.price}</span>
-                            </div>
-                            {bestDeal.discount > 0 && (
-                                <div className={styles.savings}>
-                                    <span className={styles.originalPrice}>${bestDeal.originalPrice}</span>
-                                    <span className={styles.discountBadge}>-{bestDeal.discount}%</span>
-                                </div>
-                            )}
+                        <div className={styles.bestDealPrice}>
+                            <span className={styles.priceMain}>${bestDeal.price}</span>
+                            <span className={styles.priceUnit}>per {bestDeal.unit}</span>
                         </div>
-                        <div className={styles.dealDetails}>
-                            <span className={styles.shipping}>
-                                {bestDeal.shipping === 'Free' ? '🚚 Free Shipping' : `🚚 Shipping: ${bestDeal.shipping}`}
-                            </span>
-                            <a
-                                href={bestDeal.vendorUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={styles.visitBtn}
-                            >
-                                Visit Store
-                                <ExternalLink size={16} />
-                            </a>
+                        <div className={styles.bestDealMeta}>
+                            <span><Truck size={14} /> {bestDeal.shipping}</span>
+                            <span><Clock size={14} /> {bestDeal.shippingDays}</span>
                         </div>
+                        <a
+                            href={bestDeal.productUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.buyBtn}
+                        >
+                            View Deal
+                            <ExternalLink size={16} />
+                        </a>
                     </div>
                 </div>
             )}
 
-            <div className={styles.statsGrid}>
-                <div className={`card ${styles.statCard}`}>
-                    <span className={styles.statLabel}>Average Price</span>
-                    <span className={styles.statValue}>${avgPrice}</span>
-                </div>
-                <div className={`card ${styles.statCard}`}>
-                    <span className={styles.statLabel}>Vendors Compared</span>
-                    <span className={styles.statValue}>{prices.length}</span>
-                </div>
-                <div className={`card ${styles.statCard}`}>
-                    <span className={styles.statLabel}>Potential Savings</span>
-                    <span className={styles.statValue}>
-                        {bestDeal ? `$${(avgPrice - parseFloat(bestDeal.price)).toFixed(2)}` : '$0.00'}
-                    </span>
-                </div>
-            </div>
-
-            <div className={styles.priceList}>
+            {/* All Vendors List */}
+            <div className={styles.vendorSection}>
                 <h2 className={styles.sectionTitle}>All Vendors</h2>
-                <div className={styles.vendorGridWrapper} aria-busy={loading}>
-                    {loading ? (
-                        <div className={styles.loadingState} aria-live="polite">
-                            <RefreshCw size={48} className={styles.spinning} />
-                            <p>{statusMessage}</p>
-                        </div>
-                    ) : prices.length === 0 ? (
-                        <div className={styles.emptyState} aria-live="polite">
-                            <AlertCircle size={32} />
-                            <p>{error || 'No prices available. Try refreshing.'}</p>
-                        </div>
-                    ) : (
-                        <div className={styles.vendorGrid}>
-                            {prices.map((item, index) => (
-                                <div key={index} className={`card ${styles.vendorCard}`}>
-                                    <div className={styles.vendorHeader}>
+
+                {loading ? (
+                    <div className={styles.loadingState}>
+                        <RefreshCw size={32} className={styles.spinning} />
+                        <p>Comparing prices...</p>
+                    </div>
+                ) : (
+                    <div className={styles.vendorList}>
+                        {prices.map((vendor, index) => (
+                            <div
+                                key={vendor.id}
+                                className={`${styles.vendorCard} ${index === 0 ? styles.bestVendor : ''}`}
+                            >
+                                <div
+                                    className={styles.vendorMain}
+                                    onClick={() => setExpandedVendor(expandedVendor === vendor.id ? null : vendor.id)}
+                                >
+                                    <div className={styles.vendorInfo}>
+                                        <span className={styles.vendorLogo}>{vendor.logo}</span>
                                         <div>
-                                            <h3 className={styles.vendorName}>{item.vendor}</h3>
-                                            <div className={styles.vendorRating}>⭐ {item.rating}</div>
-                                        </div>
-                                        {index === 0 && (
-                                            <div className={styles.bestBadge}>
-                                                <Award size={16} />
+                                            <h3 className={styles.vendorName}>
+                                                {vendor.name}
+                                                {index === 0 && <span className={styles.bestTag}>Best Price</span>}
+                                            </h3>
+                                            <div className={styles.vendorMeta}>
+                                                {renderStars(vendor.rating)}
+                                                <span className={styles.reviewCount}>({vendor.reviews.toLocaleString()} reviews)</span>
                                             </div>
+                                        </div>
+                                    </div>
+
+                                    <div className={styles.vendorPrice}>
+                                        <span className={styles.price}>${vendor.price}</span>
+                                        <span className={styles.priceUnit}>/{vendor.unit}</span>
+                                    </div>
+
+                                    <div className={styles.vendorStatus}>
+                                        {vendor.inStock ? (
+                                            <span className={styles.inStock}>
+                                                <Check size={14} /> In Stock
+                                            </span>
+                                        ) : (
+                                            <span className={styles.outOfStock}>
+                                                Out of Stock
+                                            </span>
                                         )}
                                     </div>
 
-                                    <div className={styles.vendorPricing}>
-                                        <div className={styles.mainPrice}>
-                                            <DollarSign size={20} />
-                                            <span>{item.price}</span>
-                                        </div>
-                                        {item.discount > 0 && (
-                                            <div className={styles.discountInfo}>
-                                                <span className={styles.wasPrice}>${item.originalPrice}</span>
-                                                <span className={styles.savePercent}>Save {item.discount}%</span>
-                                            </div>
-                                        )}
+                                    <div className={styles.vendorActions}>
+                                        <a
+                                            href={vendor.productUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.viewBtn}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            View <ExternalLink size={14} />
+                                        </a>
+                                        <button className={styles.expandBtn}>
+                                            {expandedVendor === vendor.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
                                     </div>
-
-                                    <div className={styles.vendorDetails}>
-                                        <div className={styles.stockStatus}>
-                                            {item.inStock ? (
-                                                <span className={styles.inStock}>✓ In Stock</span>
-                                            ) : (
-                                                <span className={styles.outOfStock}>✗ Out of Stock</span>
-                                            )}
-                                        </div>
-                                        <div className={styles.shippingInfo}>
-                                            {item.shipping === 'Free' ? (
-                                                <span className={styles.freeShipping}>Free Shipping</span>
-                                            ) : (
-                                                <span>Shipping: {item.shipping}</span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <a
-                                        href={item.vendorUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={styles.vendorLink}
-                                        disabled={!item.inStock}
-                                    >
-                                        View Product
-                                        <ExternalLink size={14} />
-                                    </a>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+
+                                {/* Expanded Details */}
+                                {expandedVendor === vendor.id && (
+                                    <div className={styles.vendorDetails}>
+                                        <div className={styles.detailsGrid}>
+                                            <div className={styles.detailItem}>
+                                                <Truck size={16} />
+                                                <div>
+                                                    <span className={styles.detailLabel}>Shipping</span>
+                                                    <span className={styles.detailValue}>{vendor.shipping}</span>
+                                                </div>
+                                            </div>
+                                            <div className={styles.detailItem}>
+                                                <Clock size={16} />
+                                                <div>
+                                                    <span className={styles.detailLabel}>Delivery</span>
+                                                    <span className={styles.detailValue}>{vendor.shippingDays}</span>
+                                                </div>
+                                            </div>
+                                            <div className={styles.detailItem}>
+                                                <Shield size={16} />
+                                                <div>
+                                                    <span className={styles.detailLabel}>Payment</span>
+                                                    <span className={styles.detailValue}>{vendor.paymentMethods.join(', ')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={styles.features}>
+                                            {vendor.features.map((feature, i) => (
+                                                <span key={i} className={styles.featureTag}>
+                                                    <Check size={12} /> {feature}
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <a
+                                            href={vendor.productUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.visitStoreBtn}
+                                        >
+                                            Visit {vendor.name}
+                                            <ExternalLink size={16} />
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            <div className={`glass-panel ${styles.disclaimer}`}>
-                <AlertCircle size={20} />
-                <div>
-                    <strong>Disclaimer:</strong> Prices are simulated for demonstration purposes.
-                    In a production environment, this would fetch real-time data from vendor APIs or web scraping services.
-                    Always verify prices on the vendor's website before purchasing.
+            {/* Update Time & Disclaimer */}
+            <div className={styles.footer}>
+                {lastUpdate && (
+                    <p className={styles.updateTime}>
+                        Last updated: {lastUpdate.toLocaleTimeString()}
+                    </p>
+                )}
+                <div className={styles.disclaimer}>
+                    <AlertCircle size={16} />
+                    <p>
+                        <strong>Disclaimer:</strong> Prices shown are estimates and may vary.
+                        Always verify current pricing on the vendor's website before purchasing.
+                        We earn affiliate commissions on qualifying purchases.
+                    </p>
                 </div>
             </div>
         </div>

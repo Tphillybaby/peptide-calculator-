@@ -19,6 +19,8 @@ import AdminLayout from './components/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminPeptides from './pages/admin/AdminPeptides';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminForum from './pages/admin/AdminForum';
+import AdminReviews from './pages/admin/AdminReviews';
 import CookieConsent from './components/CookieConsent';
 import SupportTickets from './components/SupportTickets';
 import AdminTickets from './components/AdminTickets';
@@ -135,6 +137,8 @@ function App() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="peptides" element={<AdminPeptides />} />
                 <Route path="users" element={<AdminUsers />} />
+                <Route path="forum" element={<AdminForum />} />
+                <Route path="reviews" element={<AdminReviews />} />
                 <Route path="tickets" element={<AdminTickets />} />
                 <Route path="audit-logs" element={<AdminAuditLogs />} />
                 <Route path="monitoring" element={<AdminMonitoring />} />

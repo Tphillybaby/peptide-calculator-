@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Users, Database, Settings, LogOut, MessageCircle, Activity, Shield } from 'lucide-react';
+import { LayoutDashboard, Users, Database, Settings, LogOut, MessageCircle, Activity, Shield, MessageSquare, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const AdminLayout = () => {
@@ -79,6 +79,40 @@ const AdminLayout = () => {
                     >
                         <Users size={20} />
                         Users
+                    </NavLink>
+                    <NavLink
+                        to="/admin/forum"
+                        style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '0.75rem',
+                            borderRadius: '0.5rem',
+                            color: isActive ? 'white' : 'var(--text-secondary)',
+                            background: isActive ? 'var(--accent-primary)' : 'transparent',
+                            textDecoration: 'none',
+                            transition: 'all 0.2s'
+                        })}
+                    >
+                        <MessageSquare size={20} />
+                        Forum
+                    </NavLink>
+                    <NavLink
+                        to="/admin/reviews"
+                        style={({ isActive }) => ({
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            padding: '0.75rem',
+                            borderRadius: '0.5rem',
+                            color: isActive ? 'white' : 'var(--text-secondary)',
+                            background: isActive ? 'var(--accent-primary)' : 'transparent',
+                            textDecoration: 'none',
+                            transition: 'all 0.2s'
+                        })}
+                    >
+                        <Star size={20} />
+                        Reviews
                     </NavLink>
                     <NavLink
                         to="/admin/tickets"
