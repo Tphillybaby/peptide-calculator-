@@ -505,7 +505,7 @@ const ReconstitutionCalculator = () => {
             <div className={styles.details}>
               <div className={styles.detailRow}>
                 <span>Volume to Draw:</span>
-                <span>{result.drawMl} ml</span>
+                <span>{Number(result.drawMl)} mL</span>
               </div>
               <div className={styles.detailRow}>
                 <span>Concentration:</span>
