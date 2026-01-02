@@ -39,7 +39,7 @@ const AdminUsers = () => {
             const { data: profiles, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
-                .order('created_at', { ascending: false });
+                .order('updated_at', { ascending: false });
 
             if (profileError) throw profileError;
 
@@ -53,13 +53,20 @@ const AdminUsers = () => {
             setStats({
                 total: profiles?.length || 0,
                 admins: profiles?.filter(p => p.is_admin).length || 0,
-                newThisWeek: profiles?.filter(p => new Date(p.created_at) >= weekAgo).length || 0,
+                newThisWeek: profiles?.filter(p => p.updated_at && new Date(p.updated_at) >= weekAgo).length || 0,
                 activeToday: profiles?.filter(p => p.last_sign_in && new Date(p.last_sign_in) >= todayStart).length || 0
             });
 
         } catch (err) {
             console.error('Error fetching users:', err);
-            setError('Failed to load users. Please try again.');
+            // Provide helpful error message based on error type
+            if (err.code === 'PGRST301' || err.message?.includes('permission denied')) {
+                setError('Access denied. Make sure your account has admin privileges and RLS policies are configured correctly. Check the browser console for details.');
+            } else if (err.code === '42501') {
+                setError('Database permission error. The RLS policies may need to be updated. Run the FIX_ADMIN_PANEL_NOW.sql script in Supabase Dashboard.');
+            } else {
+                setError(`Failed to load users: ${err.message || 'Unknown error'}. Check browser console for details.`);
+            }
         } finally {
             setLoading(false);
         }
@@ -325,7 +332,7 @@ const AdminUsers = () => {
                                 <div className={styles.userMeta}>
                                     <div className={styles.metaItem}>
                                         <Calendar size={14} />
-                                        Joined {formatTimeAgo(user.created_at)}
+                                        Joined {formatTimeAgo(user.updated_at)}
                                     </div>
                                     {user.last_sign_in && (
                                         <div className={styles.metaItem}>
@@ -400,7 +407,7 @@ const AdminUsers = () => {
                                         </div>
                                         <div className={styles.infoRow}>
                                             <span className={styles.infoLabel}>Registered:</span>
-                                            <span className={styles.infoValue}>{formatDate(user.created_at)}</span>
+                                            <span className={styles.infoValue}>{formatDate(user.updated_at)}</span>
                                         </div>
                                         <div className={styles.infoRow}>
                                             <span className={styles.infoLabel}>Last Sign In:</span>

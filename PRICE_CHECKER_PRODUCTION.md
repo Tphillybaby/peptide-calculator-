@@ -1,452 +1,393 @@
-# Making the Price Checker Production-Ready
+# Peptide Price Checker - Production Guide
 
-## Current State
-The Price Checker currently uses **simulated data** for demonstration purposes. This document outlines what's needed to integrate real-time pricing data from actual peptide vendors.
+## Overview
 
----
-
-## Implementation Options
-
-### Option 1: Backend API with Web Scraping (Recommended)
-
-**Overview:** Create a backend service that scrapes vendor websites and provides a unified API.
-
-**Requirements:**
-1. **Backend Server** (Node.js/Express, Python/Flask, or similar)
-2. **Web Scraping Libraries:**
-   - Node.js: `puppeteer`, `cheerio`, `playwright`
-   - Python: `beautifulsoup4`, `scrapy`, `selenium`
-3. **Database** (PostgreSQL, MongoDB) to cache prices
-4. **Cron Jobs** to update prices periodically
-
-**Architecture:**
-```
-Frontend (React) → Backend API → Web Scrapers → Vendor Websites
-                        ↓
-                    Database (Cache)
-```
-
-**Backend API Endpoints:**
-```javascript
-GET /api/prices/:peptide
-// Returns: Array of vendor prices for specified peptide
-
-GET /api/vendors
-// Returns: List of all supported vendors
-
-POST /api/prices/refresh
-// Triggers manual price refresh
-```
-
-**Example Backend Code (Node.js/Express):**
-```javascript
-// server.js
-const express = require('express');
-const puppeteer = require('puppeteer');
-const app = express();
-
-// Price scraping function
-async function scrapePeptideSciences(peptideName) {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  
-  await page.goto(`https://www.peptidesciences.com/search?q=${peptideName}`);
-  
-  const priceData = await page.evaluate(() => {
-    const priceElement = document.querySelector('.product-price');
-    const stockElement = document.querySelector('.stock-status');
-    
-    return {
-      price: priceElement?.textContent.trim(),
-      inStock: stockElement?.textContent.includes('In Stock')
-    };
-  });
-  
-  await browser.close();
-  return priceData;
-}
-
-// API endpoint
-app.get('/api/prices/:peptide', async (req, res) => {
-  const peptide = req.params.peptide;
-  
-  try {
-    const prices = await Promise.all([
-      scrapePeptideSciences(peptide),
-      scrapeAmericanResearchLabs(peptide),
-      // ... other vendors
-    ]);
-    
-    res.json({ peptide, prices, lastUpdated: new Date() });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch prices' });
-  }
-});
-
-app.listen(3001, () => console.log('API running on port 3001'));
-```
-
-**Frontend Integration:**
-```javascript
-// In PriceChecker.jsx, replace fetchPrices function:
-const fetchPrices = async (peptide) => {
-  try {
-    const response = await fetch(`http://localhost:3001/api/prices/${peptide}`);
-    const data = await response.json();
-    return data.prices.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  } catch (error) {
-    console.error('Error fetching prices:', error);
-    return [];
-  }
-};
-```
-
-**Challenges:**
-- Websites may block scrapers (use proxies, rate limiting)
-- HTML structure changes require scraper updates
-- Legal considerations (check vendor ToS)
-- Performance (scraping is slow, use caching)
+The Price Checker is a comprehensive price comparison tool that allows users to compare peptide prices across multiple trusted vendors. The system supports both **automated web scraping** and **manual price management**.
 
 ---
 
-### Option 2: Vendor APIs (If Available)
+## ✅ Current Implementation Status
 
-**Overview:** Use official APIs provided by vendors.
+### Completed Features
 
-**Requirements:**
-1. API keys from each vendor
-2. Backend to proxy requests (hide API keys)
-3. Rate limiting to respect API quotas
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Frontend Component** | ✅ Done | `src/components/PriceChecker.jsx` - Full-featured price comparison UI |
+| **Database Schema** | ✅ Done | `vendors`, `peptide_prices`, `price_history`, `scrape_logs` tables |
+| **Admin Panel** | ✅ Done | `src/pages/admin/AdminPrices.jsx` - Manage vendors, prices, and logs |
+| **Scraping Edge Function** | ✅ Done | `supabase/functions/scrape-prices/index.ts` - Automated scraping |
+| **Fallback Data** | ✅ Done | `src/data/vendorData.js` - Static pricing when DB unavailable |
+| **RPC Functions** | ✅ Done | `get_peptide_prices()`, `get_available_peptides()` |
+| **Price History Tracking** | ✅ Done | Historical price data stored in `price_history` table |
+| **Manual Price Editing** | ✅ Done | Edit prices directly from admin panel |
 
-**Example:**
-```javascript
-// Backend endpoint
-app.get('/api/prices/:peptide', async (req, res) => {
-  const peptide = req.params.peptide;
-  
-  const prices = await Promise.all([
-    fetch(`https://api.vendor1.com/products?search=${peptide}`, {
-      headers: { 'Authorization': `Bearer ${process.env.VENDOR1_API_KEY}` }
-    }),
-    fetch(`https://api.vendor2.com/search?q=${peptide}`, {
-      headers: { 'X-API-Key': process.env.VENDOR2_API_KEY }
-    })
-  ]);
-  
-  const formattedPrices = prices.map(p => ({
-    vendor: p.vendorName,
-    price: p.price,
-    inStock: p.available,
-    // ... format according to your needs
-  }));
-  
-  res.json(formattedPrices);
-});
-```
+### Pending / Optional Enhancements
 
-**Pros:**
-- More reliable than scraping
-- Faster response times
-- Less likely to break
-
-**Cons:**
-- Most peptide vendors don't offer public APIs
-- May have usage limits
-- Requires partnerships/agreements
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Scheduled Cron Jobs** | ⏳ Optional | Set up pg_cron or external scheduler for automated updates |
+| **Affiliate Link Setup** | ⏳ Pending | Replace `YOUR_AFFILIATE_ID` placeholders with real codes |
+| **Vendor API Integration** | ⏳ Optional | Direct API access (most vendors don't offer this) |
+| **Price Alerts** | ⏳ Future | Notify users when prices drop |
+| **Price Charts** | ⏳ Future | Visualize price history over time |
 
 ---
 
-### Option 3: Third-Party Price Aggregation Services
+## Architecture
 
-**Overview:** Use existing price comparison APIs.
-
-**Services to Consider:**
-- Custom price aggregation platforms
-- Affiliate networks with price feeds
-- Industry-specific data providers
-
-**Implementation:**
-```javascript
-const fetchPrices = async (peptide) => {
-  const response = await fetch(
-    `https://api.priceaggregator.com/peptides/${peptide}`,
-    { headers: { 'X-API-Key': process.env.AGGREGATOR_KEY } }
-  );
-  return response.json();
-};
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              User Interface                                  │
+│                         (PriceChecker.jsx)                                  │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           Supabase Database                                  │
+│  ┌─────────────┐  ┌─────────────────┐  ┌───────────────┐  ┌─────────────┐  │
+│  │   vendors   │  │ peptide_prices  │  │ price_history │  │ scrape_logs │  │
+│  └─────────────┘  └─────────────────┘  └───────────────┘  └─────────────┘  │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      Supabase Edge Function                                  │
+│                    (scrape-prices/index.ts)                                 │
+│                                                                              │
+│  • Fetches vendor pages with proper User-Agent                              │
+│  • Parses HTML with deno-dom                                                 │
+│  • Matches products to tracked peptides                                     │
+│  • Updates prices and logs results                                          │
+└─────────────────────────────────┬───────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          Vendor Websites                                     │
+│  Peptide Sciences • PureRawz • Swiss Chems • BioTech • Amino Asylum • etc  │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### Option 4: Manual Data Entry with Admin Panel
+## Database Schema
 
-**Overview:** Create an admin interface to manually update prices.
-
-**Requirements:**
-1. Admin authentication
-2. Database to store prices
-3. Admin UI for price updates
-
-**Database Schema:**
+### vendors
 ```sql
-CREATE TABLE peptide_prices (
-  id SERIAL PRIMARY KEY,
-  peptide_name VARCHAR(100),
-  vendor_name VARCHAR(100),
-  price DECIMAL(10,2),
-  original_price DECIMAL(10,2),
-  discount_percent INTEGER,
-  in_stock BOOLEAN,
-  shipping_cost VARCHAR(50),
-  vendor_url TEXT,
-  last_updated TIMESTAMP DEFAULT NOW()
+CREATE TABLE vendors (
+    id uuid PRIMARY KEY,
+    name text NOT NULL,
+    slug text UNIQUE NOT NULL,
+    website_url text NOT NULL,
+    affiliate_url text,
+    logo_emoji text DEFAULT '🧬',
+    rating numeric(2,1) DEFAULT 4.5,
+    review_count integer DEFAULT 0,
+    shipping_info text,
+    shipping_days text,
+    payment_methods text[],
+    features text[],
+    is_active boolean DEFAULT true,
+    scrape_config jsonb,          -- CSS selectors for scraping
+    last_scraped_at timestamptz,
+    created_at timestamptz,
+    updated_at timestamptz
 );
 ```
 
-**Admin Panel Example:**
-```javascript
-// Admin component
-const PriceAdmin = () => {
-  const [prices, setPrices] = useState([]);
-  
-  const updatePrice = async (priceId, newData) => {
-    await fetch(`/api/admin/prices/${priceId}`, {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${adminToken}`
-      },
-      body: JSON.stringify(newData)
-    });
-  };
-  
-  // ... UI for editing prices
-};
+### peptide_prices
+```sql
+CREATE TABLE peptide_prices (
+    id uuid PRIMARY KEY,
+    vendor_id uuid REFERENCES vendors(id),
+    peptide_name text NOT NULL,
+    peptide_slug text NOT NULL,
+    price numeric(10,2) NOT NULL,
+    unit text DEFAULT 'vial',
+    quantity text,                -- e.g., "5mg", "10mg"
+    original_price numeric(10,2), -- For showing discounts
+    in_stock boolean DEFAULT true,
+    product_url text,
+    last_verified_at timestamptz,
+    created_at timestamptz,
+    updated_at timestamptz,
+    UNIQUE(vendor_id, peptide_slug)
+);
+```
+
+### price_history
+```sql
+CREATE TABLE price_history (
+    id uuid PRIMARY KEY,
+    peptide_price_id uuid REFERENCES peptide_prices(id),
+    price numeric(10,2) NOT NULL,
+    recorded_at timestamptz DEFAULT now()
+);
+```
+
+### scrape_logs
+```sql
+CREATE TABLE scrape_logs (
+    id uuid PRIMARY KEY,
+    vendor_id uuid REFERENCES vendors(id),
+    status text NOT NULL,           -- 'success', 'partial', 'failed'
+    products_found integer DEFAULT 0,
+    products_updated integer DEFAULT 0,
+    error_message text,
+    duration_ms integer,
+    created_at timestamptz DEFAULT now()
+);
 ```
 
 ---
 
-## Recommended Approach
+## RPC Functions
 
-**Hybrid Solution:**
-1. **Start with web scraping** for automated price collection
-2. **Add manual override** capability for when scrapers fail
-3. **Cache prices** in database (update every 6-24 hours)
-4. **Implement fallback** to last known prices if scraping fails
+### get_available_peptides()
+Returns all tracked peptides with price range and vendor count.
 
-**Implementation Steps:**
-
-### Step 1: Set Up Backend
-```bash
-# Create backend directory
-mkdir peptide-api
-cd peptide-api
-npm init -y
-npm install express puppeteer node-cron dotenv cors
+```sql
+SELECT * FROM get_available_peptides();
+-- Returns: peptide_name, peptide_slug, min_price, max_price, vendor_count
 ```
 
-### Step 2: Create Scraper Service
-```javascript
-// scrapers/peptideSciences.js
-const puppeteer = require('puppeteer');
+### get_peptide_prices(p_peptide_slug text)
+Returns all vendor prices for a specific peptide.
 
-async function scrapePeptideSciences(peptide) {
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  
-  try {
-    await page.goto(`https://www.peptidesciences.com/search?q=${peptide}`, {
-      waitUntil: 'networkidle2'
-    });
-    
-    const data = await page.evaluate(() => {
-      // Adjust selectors based on actual website structure
-      const product = document.querySelector('.product-item');
-      if (!product) return null;
-      
-      return {
-        price: product.querySelector('.price')?.textContent,
-        originalPrice: product.querySelector('.original-price')?.textContent,
-        inStock: product.querySelector('.stock')?.textContent.includes('In Stock'),
-        rating: product.querySelector('.rating')?.textContent
-      };
-    });
-    
-    await browser.close();
-    return data;
-  } catch (error) {
-    await browser.close();
-    throw error;
-  }
+```sql
+SELECT * FROM get_peptide_prices('semaglutide');
+-- Returns: vendor info, price, unit, quantity, in_stock, last_verified
+```
+
+---
+
+## Web Scraping Edge Function
+
+**Location:** `supabase/functions/scrape-prices/index.ts`
+
+### Endpoint
+```
+POST /functions/v1/scrape-prices
+Authorization: Bearer <user_access_token>
+```
+
+### Request Body (optional)
+```json
+{
+    "vendor_slug": "peptide-sciences"  // Omit to scrape all vendors
 }
-
-module.exports = { scrapePeptideSciences };
 ```
 
-### Step 3: Create API Server
-```javascript
-// server.js
-const express = require('express');
-const cors = require('cors');
-const cron = require('node-cron');
-const { scrapePeptideSciences } = require('./scrapers/peptideSciences');
-// Import other scrapers...
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// In-memory cache (use Redis or database in production)
-let priceCache = {};
-
-async function updatePrices(peptide) {
-  const prices = await Promise.allSettled([
-    scrapePeptideSciences(peptide),
-    // Add other vendor scrapers
-  ]);
-  
-  priceCache[peptide] = {
-    prices: prices.filter(p => p.status === 'fulfilled').map(p => p.value),
-    lastUpdated: new Date()
-  };
+### Response
+```json
+{
+    "success": true,
+    "vendorsScraped": 6,
+    "totalDurationMs": 12500,
+    "results": [
+        {
+            "vendor": "Peptide Sciences",
+            "status": "success",
+            "productsFound": 15,
+            "productsUpdated": 12,
+            "durationMs": 2100
+        }
+    ]
 }
-
-app.get('/api/prices/:peptide', async (req, res) => {
-  const peptide = req.params.peptide;
-  
-  // Check cache
-  if (priceCache[peptide]) {
-    const cacheAge = Date.now() - new Date(priceCache[peptide].lastUpdated);
-    if (cacheAge < 6 * 60 * 60 * 1000) { // 6 hours
-      return res.json(priceCache[peptide]);
-    }
-  }
-  
-  // Fetch fresh data
-  try {
-    await updatePrices(peptide);
-    res.json(priceCache[peptide]);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch prices' });
-  }
-});
-
-// Update prices every 6 hours
-cron.schedule('0 */6 * * *', () => {
-  const peptides = ['Semaglutide', 'Tirzepatide', 'BPC-157'];
-  peptides.forEach(updatePrices);
-});
-
-app.listen(3001, () => console.log('API running on port 3001'));
 ```
 
-### Step 4: Update Frontend
-```javascript
-// In PriceChecker.jsx
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+### Tracked Peptides
+The scraper automatically tracks these peptides:
+- **GLP-1:** Semaglutide, Tirzepatide, Retatrutide
+- **GH Secretagogues:** Ipamorelin, CJC-1295 (DAC/no DAC), GHRP-2, GHRP-6, Hexarelin, MK-677
+- **Healing:** BPC-157, TB-500
+- **Cosmetic:** Melanotan II, PT-141, GHK-Cu
+- **Other:** AOD-9604, Semax, Selank, Epithalon, MOTS-c
 
-const fetchPrices = async (peptide) => {
-  try {
-    const response = await fetch(`${API_URL}/api/prices/${peptide}`);
-    const data = await response.json();
-    return data.prices.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  } catch (error) {
-    console.error('Error fetching prices:', error);
-    // Fallback to simulated data if API fails
-    return generateSimulatedPrices(peptide);
-  }
-};
+### Vendor Scrape Configuration
+Each vendor has a `scrape_config` JSON field with CSS selectors:
+
+```json
+{
+    "productSelector": ".product-item",
+    "priceSelector": ".price",
+    "nameSelector": ".product-name",
+    "searchUrl": "https://vendor.com/peptides"  // Optional
+}
 ```
 
-### Step 5: Environment Variables
-```bash
-# .env file in backend
-PORT=3001
-NODE_ENV=production
-DATABASE_URL=postgresql://user:pass@localhost/peptide_prices
+---
 
-# .env file in frontend
-REACT_APP_API_URL=https://your-api-domain.com
+## Admin Panel
+
+**Location:** `src/pages/admin/AdminPrices.jsx`
+
+### Features
+1. **Overview Tab** - Price summary by peptide (min/max/avg)
+2. **Vendors Tab** - View and manage vendors, trigger individual scrapes
+3. **All Prices Tab** - Edit individual prices manually
+4. **Scrape Logs Tab** - View scrape history and errors
+
+### Triggering a Scrape
+- **All Vendors:** Click "Scrape All" button
+- **Single Vendor:** Go to Vendors tab, click "Scrape Now" on specific vendor
+
+---
+
+## Frontend Component
+
+**Location:** `src/components/PriceChecker.jsx`
+
+### Data Flow
+1. On mount, calls `get_available_peptides()` RPC
+2. If successful, uses database mode
+3. If DB empty/error, falls back to `src/data/vendorData.js`
+4. When peptide selected, calls `get_peptide_prices(slug)`
+5. Displays sorted vendor list with best deal highlighted
+
+### UI Features
+- Peptide category dropdown
+- Best Price / Average / Vendors / Savings stats
+- Best Deal highlight card
+- Expandable vendor cards with details
+- Refresh button
+- Data source indicator (DB vs estimated)
+
+---
+
+## Setting Up Affiliate Links
+
+Replace placeholder IDs in the database:
+
+```sql
+-- Update Peptide Sciences
+UPDATE vendors 
+SET affiliate_url = 'https://www.peptidesciences.com/?ref=YOUR_REAL_ID'
+WHERE slug = 'peptide-sciences';
+
+-- Update all vendors
+UPDATE vendors SET affiliate_url = 
+    CASE slug
+        WHEN 'peptide-sciences' THEN 'https://www.peptidesciences.com/?ref=xxx'
+        WHEN 'pure-rawz' THEN 'https://purerawz.co/?aff=xxx'
+        WHEN 'swiss-chems' THEN 'https://swisschems.is/?ref=xxx'
+        -- ... etc
+    END;
 ```
+
+Also update `src/data/vendorData.js` for fallback mode.
+
+---
+
+## Setting Up Automated Scraping (Cron)
+
+### Option 1: pg_cron (Supabase)
+```sql
+-- Enable pg_cron extension (if not already)
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Schedule daily scrape at 6 AM UTC
+SELECT cron.schedule(
+    'daily-price-scrape',
+    '0 6 * * *',
+    $$
+    SELECT net.http_post(
+        url := 'https://your-project.supabase.co/functions/v1/scrape-prices',
+        headers := '{"Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb
+    )
+    $$
+);
+```
+
+### Option 2: External Scheduler
+Use cron-job.org, GitHub Actions, or any scheduler to POST to:
+```
+POST https://your-project.supabase.co/functions/v1/scrape-prices
+Authorization: Bearer <service_role_key>
+```
+
+### Option 3: GitHub Actions
+```yaml
+name: Scrape Prices
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Daily at 6 AM UTC
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Price Scrape
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_KEY }}" \
+            https://your-project.supabase.co/functions/v1/scrape-prices
+```
+
+---
+
+## Troubleshooting
+
+### Scraper Returns No Products
+1. Check vendor website structure hasn't changed
+2. Verify CSS selectors in `scrape_config`
+3. Review scrape logs for errors
+4. Try scraping vendor individually
+
+### Database Shows Wrong Prices
+1. Check `last_verified_at` timestamp
+2. Manually edit in Admin Panel
+3. Re-run scrape for that vendor
+
+### Fallback Mode Always Active
+1. Ensure migration has been applied
+2. Check Supabase connection
+3. Verify RPC functions exist
+4. Check browser console for errors
+
+---
+
+## Deployment Checklist
+
+- [x] Database schema created (migration applied)
+- [x] Edge function deployed
+- [x] Admin panel accessible
+- [x] Frontend component working
+- [x] Fallback data configured
+- [ ] Affiliate links configured
+- [ ] Cron job scheduled (optional)
+- [ ] Price alerts set up (optional)
 
 ---
 
 ## Legal & Ethical Considerations
 
 1. **Terms of Service:** Check each vendor's ToS regarding scraping
-2. **Rate Limiting:** Don't overload vendor servers
-3. **Robots.txt:** Respect robots.txt directives
-4. **User-Agent:** Identify your scraper properly
-5. **Caching:** Cache aggressively to minimize requests
-6. **Affiliate Links:** Consider using affiliate links for revenue
-
----
-
-## Deployment
-
-**Backend Options:**
-- **Heroku** (easy, free tier available)
-- **AWS Lambda** (serverless, cost-effective)
-- **DigitalOcean** (VPS, more control)
-- **Railway** (modern, simple deployment)
-
-**Database Options:**
-- **Supabase** (PostgreSQL, free tier)
-- **MongoDB Atlas** (NoSQL, free tier)
-- **PlanetScale** (MySQL, serverless)
-
----
-
-## Monitoring & Maintenance
-
-1. **Error Tracking:** Use Sentry or similar
-2. **Uptime Monitoring:** UptimeRobot, Pingdom
-3. **Logging:** Winston, Pino for backend logs
-4. **Alerts:** Get notified when scrapers fail
-5. **Regular Updates:** Scrapers need maintenance when sites change
+2. **Rate Limiting:** Built-in 1-second delay between vendors
+3. **User-Agent:** Properly identifies as browser
+4. **Caching:** Prices cached in DB to minimize requests
+5. **Affiliate Disclosure:** Always displayed in UI
 
 ---
 
 ## Cost Estimates
 
-**Monthly Costs (Approximate):**
-- Backend hosting: $0-25 (Heroku free tier or Railway)
-- Database: $0-10 (Supabase/MongoDB free tier)
-- Proxy service (if needed): $10-50
-- Total: $0-85/month for small scale
-
-**Time Investment:**
-- Initial setup: 20-40 hours
-- Maintenance: 2-5 hours/month
-- Updates when sites change: 1-3 hours per vendor
+| Service | Cost |
+|---------|------|
+| Supabase (Free tier) | $0/month |
+| Edge Function invocations | Free tier: 500K/month |
+| Database storage | Free tier: 500MB |
+| **Total** | **$0/month** (within free tier limits) |
 
 ---
 
-## Quick Start Checklist
+## Future Enhancements
 
-- [ ] Choose implementation approach
-- [ ] Set up backend server
-- [ ] Implement scrapers for 2-3 vendors
-- [ ] Set up database for caching
-- [ ] Create API endpoints
-- [ ] Update frontend to use API
-- [ ] Add error handling and fallbacks
-- [ ] Implement caching strategy
-- [ ] Set up monitoring
-- [ ] Deploy backend
-- [ ] Test thoroughly
-- [ ] Add more vendors incrementally
+1. **Price Alerts** - Email/push notifications when prices drop
+2. **Price Charts** - Visualize historical price trends
+3. **Vendor Reviews** - User reviews and ratings
+4. **Discount Codes** - Track and display active coupons
+5. **Bulk Pricing** - Compare quantity discounts
+6. **Stock Alerts** - Notify when out-of-stock items return
 
 ---
 
-## Contact & Support
-
-For questions about implementing real price data, consider:
-- Hiring a backend developer familiar with web scraping
-- Using a freelance platform (Upwork, Fiverr)
-- Partnering with vendors for official data feeds
-- Joining peptide community forums for data sharing
-
----
-
-**Last Updated:** November 24, 2025
+**Last Updated:** January 1, 2026

@@ -29,25 +29,48 @@ const AdminReviews = () => {
     const fetchReviews = async () => {
         setLoading(true);
         try {
-            const { data, error } = await supabase
+            // Fetch reviews without relationship syntax to avoid PGRST200 errors
+            const { data: reviewsData, error: reviewsError } = await supabase
                 .from('reviews')
-                .select(`
-                    *,
-                    profiles:user_id (email, full_name),
-                    peptides:peptide_id (name)
-                `)
+                .select('*')
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
-            setReviews(data || []);
+            if (reviewsError) throw reviewsError;
+
+            // Get unique user IDs and peptide names to fetch related data
+            const userIds = [...new Set(reviewsData?.map(r => r.user_id).filter(Boolean))];
+            const peptideNames = [...new Set(reviewsData?.map(r => r.peptide_name).filter(Boolean))];
+
+            // Fetch profiles for these users
+            const { data: profilesData } = userIds.length > 0
+                ? await supabase.from('profiles').select('id, email, full_name').in('id', userIds)
+                : { data: [] };
+
+            // Fetch peptides by name
+            const { data: peptidesData } = peptideNames.length > 0
+                ? await supabase.from('peptides').select('id, name').in('name', peptideNames)
+                : { data: [] };
+
+            // Create lookup maps
+            const profileMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+            const peptideMap = Object.fromEntries((peptidesData || []).map(p => [p.name, p]));
+
+            // Combine the data
+            const enrichedReviews = (reviewsData || []).map(review => ({
+                ...review,
+                profiles: profileMap[review.user_id] || null,
+                peptides: peptideMap[review.peptide_name] || { name: review.peptide_name }
+            }));
+
+            setReviews(enrichedReviews);
 
             // Calculate stats
-            const total = data?.length || 0;
+            const total = enrichedReviews?.length || 0;
             const avgRating = total > 0
-                ? (data.reduce((sum, r) => sum + (r.rating || 0), 0) / total).toFixed(1)
+                ? (enrichedReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / total).toFixed(1)
                 : 0;
-            const fiveStar = data?.filter(r => r.rating === 5).length || 0;
-            const oneStar = data?.filter(r => r.rating === 1).length || 0;
+            const fiveStar = enrichedReviews?.filter(r => r.rating === 5).length || 0;
+            const oneStar = enrichedReviews?.filter(r => r.rating === 1).length || 0;
 
             setStats({
                 total,
@@ -57,7 +80,14 @@ const AdminReviews = () => {
             });
         } catch (err) {
             console.error('Error fetching reviews:', err);
-            setError('Failed to load reviews');
+            // Provide helpful error message based on error type
+            if (err.code === 'PGRST301' || err.message?.includes('permission denied')) {
+                setError('Access denied. RLS policies may need to be configured. Check browser console for details.');
+            } else if (err.code === '42501') {
+                setError('Database permission error. Run the FIX_ADMIN_PANEL_NOW.sql script in Supabase Dashboard.');
+            } else {
+                setError(`Failed to load reviews: ${err.message || 'Unknown error'}`);
+            }
         }
         setLoading(false);
     };

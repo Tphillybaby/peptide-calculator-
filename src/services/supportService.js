@@ -19,8 +19,11 @@ export const supportService = {
       `)
             .order('updated_at', { ascending: false });
 
-        if (error) throw error;
-        return data;
+        if (error) {
+            console.warn('Error fetching my tickets:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+        return data || [];
     },
 
     // Get a single ticket with messages
@@ -87,14 +90,11 @@ export const supportService = {
 
     // Admin: Get all tickets
     async getAllTickets(status = null) {
+        // Fetch tickets without relationship syntax to avoid PGRST200 errors
         let query = supabase
             .from('support_tickets')
             .select(`
         *,
-        profiles:user_id (
-          email,
-          full_name
-        ),
         ticket_messages (
           id
         )
@@ -105,9 +105,32 @@ export const supportService = {
             query = query.eq('status', status);
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
-        return data;
+        const { data: ticketsData, error } = await query;
+        if (error) {
+            console.warn('Error fetching tickets:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+
+        // Get unique user IDs to fetch profiles
+        const userIds = [...new Set((ticketsData || []).map(t => t.user_id).filter(Boolean))];
+
+        // Fetch profiles for these users
+        let profileMap = {};
+        if (userIds.length > 0) {
+            const { data: profilesData } = await supabase
+                .from('profiles')
+                .select('id, email, full_name')
+                .in('id', userIds);
+            profileMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+        }
+
+        // Enrich tickets with profile data
+        const enrichedTickets = (ticketsData || []).map(ticket => ({
+            ...ticket,
+            profiles: profileMap[ticket.user_id] || null
+        }));
+
+        return enrichedTickets;
     },
 
     // Admin: Update ticket status

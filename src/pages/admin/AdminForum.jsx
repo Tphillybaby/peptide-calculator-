@@ -44,6 +44,7 @@ const AdminForum = () => {
 
     const fetchData = async () => {
         setLoading(true);
+        setError('');
         try {
             if (activeTab === 'topics') {
                 await fetchTopics();
@@ -52,53 +53,107 @@ const AdminForum = () => {
             }
         } catch (err) {
             console.error('Error fetching data:', err);
-            setError('Failed to load data');
+            if (err.code === '42501' || err.message?.includes('permission denied')) {
+                setError('Access denied. Run the FIX_ADMIN_PANEL_NOW.sql script in Supabase Dashboard.');
+            } else {
+                setError(`Failed to load data: ${err.message || 'Unknown error'}`);
+            }
         }
         setLoading(false);
     };
 
     const fetchTopics = async () => {
-        const { data, error } = await supabase
+        // Fetch topics without relationship syntax
+        const { data: topicsData, error } = await supabase
             .from('forum_topics')
-            .select(`
-                *,
-                profiles:user_id (email, full_name),
-                forum_categories:category_id (name, slug)
-            `)
+            .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        setTopics(data || []);
+        if (error) {
+            console.warn('Error fetching topics:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+
+        // Get unique IDs
+        const userIds = [...new Set((topicsData || []).map(t => t.user_id).filter(Boolean))];
+        const categoryIds = [...new Set((topicsData || []).map(t => t.category_id).filter(Boolean))];
+
+        // Fetch related data
+        const { data: profilesData } = userIds.length > 0
+            ? await supabase.from('profiles').select('id, email, full_name').in('id', userIds)
+            : { data: [] };
+
+        const { data: categoriesData } = categoryIds.length > 0
+            ? await supabase.from('forum_categories').select('id, name, slug').in('id', categoryIds)
+            : { data: [] };
+
+        // Create key-value maps
+        const profileMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+        const categoryMap = Object.fromEntries((categoriesData || []).map(c => [c.id, c]));
+
+        // Enrich topics
+        const enrichedTopics = (topicsData || []).map(topic => ({
+            ...topic,
+            profiles: profileMap[topic.user_id] || null,
+            forum_categories: categoryMap[topic.category_id] || null
+        }));
+
+        setTopics(enrichedTopics);
 
         // Calculate stats
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const activeToday = (data || []).filter(t => new Date(t.created_at) >= today).length;
+        const activeToday = enrichedTopics.filter(t => new Date(t.created_at) >= today).length;
 
         setStats(prev => ({
             ...prev,
-            totalTopics: data?.length || 0,
+            totalTopics: enrichedTopics.length,
             activeToday
         }));
     };
 
     const fetchPosts = async () => {
-        const { data, error } = await supabase
+        // Fetch posts without relationship syntax
+        const { data: postsData, error } = await supabase
             .from('forum_posts')
-            .select(`
-                *,
-                profiles:user_id (email, full_name),
-                forum_topics:topic_id (title)
-            `)
+            .select('*')
             .order('created_at', { ascending: false })
             .limit(100);
 
-        if (error) throw error;
-        setPosts(data || []);
+        if (error) {
+            console.warn('Error fetching posts:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+
+        // Get unique IDs
+        const userIds = [...new Set((postsData || []).map(p => p.user_id).filter(Boolean))];
+        const topicIds = [...new Set((postsData || []).map(p => p.topic_id).filter(Boolean))];
+
+        // Fetch related data
+        const { data: profilesData } = userIds.length > 0
+            ? await supabase.from('profiles').select('id, email, full_name').in('id', userIds)
+            : { data: [] };
+
+        const { data: topicsData } = topicIds.length > 0
+            ? await supabase.from('forum_topics').select('id, title').in('id', topicIds)
+            : { data: [] };
+
+        // Create key-value maps
+        const profileMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+        const topicMap = Object.fromEntries((topicsData || []).map(t => [t.id, t]));
+
+        // Enrich posts
+        const enrichedPosts = (postsData || []).map(post => ({
+            ...post,
+            profiles: profileMap[post.user_id] || null,
+            forum_topics: topicMap[post.topic_id] || null
+        }));
+
+        setPosts(enrichedPosts);
 
         setStats(prev => ({
             ...prev,
-            totalPosts: data?.length || 0
+            totalPosts: enrichedPosts.length
         }));
     };
 

@@ -23,6 +23,7 @@ const AdminTickets = () => {
     const loadTickets = async () => {
         try {
             setLoading(true);
+            setError(null);
             const data = await supportService.getAllTickets(filterStatus || null);
             setTickets(data || []);
         } catch (err) {

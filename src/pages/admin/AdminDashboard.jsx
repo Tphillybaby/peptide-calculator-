@@ -50,6 +50,14 @@ const AdminDashboard = () => {
                 supabase.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'open')
             ]);
 
+            // Log any errors for debugging
+            if (users.error) console.error('Error fetching users count:', users.error);
+            if (injections.error) console.error('Error fetching injections count:', injections.error);
+            if (peptides.error) console.error('Error fetching peptides count:', peptides.error);
+            if (reviews.error) console.error('Error fetching reviews count:', reviews.error);
+            if (schedules.error) console.error('Error fetching schedules count:', schedules.error);
+            if (tickets.error) console.error('Error fetching tickets count:', tickets.error);
+
             setStats({
                 users: users.count || 0,
                 injections: injections.count || 0,

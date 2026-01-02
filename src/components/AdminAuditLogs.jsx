@@ -60,6 +60,7 @@ const AdminAuditLogs = () => {
     const loadLogs = async () => {
         try {
             setLoading(true);
+            setError(null);
             const { data, count } = await auditService.getAllLogs({
                 limit: pageSize,
                 offset: page * pageSize,

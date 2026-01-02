@@ -42,8 +42,11 @@ export const auditService = {
             .order('created_at', { ascending: false })
             .limit(limit);
 
-        if (error) throw error;
-        return data;
+        if (error) {
+            console.warn('Error fetching my logs:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+        return data || [];
     },
 
     // Admin: Get all audit logs with filters
@@ -56,15 +59,10 @@ export const auditService = {
         startDate = null,
         endDate = null
     } = {}) {
+        // Build query without relationship syntax to avoid PGRST200 errors
         let query = supabase
             .from('audit_logs')
-            .select(`
-        *,
-        profiles:user_id (
-          email,
-          full_name
-        )
-      `, { count: 'exact' })
+            .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
@@ -84,9 +82,32 @@ export const auditService = {
             query = query.lte('created_at', endDate);
         }
 
-        const { data, error, count } = await query;
-        if (error) throw error;
-        return { data, count };
+        const { data: logsData, error, count } = await query;
+        if (error) {
+            console.warn('Error fetching audit logs:', error);
+            if (error.code !== 'PGRST116') throw error;
+        }
+
+        // Get unique user IDs to fetch profiles
+        const userIds = [...new Set((logsData || []).map(l => l.user_id).filter(Boolean))];
+
+        // Fetch profiles for these users
+        let profileMap = {};
+        if (userIds.length > 0) {
+            const { data: profilesData } = await supabase
+                .from('profiles')
+                .select('id, email, full_name')
+                .in('id', userIds);
+            profileMap = Object.fromEntries((profilesData || []).map(p => [p.id, p]));
+        }
+
+        // Enrich logs with profile data
+        const enrichedLogs = (logsData || []).map(log => ({
+            ...log,
+            profiles: profileMap[log.user_id] || null
+        }));
+
+        return { data: enrichedLogs, count: count || 0 };
     },
 
     // Get unique action types for filtering
