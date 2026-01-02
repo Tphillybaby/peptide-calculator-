@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { addDays, eachDayOfInterval, getDay, startOfDay, format, isAfter, isBefore, isSameDay } from 'date-fns';
+import { notificationService } from '../services/notificationService';
+import { localNotifications, device } from '../services/nativeService';
 
 const STORAGE_KEY = 'peptide_tracker_schedule';
 const TEMPLATES_KEY = 'peptide_tracker_templates';
@@ -20,6 +22,40 @@ export const useSchedule = () => {
             loadFromLocalStorage();
         }
     }, [user]);
+
+    // Schedule notifications whenever schedules change
+    useEffect(() => {
+        if (schedules.length > 0) {
+            // Web Notifications
+            if (!device.isNative) {
+                notificationService.scheduleReminders(schedules);
+            }
+            // Native Notifications
+            else {
+                // Clear all pending first to avoid duplicates (naive approach, but safe)
+                // In a real app, we'd diff them, but for now re-scheduling upcoming is safer
+                localNotifications.getPending().then(pending => {
+                    const ids = pending.map(n => n.id);
+                    if (ids.length > 0) localNotifications.cancel(ids);
+
+                    // Schedule new ones
+                    schedules.forEach(schedule => {
+                        if (schedule.completed) return;
+
+                        const scheduleDate = new Date(schedule.date);
+                        if (scheduleDate > new Date()) {
+                            localNotifications.scheduleInjectionReminder({
+                                id: parseInt(schedule.id.toString().replace(/\D/g, '').slice(-8)) || Math.floor(Math.random() * 100000), // Ensure integer ID for valid notification
+                                title: 'Time for your dose!',
+                                body: `Take ${schedule.peptide} (${schedule.dosage}${schedule.unit})`,
+                                scheduledAt: scheduleDate
+                            });
+                        }
+                    });
+                });
+            }
+        }
+    }, [schedules]);
 
     const loadFromLocalStorage = () => {
         try {

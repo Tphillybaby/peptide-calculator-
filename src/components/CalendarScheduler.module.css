@@ -54,6 +54,25 @@
     font-weight: 600;
 }
 
+.notificationBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: var(--radius-full);
+    color: var(--accent-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.notificationBtn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    transform: scale(1.05);
+}
+
 /* Loading State */
 .loadingState {
     display: flex;

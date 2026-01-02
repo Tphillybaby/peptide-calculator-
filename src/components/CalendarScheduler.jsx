@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     ChevronLeft, ChevronRight, Plus, Trash2, CheckCircle, Circle, Calendar, X,
     CloudOff, Loader2, Repeat, Clock, Zap, Edit2, CalendarPlus, CalendarCheck,
-    AlertCircle
+    AlertCircle, Bell, BellOff
 } from 'lucide-react';
 import {
     format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval,
@@ -11,6 +11,8 @@ import {
 import { useSchedule } from '../hooks/useSchedule';
 import { useAuth } from '../context/AuthContext';
 import { usePeptides } from '../hooks/usePeptides';
+import { notificationService } from '../services/notificationService';
+import { device } from '../services/nativeService';
 import styles from './CalendarScheduler.module.css';
 
 const DAYS_OF_WEEK = [
@@ -61,7 +63,25 @@ const CalendarScheduler = () => {
     // Autocomplete state
     const [showAutocomplete, setShowAutocomplete] = useState(false);
     const [filteredPeptides, setFilteredPeptides] = useState([]);
+    const [notificationPermission, setNotificationPermission] = useState('default');
     const autocompleteRef = useRef(null);
+
+    useEffect(() => {
+        // Check permission status
+        if (!device.isNative) {
+            setNotificationPermission(notificationService.getPermission());
+        }
+    }, []);
+
+    const requestNotifications = async () => {
+        const granted = await notificationService.requestPermission();
+        setNotificationPermission(granted ? 'granted' : 'denied');
+        if (granted) {
+            // Immediately schedule if granted
+            notificationService.scheduleReminders(schedules);
+            alert('Notifications enabled! You will be reminded 30 minutes before your scheduled doses.');
+        }
+    };
 
     // Filter peptides for autocomplete
     useEffect(() => {
@@ -232,6 +252,15 @@ const CalendarScheduler = () => {
                             <CloudOff size={14} />
                             Guest Mode
                         </div>
+                    )}
+                    {!device.isNative && notificationPermission === 'default' && (
+                        <button
+                            className={styles.notificationBtn}
+                            onClick={requestNotifications}
+                            title="Enable Notifications"
+                        >
+                            <Bell size={18} />
+                        </button>
                     )}
                 </div>
             </div>
