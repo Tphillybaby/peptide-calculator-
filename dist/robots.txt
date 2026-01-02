@@ -1,10 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /settings
-Disallow: /admin
-Disallow: /log
-Disallow: /login
-Disallow: /signup
-Disallow: /forgot-password
 
 Sitemap: https://peptidelog.net/sitemap.xml
