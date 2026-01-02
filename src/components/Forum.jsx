@@ -40,6 +40,8 @@ const Forum = () => {
     const [replyContent, setReplyContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const [error, setError] = useState(null);
+
     useEffect(() => {
         loadInitialData();
     }, []);
@@ -47,6 +49,7 @@ const Forum = () => {
     const loadInitialData = async () => {
         try {
             setLoading(true);
+            setError(null);
             const [categoriesData, recentData, statsData] = await Promise.all([
                 forumService.getCategories(),
                 forumService.getRecentTopics(10),
@@ -57,6 +60,7 @@ const Forum = () => {
             setStats(statsData || { topics: 0, posts: 0 });
         } catch (error) {
             console.error('Error loading forum data:', error);
+            setError(error.message || 'Failed to load forum data');
             // Set empty data - no mock data
             setCategories([]);
             setRecentTopics([]);
@@ -260,8 +264,13 @@ const Forum = () => {
                 ) : (
                     <div className={styles.emptyState} style={{ gridColumn: '1 / -1' }}>
                         <MessageCircle size={48} />
-                        <h3>Forum Coming Soon</h3>
-                        <p>The community forum is being set up. Check back soon to join the discussion!</p>
+                        <h3>{error ? 'Unable to Load Forum' : 'Forum Coming Soon'}</h3>
+                        <p>{error ? `Error: ${error}. Please try again later.` : 'The community forum is being set up. Check back soon to join the discussion!'}</p>
+                        {error && (
+                            <button className={styles.newTopicBtn} onClick={loadInitialData} style={{ marginTop: '1rem', width: 'auto' }}>
+                                Retry
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
