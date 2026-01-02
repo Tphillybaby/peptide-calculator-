@@ -254,34 +254,25 @@ const Forum = () => {
                 {categories.length > 0 ? (
                     categories.map((category) => {
                         const Icon = getIcon(category.icon);
-                        const isLocked = category.is_restricted && !hasMarketAccess;
+                        const isRestricted = category.is_restricted;
+                        // Everyone can View
 
                         return (
                             <div
                                 key={category.id}
                                 className={styles.categoryCard}
-                                style={isLocked ? { opacity: 0.7, borderColor: 'var(--text-tertiary)' } : {}}
-                                onClick={() => {
-                                    if (isLocked) {
-                                        alert('This section is restricted to verified members. Contact support for access.');
-                                    } else {
-                                        loadCategory(category.slug);
-                                    }
-                                }}
+                                onClick={() => loadCategory(category.slug)}
                             >
                                 <div className={styles.categoryHeader}>
                                     <div
                                         className={styles.categoryIcon}
-                                        style={isLocked
-                                            ? { background: 'rgba(255,255,255,0.05)', color: 'var(--text-tertiary)' }
-                                            : { background: `${category.color}20`, color: category.color }
-                                        }
+                                        style={{ background: `${category.color}20`, color: category.color }}
                                     >
-                                        {isLocked ? <Lock size={22} /> : <Icon size={22} />}
+                                        <Icon size={22} />
                                     </div>
                                     <span className={styles.categoryName}>
                                         {category.name}
-                                        {isLocked && <span style={{ fontSize: '0.7em', marginLeft: '6px', opacity: 0.7 }}>(Locked)</span>}
+                                        {isRestricted && <span style={{ fontSize: '0.7em', marginLeft: '6px', color: '#fbbf24' }}>(Marketplace)</span>}
                                     </span>
                                 </div>
                                 <p className={styles.categoryDesc}>{category.description}</p>
@@ -376,16 +367,37 @@ const Forum = () => {
                     <input type="text" placeholder="Search in this category..." />
                 </div>
                 {user ? (
-                    <button
-                        className={styles.newTopicBtn}
-                        onClick={() => {
-                            setNewTopic({ ...newTopic, categoryId: selectedCategory?.id });
-                            setShowNewTopicModal(true);
-                        }}
-                    >
-                        <Plus size={18} />
-                        New Topic
-                    </button>
+                    (() => {
+                        const isRestricted = selectedCategory?.is_restricted;
+                        const canPost = !isRestricted || hasMarketAccess;
+
+                        if (!canPost) {
+                            return (
+                                <button
+                                    className={styles.newTopicBtn}
+                                    style={{ opacity: 0.5, cursor: 'not-allowed', background: 'var(--glass-border)' }}
+                                    title="Posting restricted to verified members"
+                                    disabled
+                                >
+                                    <Lock size={18} />
+                                    Posting Restricted
+                                </button>
+                            );
+                        }
+
+                        return (
+                            <button
+                                className={styles.newTopicBtn}
+                                onClick={() => {
+                                    setNewTopic({ ...newTopic, categoryId: selectedCategory?.id });
+                                    setShowNewTopicModal(true);
+                                }}
+                            >
+                                <Plus size={18} />
+                                New Topic
+                            </button>
+                        );
+                    })()
                 ) : (
                     <Link to="/login" className={styles.newTopicBtn}>
                         Login to Post
