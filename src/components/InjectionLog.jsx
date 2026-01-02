@@ -6,10 +6,8 @@ import {
 } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { useSchedule } from '../hooks/useSchedule';
-import { PEPTIDE_DATABASE } from '../data/peptideDatabase';
+import { usePeptides } from '../hooks/usePeptides';
 import styles from './InjectionLog.module.css';
-
-const PEPTIDE_NAMES = Object.keys(PEPTIDE_DATABASE);
 
 const DAYS_OF_WEEK = [
     { value: 0, label: 'Sun', short: 'S' },
@@ -36,6 +34,8 @@ const InjectionLog = () => {
         injections, loading: injectionsLoading, error: injectionsError,
         addInjection, updateInjection, deleteInjection, getStats, isUsingLocalStorage
     } = useInjections();
+
+    const { peptides } = usePeptides();
 
     const {
         schedules, templates, loading: schedulesLoading,
@@ -118,12 +118,13 @@ const InjectionLog = () => {
 
     // Filter for autocomplete
     const filteredPeptides = useMemo(() => {
-        if (!formData.peptide) return PEPTIDE_NAMES.slice(0, 8);
+        if (!formData.peptide) return peptides.map(p => p.name).slice(0, 8);
         const search = formData.peptide.toLowerCase();
-        return PEPTIDE_NAMES.filter(name =>
-            name.toLowerCase().includes(search)
-        ).slice(0, 8);
-    }, [formData.peptide]);
+        return peptides
+            .filter(p => p.name.toLowerCase().includes(search))
+            .map(p => p.name)
+            .slice(0, 8);
+    }, [formData.peptide, peptides]);
 
     // Click outside for autocomplete
     useEffect(() => {

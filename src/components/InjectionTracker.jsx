@@ -1,14 +1,12 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Plus, Trash2, Calendar, Syringe, X, Clock, TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
-import { PEPTIDE_DATABASE } from '../data/peptideDatabase';
+import { usePeptides } from '../hooks/usePeptides';
 import styles from './InjectionTracker.module.css';
-
-// Get peptide names for autocomplete
-const PEPTIDE_NAMES = Object.keys(PEPTIDE_DATABASE);
 
 const InjectionTracker = () => {
     const { injections, loading, error, addInjection, deleteInjection, updateInjection, getStats, isUsingLocalStorage } = useInjections();
+    const { peptides } = usePeptides();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [showAutocomplete, setShowAutocomplete] = useState(false);
@@ -27,12 +25,13 @@ const InjectionTracker = () => {
 
     // Filter peptides for autocomplete
     const filteredPeptides = useMemo(() => {
-        if (!formData.peptide) return PEPTIDE_NAMES.slice(0, 8);
+        if (!formData.peptide) return peptides.map(p => p.name).slice(0, 8);
         const search = formData.peptide.toLowerCase();
-        return PEPTIDE_NAMES.filter(name =>
-            name.toLowerCase().includes(search)
-        ).slice(0, 8);
-    }, [formData.peptide]);
+        return peptides
+            .filter(p => p.name.toLowerCase().includes(search))
+            .map(p => p.name)
+            .slice(0, 8);
+    }, [formData.peptide, peptides]);
 
     // Close autocomplete when clicking outside
     useEffect(() => {
@@ -263,7 +262,7 @@ const InjectionTracker = () => {
                                         >
                                             <span>{name}</span>
                                             <span className={styles.peptideCategory}>
-                                                {PEPTIDE_DATABASE[name]?.category}
+                                                {peptides.find(p => p.name === name)?.category}
                                             </span>
                                         </button>
                                     ))}

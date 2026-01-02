@@ -10,10 +10,8 @@ import {
 } from 'date-fns';
 import { useSchedule } from '../hooks/useSchedule';
 import { useAuth } from '../context/AuthContext';
-import { PEPTIDE_DATABASE } from '../data/peptideDatabase';
+import { usePeptides } from '../hooks/usePeptides';
 import styles from './CalendarScheduler.module.css';
-
-const PEPTIDE_NAMES = Object.keys(PEPTIDE_DATABASE);
 
 const DAYS_OF_WEEK = [
     { value: 0, label: 'Sun', short: 'S' },
@@ -42,6 +40,7 @@ const CalendarScheduler = () => {
         deleteSchedule, toggleComplete, deleteTemplate, getUpcomingSchedules
     } = useSchedule();
     const { user } = useAuth();
+    const { peptides } = usePeptides();
 
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(new Date());
@@ -68,14 +67,15 @@ const CalendarScheduler = () => {
     useEffect(() => {
         if (formData.peptide) {
             const search = formData.peptide.toLowerCase();
-            const filtered = PEPTIDE_NAMES.filter(name =>
-                name.toLowerCase().includes(search)
-            ).slice(0, 6);
+            const filtered = peptides
+                .filter(p => p.name.toLowerCase().includes(search))
+                .map(p => p.name)
+                .slice(0, 6);
             setFilteredPeptides(filtered);
         } else {
-            setFilteredPeptides(PEPTIDE_NAMES.slice(0, 6));
+            setFilteredPeptides(peptides.map(p => p.name).slice(0, 6));
         }
-    }, [formData.peptide]);
+    }, [formData.peptide, peptides]);
 
     // Close autocomplete on click outside
     useEffect(() => {

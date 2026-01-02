@@ -2,13 +2,10 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Syringe, Info, ChevronDown, Bookmark, BookmarkCheck, Trash2, RotateCcw, Beaker, Droplets, FlaskConical, Sparkles } from 'lucide-react';
 import styles from './ReconstitutionCalculator.module.css';
 import SyringeVisualizer from './SyringeVisualizer';
-import { PEPTIDE_DATABASE } from '../data/peptideDatabase';
+import { usePeptides } from '../hooks/usePeptides';
 
 // Local storage key for saved calculations
 const SAVED_CALCS_KEY = 'peptide_saved_calculations';
-
-// Get peptide names for autocomplete
-const PEPTIDE_NAMES = Object.keys(PEPTIDE_DATABASE);
 
 // Syringe types
 const SYRINGE_TYPES = [
@@ -31,6 +28,7 @@ const getSavedCalculations = () => {
 };
 
 const ReconstitutionCalculator = () => {
+  const { peptides } = usePeptides();
   // Form state - use strings to allow empty input and prevent leading zeros
   const [selectedPeptide, setSelectedPeptide] = useState('');
   const [vialAmount, setVialAmount] = useState('5');
@@ -52,17 +50,18 @@ const ReconstitutionCalculator = () => {
 
   // Filter peptides for autocomplete
   const filteredPeptides = useMemo(() => {
-    if (!selectedPeptide) return PEPTIDE_NAMES.slice(0, 8);
+    const names = peptides.map(p => p.name);
+    if (!selectedPeptide) return names.slice(0, 8);
     const search = selectedPeptide.toLowerCase();
-    return PEPTIDE_NAMES.filter(name =>
+    return names.filter(name =>
       name.toLowerCase().includes(search)
     ).slice(0, 8);
-  }, [selectedPeptide]);
+  }, [selectedPeptide, peptides]);
 
   // Get selected peptide data
   const peptideData = useMemo(() => {
-    return PEPTIDE_DATABASE[selectedPeptide] || null;
-  }, [selectedPeptide]);
+    return peptides.find(p => p.name === selectedPeptide) || null;
+  }, [selectedPeptide, peptides]);
 
   // Get common doses for selected peptide
   const commonDoses = useMemo(() => {
@@ -138,7 +137,7 @@ const ReconstitutionCalculator = () => {
     setSelectedPeptide(name);
     setShowAutocomplete(false);
 
-    const peptide = PEPTIDE_DATABASE[name];
+    const peptide = peptides.find(p => p.name === name);
     if (peptide) {
       // Try to parse common dosage
       const dosageStr = peptide.commonDosage || '';
@@ -336,7 +335,7 @@ const ReconstitutionCalculator = () => {
                   >
                     <span>{name}</span>
                     <span className={styles.peptideCategory}>
-                      {PEPTIDE_DATABASE[name]?.category}
+                      {peptides.find(p => p.name === name)?.category}
                     </span>
                   </button>
                 ))}

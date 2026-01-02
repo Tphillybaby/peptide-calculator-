@@ -1,31 +1,46 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, ArrowRight, Beaker, Activity, Brain, Heart, Zap, BookOpen } from 'lucide-react';
-import { getAllPeptides, getPeptidesByCategory } from '../data/peptideDatabase';
+import { Search, Filter, ArrowRight, Beaker, Activity, Brain, Heart, Zap, BookOpen, Loader2 } from 'lucide-react';
+import { usePeptides } from '../hooks/usePeptides';
 
 const Encyclopedia = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const peptides = useMemo(() => getAllPeptides(), []);
-    const categories = useMemo(() => ['All', ...new Set(peptides.map(p => p.category))], [peptides]);
+    const { peptides, loading } = usePeptides();
+
+    // Dynamically generate categories from fetched data
+    const categories = useMemo(() => {
+        if (!peptides.length) return ['All'];
+        const cats = new Set(peptides.map(p => p.category));
+        return ['All', ...Array.from(cats).sort()];
+    }, [peptides]);
 
     const filteredPeptides = useMemo(() => {
         return peptides.filter(peptide => {
             const matchesSearch = peptide.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                peptide.description.toLowerCase().includes(searchTerm.toLowerCase());
+                (peptide.description && peptide.description.toLowerCase().includes(searchTerm.toLowerCase()));
             const matchesCategory = selectedCategory === 'All' || peptide.category === selectedCategory;
             return matchesSearch && matchesCategory;
         });
     }, [peptides, searchTerm, selectedCategory]);
 
     const getCategoryIcon = (category) => {
+        if (!category) return <Beaker size={20} />;
         if (category.includes('GLP-1') || category.includes('Metabolic')) return <Activity size={20} />;
         if (category.includes('Healing')) return <Heart size={20} />;
         if (category.includes('Cognitive')) return <Brain size={20} />;
         if (category.includes('Growth')) return <Zap size={20} />;
         return <Beaker size={20} />;
     };
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', paddingTop: '4rem' }}>
+                <Loader2 className="spinning" size={48} color="var(--accent-primary)" />
+            </div>
+        );
+    }
 
     return (
         <div className="page-container">
@@ -122,7 +137,9 @@ const Encyclopedia = () => {
 
                             <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>{peptide.name}</h3>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', lineHeight: '1.5', marginBottom: '1.5rem', flex: 1 }}>
-                                {peptide.description.length > 100 ? peptide.description.substring(0, 100) + '...' : peptide.description}
+                                {peptide.description && peptide.description.length > 100
+                                    ? peptide.description.substring(0, 100) + '...'
+                                    : peptide.description}
                             </p>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)', fontSize: '0.875rem', fontWeight: '500' }}>

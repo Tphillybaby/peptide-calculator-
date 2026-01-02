@@ -38,7 +38,9 @@ const AdminPeptides = () => {
         benefits: '',
         side_effects: '',
         warnings: '',
-        dosage_protocols: ''
+        dosage_protocols: '',
+        common_dosage: '',
+        research_links: ''
     });
 
     useEffect(() => {
@@ -72,7 +74,9 @@ const AdminPeptides = () => {
             benefits: (peptide.benefits || []).join('\n'),
             side_effects: (peptide.side_effects || []).join('\n'),
             warnings: (peptide.warnings || []).join('\n'),
-            dosage_protocols: peptide.dosage_protocols ? JSON.stringify(peptide.dosage_protocols, null, 2) : ''
+            dosage_protocols: peptide.dosage_protocols ? JSON.stringify(peptide.dosage_protocols, null, 2) : '',
+            common_dosage: peptide.common_dosage || '',
+            research_links: (peptide.research_links || []).join('\n')
         });
         setIsModalOpen(true);
     };
@@ -87,7 +91,9 @@ const AdminPeptides = () => {
             benefits: '',
             side_effects: '',
             warnings: '',
-            dosage_protocols: ''
+            dosage_protocols: '',
+            common_dosage: '',
+            research_links: ''
         });
         setIsModalOpen(true);
     };
@@ -102,7 +108,9 @@ const AdminPeptides = () => {
             benefits: (peptide.benefits || []).join('\n'),
             side_effects: (peptide.side_effects || []).join('\n'),
             warnings: (peptide.warnings || []).join('\n'),
-            dosage_protocols: peptide.dosage_protocols ? JSON.stringify(peptide.dosage_protocols, null, 2) : ''
+            dosage_protocols: peptide.dosage_protocols ? JSON.stringify(peptide.dosage_protocols, null, 2) : '',
+            common_dosage: peptide.common_dosage || '',
+            research_links: (peptide.research_links || []).join('\n')
         });
         setIsModalOpen(true);
     };
@@ -149,7 +157,9 @@ const AdminPeptides = () => {
             benefits: formData.benefits.split('\n').map(s => s.trim()).filter(Boolean),
             side_effects: formData.side_effects.split('\n').map(s => s.trim()).filter(Boolean),
             warnings: formData.warnings.split('\n').map(s => s.trim()).filter(Boolean),
-            dosage_protocols: dosageProtocols
+            dosage_protocols: dosageProtocols,
+            common_dosage: formData.common_dosage.trim(),
+            research_links: formData.research_links.split('\n').map(s => s.trim()).filter(Boolean)
         };
 
         try {
@@ -391,6 +401,16 @@ const AdminPeptides = () => {
                             </div>
 
                             <div className={styles.formGroup}>
+                                <label>Common Dosage</label>
+                                <input
+                                    type="text"
+                                    value={formData.common_dosage}
+                                    onChange={e => setFormData({ ...formData, common_dosage: e.target.value })}
+                                    placeholder="e.g., 0.25mg - 2.4mg weekly"
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
                                 <label>Description</label>
                                 <textarea
                                     value={formData.description}
@@ -427,6 +447,16 @@ const AdminPeptides = () => {
                                     onChange={e => setFormData({ ...formData, warnings: e.target.value })}
                                     rows={3}
                                     placeholder="Not for pregnant women&#10;Consult doctor before use"
+                                />
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label>Research Links (one per line)</label>
+                                <textarea
+                                    value={formData.research_links}
+                                    onChange={e => setFormData({ ...formData, research_links: e.target.value })}
+                                    rows={3}
+                                    placeholder="https://pubmed.ncbi.nlm.nih.gov/..."
                                 />
                             </div>
 

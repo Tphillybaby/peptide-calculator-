@@ -1,4 +1,7 @@
 // Comprehensive peptide database with detailed information
+// DEPRECATED: This file is no longer the source of truth for the Encyclopedia.
+// Data has been migrated to Supabase 'peptides' table.
+// Please use usePeptides hook or fetch from DB instead.
 export const PEPTIDE_DATABASE = {
     'Semaglutide': {
         name: 'Semaglutide',

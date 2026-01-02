@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 
 export const usePeptides = () => {
@@ -16,7 +16,18 @@ export const usePeptides = () => {
 
                 if (error) throw error;
 
-                setPeptides(data);
+                // Transform snake_case DB fields to camelCase for frontend compatibility
+                const transformed = (data || []).map(p => ({
+                    ...p,
+                    halfLife: p.half_life_hours ? `${p.half_life_hours} hours` : 'Unknown',
+                    sideEffects: p.side_effects || [],
+                    commonDosage: p.common_dosage || 'Consult protocol',
+                    researchLinks: p.research_links || [],
+                    protocols: p.dosage_protocols || [],
+                    // Keep original fields accessible too if needed
+                }));
+
+                setPeptides(transformed);
             } catch (err) {
                 console.error('Error fetching peptides:', err);
                 setError(err.message);
@@ -29,7 +40,8 @@ export const usePeptides = () => {
     }, []);
 
     const getPeptideByName = (name) => {
-        return peptides.find(p => p.name === name);
+        if (!name) return null;
+        return peptides.find(p => p.name.toLowerCase() === name.toLowerCase());
     };
 
     const getPeptidesByCategory = (category) => {

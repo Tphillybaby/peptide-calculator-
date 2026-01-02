@@ -1,12 +1,25 @@
 import React, { useMemo } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Clock, AlertTriangle, Shield, BookOpen, Activity, ExternalLink } from 'lucide-react';
-import { getPeptideInfo } from '../data/peptideDatabase';
+import { ArrowLeft, Clock, AlertTriangle, Shield, BookOpen, Activity, ExternalLink, Loader2 } from 'lucide-react';
+import { usePeptides } from '../hooks/usePeptides';
 import ReviewSection from '../components/ReviewSection';
 
 const PeptideDetail = () => {
     const { name } = useParams();
-    const peptide = useMemo(() => getPeptideInfo(decodeURIComponent(name)), [name]);
+    const { getPeptideByName, loading } = usePeptides();
+
+    // We don't use useMemo here for the finding logic because getPeptideByName 
+    // depends on state that updates (peptides list)
+    const decodedName = decodeURIComponent(name);
+    const peptide = getPeptideByName(decodedName);
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', paddingTop: '4rem' }}>
+                <Loader2 className="spinning" size={48} color="var(--accent-primary)" />
+            </div>
+        );
+    }
 
     if (!peptide) {
         return <Navigate to="/encyclopedia" replace />;
@@ -54,7 +67,7 @@ const PeptideDetail = () => {
                         <Shield className="text-accent" size={24} /> Benefits
                     </h3>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {peptide.benefits.map((benefit, i) => (
+                        {peptide.benefits && peptide.benefits.map((benefit, i) => (
                             <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'start', color: 'var(--text-secondary)' }}>
                                 <span style={{ color: '#10b981', marginTop: '0.25rem' }}>✓</span>
                                 {benefit}
@@ -68,7 +81,7 @@ const PeptideDetail = () => {
                         <AlertTriangle className="text-accent" size={24} /> Side Effects & Warnings
                     </h3>
                     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                        {peptide.sideEffects.map((effect, i) => (
+                        {peptide.sideEffects && peptide.sideEffects.map((effect, i) => (
                             <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'start', color: 'var(--text-secondary)' }}>
                                 <span style={{ color: '#f59e0b', marginTop: '0.25rem' }}>!</span>
                                 {effect}
