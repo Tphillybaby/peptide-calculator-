@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    MessageCircle, Users, TrendingUp, Search, Plus, Eye, MessageSquare,
-    Heart, Clock, Pin, ChevronRight, Loader2, X, Send, Check,
-    Beaker, Shield, ShoppingBag, BookOpen, HelpCircle, Coffee
+    MessageCircle, Users, TrendingUp, Search, Plus, Eye, MessageSquare, Heart, Clock, Pin, ChevronRight, Loader2, X, Send, Check,
+    Beaker, Shield, ShoppingBag, BookOpen, HelpCircle, Coffee, DollarSign, Lock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import forumService from '../lib/forumService';
 import styles from './Forum.module.css';
 
@@ -18,7 +18,8 @@ const iconMap = {
     ShoppingBag,
     BookOpen,
     HelpCircle,
-    Coffee
+    Coffee,
+    DollarSign
 };
 
 const Forum = () => {
@@ -39,17 +40,32 @@ const Forum = () => {
     const [newTopic, setNewTopic] = useState({ categoryId: '', title: '', content: '' });
     const [replyContent, setReplyContent] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [hasMarketAccess, setHasMarketAccess] = useState(false);
 
     const [error, setError] = useState(null);
 
     useEffect(() => {
         loadInitialData();
-    }, []);
+    }, [user]); // Re-run if user changes so access rights update
 
     const loadInitialData = async () => {
         try {
             setLoading(true);
             setError(null);
+
+            // Fetch user access if logged in
+            let access = false;
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('has_market_access')
+                    .eq('id', user.id)
+                    .single();
+
+                access = data?.has_market_access || false;
+            }
+            setHasMarketAccess(access);
+
             const [categoriesData, recentData, statsData] = await Promise.all([
                 forumService.getCategories(),
                 forumService.getRecentTopics(10),
@@ -238,20 +254,35 @@ const Forum = () => {
                 {categories.length > 0 ? (
                     categories.map((category) => {
                         const Icon = getIcon(category.icon);
+                        const isLocked = category.is_restricted && !hasMarketAccess;
+
                         return (
                             <div
                                 key={category.id}
                                 className={styles.categoryCard}
-                                onClick={() => loadCategory(category.slug)}
+                                style={isLocked ? { opacity: 0.7, borderColor: 'var(--text-tertiary)' } : {}}
+                                onClick={() => {
+                                    if (isLocked) {
+                                        alert('This section is restricted to verified members. Contact support for access.');
+                                    } else {
+                                        loadCategory(category.slug);
+                                    }
+                                }}
                             >
                                 <div className={styles.categoryHeader}>
                                     <div
                                         className={styles.categoryIcon}
-                                        style={{ background: `${category.color}20`, color: category.color }}
+                                        style={isLocked
+                                            ? { background: 'rgba(255,255,255,0.05)', color: 'var(--text-tertiary)' }
+                                            : { background: `${category.color}20`, color: category.color }
+                                        }
                                     >
-                                        <Icon size={22} />
+                                        {isLocked ? <Lock size={22} /> : <Icon size={22} />}
                                     </div>
-                                    <span className={styles.categoryName}>{category.name}</span>
+                                    <span className={styles.categoryName}>
+                                        {category.name}
+                                        {isLocked && <span style={{ fontSize: '0.7em', marginLeft: '6px', opacity: 0.7 }}>(Locked)</span>}
+                                    </span>
                                 </div>
                                 <p className={styles.categoryDesc}>{category.description}</p>
                                 <div className={styles.categoryStats}>

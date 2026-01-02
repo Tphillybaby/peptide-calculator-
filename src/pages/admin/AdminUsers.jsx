@@ -3,7 +3,7 @@ import {
     Users, Search, Shield, ShieldOff, Mail, Calendar,
     Activity, Syringe, Star, ChevronDown, ChevronUp,
     RefreshCw, Filter, UserX, CheckCircle, XCircle,
-    Clock, BarChart3
+    Clock, BarChart3, DollarSign
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -92,6 +92,37 @@ const AdminUsers = () => {
             }));
         } catch (err) {
             console.error('Error fetching user stats:', err);
+        }
+    };
+
+    const toggleMarketAccess = async (userId, currentStatus, userEmail) => {
+        const newStatus = !currentStatus;
+        const action = newStatus ? 'grant' : 'revoke';
+
+        if (!window.confirm(`Are you sure you want to ${action} market access for ${userEmail}?`)) {
+            return;
+        }
+
+        try {
+            // Note: Update using profiles table
+            const { error } = await supabase
+                .from('profiles')
+                .update({ has_market_access: newStatus })
+                .eq('id', userId);
+
+            if (error) throw error;
+
+            // Update local state
+            setUsers(prev => prev.map(u =>
+                u.id === userId ? { ...u, has_market_access: newStatus } : u
+            ));
+
+            showSuccess(`Market access ${newStatus ? 'granted to' : 'revoked from'} ${userEmail}.`);
+
+        } catch (err) {
+            console.error('Error updating market access:', err);
+            setError('Failed to update market access. ' + (err.message || ''));
+            setTimeout(() => setError(''), 5000);
         }
     };
 
@@ -343,6 +374,23 @@ const AdminUsers = () => {
                                 </div>
 
                                 <div className={styles.userActions}>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleMarketAccess(user.id, user.has_market_access, user.email);
+                                        }}
+                                        className={styles.promoteBtn}
+                                        style={{
+                                            background: user.has_market_access ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                                            color: user.has_market_access ? '#10b981' : 'var(--text-secondary)',
+                                            border: user.has_market_access ? '1px solid #10b981' : '1px solid var(--glass-border)',
+                                            marginRight: '8px'
+                                        }}
+                                        title={user.has_market_access ? "Revoke Market Access" : "Grant Market Access"}
+                                    >
+                                        <DollarSign size={16} />
+                                        {user.has_market_access ? 'Market: ON' : 'Market: OFF'}
+                                    </button>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
