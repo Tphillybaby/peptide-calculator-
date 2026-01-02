@@ -748,92 +748,100 @@ const Settings = () => {
                                             setExportLoading(false);
                                         }
                                     }}
-                                >
-                                    <FileText size={18} />
                                     Export as CSV
                                 </button>
-                                <button
-                                    className={styles.secondaryBtn}
-                                    disabled={exportLoading || injections.length === 0}
-                                    onClick={async () => {
-                                        setExportLoading(true);
-                                        try {
-                                            exportService.toPDF(injections, { title: 'Injection History Report' });
-                                            setMessage({ type: 'success', text: 'PDF exported successfully!' });
-                                        } catch (error) {
-                                            setMessage({ type: 'error', text: error.message });
-                                        } finally {
-                                            setExportLoading(false);
-                                        }
-                                    }}
-                                >
-                                    <Download size={18} />
-                                    Export as PDF
-                                </button>
-                            </div>
-                            {injections.length === 0 && (
-                                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '8px' }}>
-                                    No injection data to export yet.
-                                </p>
-                            )}
-
-                            <div className={styles.divider}></div>
-
-                            <h3>Privacy Settings</h3>
-                            <div className={styles.toggleGroup}>
-                                <div className={styles.toggleItem}>
-                                    <div>
-                                        <h3>Anonymous Analytics</h3>
-                                        <p>Help us improve by sharing anonymized usage data</p>
-                                    </div>
-                                    <label className={styles.toggle}>
-                                        <input type="checkbox" defaultChecked />
-                                        <span className={styles.slider}></span>
-                                    </label>
-                                </div>
-
-                                <div className={styles.toggleItem}>
-                                    <div>
-                                        <h3>Marketing Emails</h3>
-                                        <p>Receive updates about new features and tips</p>
-                                    </div>
-                                    <label className={styles.toggle}>
-                                        <input type="checkbox" />
-                                        <span className={styles.slider}></span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className={styles.divider}></div>
-
-                            <h3>Legal Documents</h3>
-                            <div className={styles.linkGroup}>
-                                <a href="/terms" className={styles.link}>Terms of Service</a>
-                                <a href="/privacy" className={styles.link}>Privacy Policy</a>
-                                <a href="/disclaimer" className={styles.link}>Medical Disclaimer</a>
-                            </div>
-
-                            <div className={styles.divider}></div>
-
-                            <h3 className={styles.dangerZone}>Danger Zone</h3>
-                            <div className={`card ${styles.dangerCard}`}>
-                                <Trash2 size={24} />
-                                <div>
-                                    <h3>Delete Account</h3>
-                                    <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
-                                </div>
-                                <button className={styles.dangerBtn}>Delete Account</button>
-                            </div>
+                            <button
+                                className={styles.secondaryBtn}
+                                style={{
+                                    background: 'linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    boxShadow: '0 4px 6px rgba(79, 70, 229, 0.2)'
+                                }}
+                                disabled={exportLoading || injections.length === 0}
+                                onClick={async () => {
+                                    setExportLoading(true);
+                                    try {
+                                        const { generatePDFReport } = await import('../services/pdfService');
+                                        generatePDFReport(injections, user);
+                                        setMessage({ type: 'success', text: 'PDF Report downloaded!' });
+                                    } catch (error) {
+                                        console.error(error);
+                                        setMessage({ type: 'error', text: 'Failed to generate PDF' });
+                                    } finally {
+                                        setExportLoading(false);
+                                    }
+                                }}
+                            >
+                                <FileText size={18} />
+                                Generate Medical Report (PDF)
+                            </button>
                         </div>
+                {injections.length === 0 && (
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginTop: '8px' }}>
+                            No injection data to export yet.
+                        </p>
                     )}
-                </div>
-            </div>
 
-            {/* Share Progress Modal */}
-            {showShareModal && (
-                <ShareProgress onClose={() => setShowShareModal(false)} />
-            )}
-        </div>
+                    <div className={styles.divider}></div>
+
+                    <h3>Privacy Settings</h3>
+                    <div className={styles.toggleGroup}>
+                        <div className={styles.toggleItem}>
+                            <div>
+                                <h3>Anonymous Analytics</h3>
+                                <p>Help us improve by sharing anonymized usage data</p>
+                            </div>
+                            <label className={styles.toggle}>
+                                <input type="checkbox" defaultChecked />
+                                <span className={styles.slider}></span>
+                            </label>
+                        </div>
+
+                        <div className={styles.toggleItem}>
+                            <div>
+                                <h3>Marketing Emails</h3>
+                                <p>Receive updates about new features and tips</p>
+                            </div>
+                            <label className={styles.toggle}>
+                                <input type="checkbox" />
+                                <span className={styles.slider}></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className={styles.divider}></div>
+
+                    <h3>Legal Documents</h3>
+                    <div className={styles.linkGroup}>
+                        <a href="/terms" className={styles.link}>Terms of Service</a>
+                        <a href="/privacy" className={styles.link}>Privacy Policy</a>
+                        <a href="/disclaimer" className={styles.link}>Medical Disclaimer</a>
+                    </div>
+
+                    <div className={styles.divider}></div>
+
+                    <h3 className={styles.dangerZone}>Danger Zone</h3>
+                    <div className={`card ${styles.dangerCard}`}>
+                        <Trash2 size={24} />
+                        <div>
+                            <h3>Delete Account</h3>
+                            <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+                        </div>
+                        <button className={styles.dangerBtn}>Delete Account</button>
+                    </div>
+                </div>
+                    )}
+            </div>
+        </div >
+
+    {/* Share Progress Modal */ }
+    {
+        showShareModal && (
+            <ShareProgress onClose={() => setShowShareModal(false)} />
+        )
+    }
+        </div >
     );
 };
 
