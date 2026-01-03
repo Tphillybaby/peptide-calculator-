@@ -135,14 +135,22 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Respo
         }
 
         if (proxyKey) {
-            if (service === 'zenrows') {
+            // Force ScrapingAnt for stubborn vendors
+            const stubbornDomains = ['swisschems.is', 'peptidesciences.com', 'biotechpeptides.com'];
+            const isStubborn = stubbornDomains.some(d => url.includes(d));
+
+            if (service === 'zenrows' && !isStubborn) {
                 fetchUrl = `https://api.zenrows.com/v1/?apikey=${proxyKey}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
                 fetchHeaders = {}; // ZenRows handles this
-            } else if (service === 'scrapingant') {
-                // Enable browser mode for better bot bypass, add wait for dynamic content
-                fetchUrl = `https://api.scrapingant.com/v2/general?x-api-key=${proxyKey}&url=${encodeURIComponent(url)}&browser=true&wait_for_selector=.product,.product-item,.price`;
+            } else if (service === 'scrapingant' || isStubborn) {
+                // Force browser mode for known protected sites
+                fetchUrl = `https://api.scrapingant.com/v2/general?x-api-key=${proxyKey}&url=${encodeURIComponent(url)}&browser=true&wait_for_selector=body`;
                 fetchHeaders = {};
             }
+        } else {
+            // Fallback for direct connection (local dev usually)
+            // Mimic a very standard browser request to try and bypass simple blocks
+            // Note: Without a proxy, this will likely still 403 on Cloudflare sites
         }
 
         console.log(`Fetching: ${url} ${proxyKey ? `(via ${service || 'Proxy'})` : '(Direct)'}`);
