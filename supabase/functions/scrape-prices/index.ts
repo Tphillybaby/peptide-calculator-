@@ -48,6 +48,10 @@ interface ScrapedProduct {
     price: number;
     inStock: boolean;
     url?: string;
+    quantity?: number;      // Amount in mg (or mcg converted to mg)
+    unit?: string;          // 'mg', 'mcg', 'iu', 'ml'
+    originalName?: string;  // Original product name from site
+    pricePerMg?: number;    // Calculated price per mg for comparison
 }
 
 // Target Peptides Definition
@@ -177,6 +181,44 @@ function extractPrice(text: string): number | null {
 }
 
 /**
+ * Extract quantity (mg/mcg/iu) from product name
+ * Examples: "BPC-157 5MG" -> { quantity: 5, unit: 'mg' }
+ *           "Semaglutide 10mg vial" -> { quantity: 10, unit: 'mg' }
+ *           "GHRP-2 5000mcg" -> { quantity: 5, unit: 'mg' } (converted)
+ */
+function extractQuantity(productName: string): { quantity: number | null; unit: string | null } {
+    if (!productName) return { quantity: null, unit: null };
+
+    const text = productName.toLowerCase();
+
+    // Match patterns like "5mg", "10 mg", "5000mcg", "10iu", "20ml"
+    const patterns = [
+        /([\d.]+)\s*mg\b/i,
+        /([\d.]+)\s*mcg\b/i,
+        /([\d.]+)\s*iu\b/i,
+        /([\d.]+)\s*ml\b/i,
+    ];
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+            let quantity = parseFloat(match[1]);
+            let unit = match[0].replace(/[\d.\s]/g, '').toLowerCase();
+
+            // Convert mcg to mg
+            if (unit === 'mcg') {
+                quantity = quantity / 1000;
+                unit = 'mg';
+            }
+
+            return { quantity, unit };
+        }
+    }
+
+    return { quantity: null, unit: null };
+}
+
+/**
  * Normalize peptide name for matching
  */
 function normalizeName(name: string): string {
@@ -299,6 +341,15 @@ async function scrapeVendor(vendor: Vendor): Promise<{
 
                     if (price === null || price <= 0) continue;
 
+                    // Extract quantity from product name
+                    const { quantity, unit } = extractQuantity(name);
+
+                    // Calculate price per mg for comparison
+                    let pricePerMg: number | undefined;
+                    if (quantity && quantity > 0 && unit === 'mg') {
+                        pricePerMg = price / quantity;
+                    }
+
                     // Stock status
                     let inStock = true;
                     const outOfStockEl = element.querySelector('.out-of-stock, .soldout, .sold-out, [class*="unavailable"], .stock.out-of-stock');
@@ -309,17 +360,34 @@ async function scrapeVendor(vendor: Vendor): Promise<{
                         inStock = false;
                     }
 
-                    // Push valid product (deduplicate logic)
+                    // Push valid product (deduplicate logic - prefer lower price per mg, or lower price if no mg)
                     const existingIndex = products.findIndex(p => p.name === matchedPeptide.name);
                     if (existingIndex >= 0) {
-                        if (products[existingIndex].price > price) {
-                            products[existingIndex] = { name: matchedPeptide.name, price, inStock };
+                        const existing = products[existingIndex];
+                        // Compare by price per mg if available, otherwise by price
+                        const shouldReplace = pricePerMg && existing.pricePerMg
+                            ? pricePerMg < existing.pricePerMg
+                            : price < existing.price;
+                        if (shouldReplace) {
+                            products[existingIndex] = {
+                                name: matchedPeptide.name,
+                                price,
+                                inStock,
+                                quantity: quantity || undefined,
+                                unit: unit || undefined,
+                                originalName: name,
+                                pricePerMg
+                            };
                         }
                     } else {
                         products.push({
                             name: matchedPeptide.name,
                             price,
                             inStock,
+                            quantity: quantity || undefined,
+                            unit: unit || undefined,
+                            originalName: name,
+                            pricePerMg
                         });
                         productsFoundOnPage++;
                     }
@@ -371,6 +439,10 @@ async function updatePrices(
             peptide_slug: peptideSlug,
             price: product.price,
             in_stock: product.inStock,
+            quantity_mg: product.quantity || null,
+            quantity_unit: product.unit || null,
+            price_per_mg: product.pricePerMg || null,
+            original_product_name: product.originalName || null,
             last_verified_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         }, {
@@ -389,7 +461,8 @@ async function updatePrices(
             if (currentPrice) {
                 await supabase.from('price_history').insert({
                     peptide_price_id: currentPrice.id,
-                    price: product.price
+                    price: product.price,
+                    quantity_mg: product.quantity || null
                 });
             }
         }
