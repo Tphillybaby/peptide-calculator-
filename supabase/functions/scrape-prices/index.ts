@@ -126,7 +126,8 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Respo
                 fetchUrl = `https://api.zenrows.com/v1/?apikey=${proxyKey}&url=${encodeURIComponent(url)}&js_render=true&premium_proxy=true`;
                 fetchHeaders = {}; // ZenRows handles this
             } else if (service === 'scrapingant') {
-                fetchUrl = `https://api.scrapingant.com/v2/general?x-api-key=${proxyKey}&url=${encodeURIComponent(url)}&browser=false`;
+                // Enable browser mode for better bot bypass, add wait for dynamic content
+                fetchUrl = `https://api.scrapingant.com/v2/general?x-api-key=${proxyKey}&url=${encodeURIComponent(url)}&browser=true&wait_for_selector=.product,.product-item,.price`;
                 fetchHeaders = {};
             }
         }
