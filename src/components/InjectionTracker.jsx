@@ -2,16 +2,26 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Plus, Trash2, Calendar, Syringe, X, Clock, TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { usePeptides } from '../hooks/usePeptides';
+import { useAuth } from '../context/AuthContext';
 import styles from './InjectionTracker.module.css';
+import SignupPrompt, { recordInteraction } from './SignupPrompt';
 
 const InjectionTracker = () => {
     const { injections, loading, error, addInjection, deleteInjection, updateInjection, getStats, isUsingLocalStorage } = useInjections();
     const { peptides } = usePeptides();
+    const { user } = useAuth();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [showAutocomplete, setShowAutocomplete] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(null);
     const autocompleteRef = useRef(null);
+
+    // Track interactions when form is opened
+    useEffect(() => {
+        if (isFormOpen && !user) {
+            recordInteraction();
+        }
+    }, [isFormOpen, user]);
 
     const [formData, setFormData] = useState({
         peptide: '',
@@ -147,6 +157,9 @@ const InjectionTracker = () => {
 
     return (
         <div className={styles.container}>
+            {/* Signup Prompt for non-logged-in users */}
+            <SignupPrompt trigger="injection" />
+
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerText}>

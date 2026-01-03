@@ -5,6 +5,7 @@ import SyringeVisualizer from './SyringeVisualizer';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { usePeptides } from '../hooks/usePeptides';
+import SignupPrompt, { recordInteraction } from './SignupPrompt';
 
 // Local storage key for saved calculations
 const SAVED_CALCS_KEY = 'peptide_saved_calculations';
@@ -325,8 +326,18 @@ const ReconstitutionCalculator = () => {
     setWaterAmount(String(bestWater));
   };
 
+  // Track user interactions for signup prompt
+  useEffect(() => {
+    if (!user && numVialAmount > 0 && numWaterAmount > 0 && numDoseAmount > 0) {
+      recordInteraction();
+    }
+  }, [numVialAmount, numWaterAmount, numDoseAmount, user]);
+
   return (
     <div className={styles.container}>
+      {/* Signup Prompt for non-logged-in users */}
+      <SignupPrompt trigger="calculator" />
+
       {/* Header */}
       <div className={styles.pageHeader}>
         <div className={styles.headerLeft}>
