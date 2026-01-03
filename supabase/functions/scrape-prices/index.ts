@@ -199,7 +199,13 @@ async function scrapeVendor(vendor: Vendor): Promise<{
             let targetUrl = baseUrl;
             if (currentPage > 1) {
                 // Handle different pagination formats
-                if (baseUrl.includes('?')) {
+                // WooCommerce style: /page/2/ (Swiss Chems, etc.)
+                // Query string style: ?product-page=2 (Biotech Peptides, etc.)
+                if (baseUrl.includes('/product-category/') || baseUrl.includes('/shop/')) {
+                    // WooCommerce uses /page/N/ format
+                    const cleanUrl = baseUrl.replace(/\/$/, '');
+                    targetUrl = `${cleanUrl}/page/${currentPage}/`;
+                } else if (baseUrl.includes('?')) {
                     targetUrl = `${baseUrl}&product-page=${currentPage}`;
                 } else {
                     targetUrl = `${baseUrl}?product-page=${currentPage}`;
