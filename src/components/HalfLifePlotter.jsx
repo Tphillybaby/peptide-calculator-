@@ -33,7 +33,9 @@ const PEPTIDE_CATEGORIES = {
         'Retatrutide': 144,
         'Liraglutide': 13,
         'Dulaglutide': 120,
-        'Exenatide': 2.4
+        'Exenatide': 2.4,
+        'Tesofensine': 200,
+        '5-Amino-1MQ': 24
     },
     'Growth Hormone Secretagogues': {
         'CJC-1295 (no DAC)': 0.5,
@@ -42,14 +44,20 @@ const PEPTIDE_CATEGORIES = {
         'GHRP-2': 0.5,
         'GHRP-6': 0.5,
         'Hexarelin': 1.5,
-        'MK-677 (Ibutamoren)': 24
+        'MK-677 (Ibutamoren)': 24,
+        'Sermorelin': 0.2,
+        'Tesamorelin': 0.5,
+        'Fragment 176-191': 0.5
     },
     'Healing & Recovery': {
         'BPC-157': 4,
         'TB-500': 120,
         'Thymosin Alpha-1': 3,
         'Thymosin Beta-4': 24,
-        'GHK-Cu': 1
+        'GHK-Cu': 1,
+        'LL-37': 1,
+        'KPV': 2,
+        'Thymulin': 2
     },
     'Cosmetic & Skin': {
         'Melanotan I': 1,
@@ -69,14 +77,17 @@ const PEPTIDE_CATEGORIES = {
         'Selank': 0.5,
         'Cerebrolysin': 2.5,
         'P21': 3,
-        'Dihexa': 2
+        'Dihexa': 2,
+        'NAD+': 1
     },
-    'Metabolic & Other': {
+    'Metabolic & Anti-Aging': {
         'AOD-9604': 0.5,
         'MOTS-c': 2,
         'Epithalon': 2,
         'Pinealon': 2,
-        'SS-31 (Elamipretide)': 4
+        'SS-31 (Elamipretide)': 4,
+        'DSIP': 0.25,
+        'Kisspeptin-10': 0.5
     }
 };
 

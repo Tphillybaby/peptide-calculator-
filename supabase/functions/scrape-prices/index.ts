@@ -74,6 +74,18 @@ const TARGET_PEPTIDES = [
     { name: 'MOTS-c', slug: 'mots-c', searchTerms: ['mots-c', 'motsc'] },
     { name: 'Tesofensine', slug: 'tesofensine', searchTerms: ['tesofensine'] },
     { name: '5-Amino-1MQ', slug: '5-amino-1mq', searchTerms: ['5-amino-1mq', '5-amino'] },
+    // New popular peptides
+    { name: 'NAD+', slug: 'nad-plus', searchTerms: ['nad+', 'nad plus', 'nicotinamide'] },
+    { name: 'DSIP', slug: 'dsip', searchTerms: ['dsip', 'delta sleep'] },
+    { name: 'Sermorelin', slug: 'sermorelin', searchTerms: ['sermorelin'] },
+    { name: 'Fragment 176-191', slug: 'fragment-176-191', searchTerms: ['fragment 176-191', 'hgh fragment', 'frag 176'] },
+    { name: 'KPV', slug: 'kpv', searchTerms: ['kpv', 'kpv tripeptide'] },
+    { name: 'LL-37', slug: 'll-37', searchTerms: ['ll-37', 'll37', 'cathelicidin'] },
+    { name: 'Tesamorelin', slug: 'tesamorelin', searchTerms: ['tesamorelin', 'egrifta'] },
+    { name: 'Kisspeptin-10', slug: 'kisspeptin-10', searchTerms: ['kisspeptin', 'kiss-10'] },
+    { name: 'Thymulin', slug: 'thymulin', searchTerms: ['thymulin'] },
+    { name: 'IGF-1 LR3', slug: 'igf-1-lr3', searchTerms: ['igf-1 lr3', 'igf1 lr3', 'long r3'] },
+    { name: 'Follistatin 344', slug: 'follistatin-344', searchTerms: ['follistatin 344', 'follistatin-344', 'fs344'] },
 ];
 
 /**

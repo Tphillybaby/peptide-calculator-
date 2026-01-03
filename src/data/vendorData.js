@@ -125,6 +125,8 @@ export const PEPTIDE_PRICES = {
     'Liraglutide': { price: 189, unit: '3mg vial' },
     'Dulaglutide': { price: 175, unit: '1.5mg vial' },
     'Exenatide': { price: 165, unit: '5mcg vial' },
+    'Tesofensine': { price: 89, unit: '500mcg capsules' },
+    '5-Amino-1MQ': { price: 65, unit: '50mg capsules' },
 
     // Growth Hormone Secretagogues
     'CJC-1295 (no DAC)': { price: 42, unit: '2mg vial' },
@@ -134,6 +136,9 @@ export const PEPTIDE_PRICES = {
     'GHRP-6': { price: 28, unit: '5mg vial' },
     'Hexarelin': { price: 45, unit: '2mg vial' },
     'MK-677 (Ibutamoren)': { price: 85, unit: '30 capsules' },
+    'Sermorelin': { price: 45, unit: '2mg vial' },
+    'Tesamorelin': { price: 185, unit: '2mg vial' },
+    'Fragment 176-191': { price: 42, unit: '5mg vial' },
 
     // Healing & Recovery
     'BPC-157': { price: 48, unit: '5mg vial' },
@@ -141,6 +146,9 @@ export const PEPTIDE_PRICES = {
     'Thymosin Alpha-1': { price: 115, unit: '5mg vial' },
     'Thymosin Beta-4': { price: 125, unit: '5mg vial' },
     'GHK-Cu': { price: 35, unit: '50mg vial' },
+    'LL-37': { price: 85, unit: '5mg vial' },
+    'KPV': { price: 55, unit: '5mg vial' },
+    'Thymulin': { price: 65, unit: '5mg vial' },
 
     // Cosmetic & Skin
     'Melanotan I': { price: 42, unit: '10mg vial' },
@@ -161,13 +169,16 @@ export const PEPTIDE_PRICES = {
     'Cerebrolysin': { price: 165, unit: '5ml vial' },
     'P21': { price: 125, unit: '50mg vial' },
     'Dihexa': { price: 145, unit: '50mg vial' },
+    'NAD+': { price: 95, unit: '500mg vial' },
 
-    // Metabolic & Other
+    // Metabolic & Anti-Aging
     'AOD-9604': { price: 58, unit: '5mg vial' },
     'MOTS-c': { price: 95, unit: '5mg vial' },
     'Epithalon': { price: 85, unit: '10mg vial' },
     'Pinealon': { price: 55, unit: '20mg vial' },
-    'SS-31 (Elamipretide)': { price: 225, unit: '50mg vial' }
+    'SS-31 (Elamipretide)': { price: 225, unit: '50mg vial' },
+    'DSIP': { price: 42, unit: '5mg vial' },
+    'Kisspeptin-10': { price: 75, unit: '5mg vial' }
 };
 
 /**
@@ -214,7 +225,9 @@ export const PEPTIDE_CATEGORIES = {
         'Retatrutide',
         'Liraglutide',
         'Dulaglutide',
-        'Exenatide'
+        'Exenatide',
+        'Tesofensine',
+        '5-Amino-1MQ'
     ],
     'Growth Hormone Secretagogues': [
         'CJC-1295 (no DAC)',
@@ -223,14 +236,20 @@ export const PEPTIDE_CATEGORIES = {
         'GHRP-2',
         'GHRP-6',
         'Hexarelin',
-        'MK-677 (Ibutamoren)'
+        'MK-677 (Ibutamoren)',
+        'Sermorelin',
+        'Tesamorelin',
+        'Fragment 176-191'
     ],
     'Healing & Recovery': [
         'BPC-157',
         'TB-500',
         'Thymosin Alpha-1',
         'Thymosin Beta-4',
-        'GHK-Cu'
+        'GHK-Cu',
+        'LL-37',
+        'KPV',
+        'Thymulin'
     ],
     'Cosmetic & Skin': [
         'Melanotan I',
@@ -250,13 +269,16 @@ export const PEPTIDE_CATEGORIES = {
         'Selank',
         'Cerebrolysin',
         'P21',
-        'Dihexa'
+        'Dihexa',
+        'NAD+'
     ],
-    'Metabolic & Other': [
+    'Metabolic & Anti-Aging': [
         'AOD-9604',
         'MOTS-c',
         'Epithalon',
         'Pinealon',
-        'SS-31 (Elamipretide)'
+        'SS-31 (Elamipretide)',
+        'DSIP',
+        'Kisspeptin-10'
     ]
 };
