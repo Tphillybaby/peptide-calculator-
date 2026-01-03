@@ -328,6 +328,14 @@ async function scrapeVendor(vendor: Vendor): Promise<{
                         name = link?.getAttribute('title')?.trim() || link?.textContent?.trim();
                     }
 
+                    // URL extraction
+                    let productUrl = element.querySelector('a')?.getAttribute('href');
+                    if (productUrl && !productUrl.startsWith('http')) {
+                        // Handle relative URLs
+                        const urlObj = new URL(vendor.website_url);
+                        productUrl = `${urlObj.origin}${productUrl.startsWith('/') ? '' : '/'}${productUrl}`;
+                    }
+
                     if (!name) continue;
 
                     // Peptide Match
@@ -376,7 +384,8 @@ async function scrapeVendor(vendor: Vendor): Promise<{
                                 quantity: quantity || undefined,
                                 unit: unit || undefined,
                                 originalName: name,
-                                pricePerMg
+                                pricePerMg,
+                                url: productUrl || undefined
                             };
                         }
                     } else {
@@ -387,7 +396,8 @@ async function scrapeVendor(vendor: Vendor): Promise<{
                             quantity: quantity || undefined,
                             unit: unit || undefined,
                             originalName: name,
-                            pricePerMg
+                            pricePerMg,
+                            url: productUrl || undefined
                         });
                         productsFoundOnPage++;
                     }
@@ -443,6 +453,7 @@ async function updatePrices(
             quantity_unit: product.unit || null,
             price_per_mg: product.pricePerMg || null,
             original_product_name: product.originalName || null,
+            product_url: product.url || null,
             last_verified_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         }, {
