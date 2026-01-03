@@ -64,7 +64,6 @@ const AdminPrices = () => {
 
     const triggerScrape = async (vendorSlug = null) => {
         setScraping(true);
-        setScrapingVendor(vendorSlug);
         setError('');
 
         try {
@@ -73,25 +72,57 @@ const AdminPrices = () => {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(
-                `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scrape-prices`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(vendorSlug ? { vendor_slug: vendorSlug } : {}),
-                }
-            );
+            // Determine which vendors to scrape
+            const vendorsToScrape = vendorSlug
+                ? vendors.filter(v => v.slug === vendorSlug)
+                : vendors.filter(v => v.is_active);
 
-            const result = await response.json();
-
-            if (!response.ok) {
-                throw new Error(result.error || 'Scrape failed');
+            if (vendorsToScrape.length === 0) {
+                throw new Error('No active vendors found to scrape');
             }
 
-            showSuccess(`Scrape completed: ${result.vendorsScraped} vendor(s) processed`);
+            let successCount = 0;
+            let errorMessages = [];
+
+            for (const vendor of vendorsToScrape) {
+                setScrapingVendor(vendor.slug); // Update UI
+
+                try {
+                    const response = await fetch(
+                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/scrape-prices`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ vendor_slug: vendor.slug }),
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || 'Scrape failed');
+                    }
+                    successCount++;
+                } catch (err) {
+                    console.error(`Error scraping ${vendor.name}:`, err);
+                    errorMessages.push(`${vendor.name}: ${err.message}`);
+                }
+            }
+
+            if (errorMessages.length > 0) {
+                if (successCount > 0) {
+                    setError(`Partial success. Errors: ${errorMessages.join('; ')}`);
+                    showSuccess(`Scraped ${successCount} vendors successfully.`);
+                } else {
+                    setError(`Scrape failed: ${errorMessages.join('; ')}`);
+                }
+            } else {
+                showSuccess(`Scrape completed: ${successCount} vendor(s) processed`);
+            }
+
             fetchData(); // Refresh data
 
         } catch (err) {

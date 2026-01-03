@@ -311,7 +311,8 @@ async function scrapeVendor(vendor: Vendor): Promise<{
 
             if (productElements.length === 0) {
                 if (products.length === 0 && currentPage === 1) {
-                    const preview = html.substring(0, 500).replace(/[\n\r]+/g, ' ').substring(0, 500);
+                    // Simple substring to avoid regex crash
+                    const preview = html.substring(0, 300);
                     console.log("No elements found. HTML Preview: ", preview);
                     errors.push(`No products found on page 1. HTML: ${preview}`);
                 }
