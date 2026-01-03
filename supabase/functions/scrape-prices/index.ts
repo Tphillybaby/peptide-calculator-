@@ -331,9 +331,14 @@ async function scrapeVendor(vendor: Vendor): Promise<{
                     // URL extraction
                     let productUrl = element.querySelector('a')?.getAttribute('href');
                     if (productUrl && !productUrl.startsWith('http')) {
-                        // Handle relative URLs
-                        const urlObj = new URL(vendor.website_url);
-                        productUrl = `${urlObj.origin}${productUrl.startsWith('/') ? '' : '/'}${productUrl}`;
+                        try {
+                            // Handle relative URLs
+                            const urlObj = new URL(vendor.website_url);
+                            productUrl = `${urlObj.origin}${productUrl.startsWith('/') ? '' : '/'}${productUrl}`;
+                        } catch (e) {
+                            console.error(`Invalid vendor URL for ${vendor.name}: ${vendor.website_url}`);
+                            productUrl = undefined;
+                        }
                     }
 
                     if (!name) continue;
