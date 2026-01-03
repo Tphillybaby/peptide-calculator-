@@ -17,7 +17,7 @@ const corsHeaders = {
 };
 
 // Configuration
-const REQUEST_TIMEOUT = 120000; // Increased to 120s for slow proxies
+const REQUEST_TIMEOUT = 150000; // Increased to 150s for slow vendors/proxies
 const MAX_RETRIES = 2;
 
 // User Agents to rotate
@@ -27,13 +27,18 @@ const USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
     'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
 ];
+
+// Temporarily disabled vendors (conserve API calls)
+const EXCLUDED_VENDORS = ['pure-rawz'];
 
 interface Vendor {
     id: string;
     name: string;
     slug: string;
     website_url: string;
+    is_active: boolean;
     scrape_config: {
         productSelector: string;
         priceSelector: string;
@@ -114,9 +119,7 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Respo
             'Referer': new URL(url).origin,
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache',
-            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
             'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"macOS"',
             'Sec-Fetch-Dest': 'document',
             'Sec-Fetch-Mode': 'navigate',
             'Sec-Fetch-Site': 'none',
@@ -124,6 +127,12 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Respo
             'Upgrade-Insecure-Requests': '1',
             'Connection': 'keep-alive',
         };
+
+        // Only add Chrome-specific hints if using a Chrome-like UA
+        if (userAgent.includes('Chrome')) {
+            fetchHeaders['Sec-Ch-Ua'] = '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"';
+            fetchHeaders['Sec-Ch-Ua-Platform'] = '"macOS"';
+        }
 
         if (proxyKey) {
             if (service === 'zenrows') {
@@ -156,9 +165,10 @@ async function fetchWithRetry(url: string, retries = MAX_RETRIES): Promise<Respo
     } catch (err) {
         clearTimeout(id);
         const error = err as Error;
-        if (retries > 0 && error.name !== 'AbortError') {
-            console.log(`Retrying due to error: ${error.message}`);
-            await new Promise(r => setTimeout(r, 1000));
+        // Retry on timeout (AbortError) too, as it might be transient network issue
+        if (retries > 0) {
+            console.log(`Retrying due to error: ${error.message} (${error.name})`);
+            await new Promise(r => setTimeout(r, 2000));
             return fetchWithRetry(url, retries - 1);
         }
         throw error;
@@ -311,10 +321,19 @@ async function scrapeVendor(vendor: Vendor): Promise<{
 
             if (productElements.length === 0) {
                 if (products.length === 0 && currentPage === 1) {
-                    // Simple substring to avoid regex crash
-                    const preview = html.substring(0, 300);
-                    console.log("No elements found. HTML Preview: ", preview);
-                    errors.push(`No products found on page 1. HTML: ${preview}`);
+                    // Check for bot detection signs
+                    const lowerHtml = html.toLowerCase();
+                    if (lowerHtml.includes('cloudflare') || lowerHtml.includes('challenge-form') || lowerHtml.includes('verify you are human')) {
+                        errors.push(`Bot detection triggered on page 1`);
+                        console.log("Bot detection suspected.");
+                    } else if (lowerHtml.includes('access denied')) {
+                        errors.push(`Access Denied (403/406)`);
+                    } else {
+                        // Simple substring to avoid regex crash
+                        const preview = html.substring(0, 300);
+                        console.log("No elements found. HTML Preview: ", preview);
+                        errors.push(`No products found on page 1. Config: ${JSON.stringify(config)}`);
+                    }
                 }
                 break; // No more products, stop paginating
             }
@@ -540,13 +559,18 @@ Deno.serve(async (req) => {
 
         if (!vendors?.length) throw new Error('No vendors found matching criteria');
 
-        const activeVendors = vendors.filter(v => v.is_active);
-        if (activeVendors.length === 0 && vendorSlug) {
-            throw new Error(`Vendor '${vendorSlug}' is marked as inactive.`);
-        }
+        const typedVendors = vendors as Vendor[];
+        const activeVendors = typedVendors.filter(v => v.is_active || vendorSlug === v.slug);
 
-        const vendorsToScrape = activeVendors;
-        if (vendorsToScrape.length === 0) throw new Error('No active vendors to scrape');
+        // Filter out excluded vendors unless specifically requested via slug
+        const vendorsToScrape = activeVendors.filter(v =>
+            (vendorSlug && v.slug === vendorSlug) || !EXCLUDED_VENDORS.includes(v.slug)
+        );
+
+        if (vendorsToScrape.length === 0) {
+            if (vendorSlug) throw new Error(`Vendor '${vendorSlug}' is inactive or excluded.`);
+            throw new Error('No active vendors to scrape');
+        }
 
         const results = [];
 
