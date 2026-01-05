@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import styles from './PriceChecker.module.css';
 import { supabase } from '../lib/supabase';
+import ShareButton from './ShareButton';
 
 // Fallback data in case database is not populated
 import { VENDORS, PEPTIDE_PRICES, PEPTIDE_CATEGORIES, getVendorPrices } from '../data/vendorData';
@@ -177,13 +178,20 @@ const PriceChecker = () => {
                         <p className={styles.subtitle}>Compare prices from trusted vendors and find the best deals</p>
                     </div>
                 </div>
-                <button
-                    className={styles.infoBtn}
-                    onClick={() => setShowInfo(!showInfo)}
-                    title="How this works"
-                >
-                    <Info size={20} />
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <ShareButton
+                        title="Best Peptide Prices"
+                        text="Find the best deals on peptides with this price checker."
+                        style={{ padding: '0.5rem', borderRadius: '50%', aspectRatio: '1/1', justifyContent: 'center' }}
+                    />
+                    <button
+                        className={styles.infoBtn}
+                        onClick={() => setShowInfo(!showInfo)}
+                        title="How this works"
+                    >
+                        <Info size={20} />
+                    </button>
+                </div>
             </div>
 
             {/* Data Source Indicator */}
