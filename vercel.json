@@ -1,7 +1,27 @@
 {
     "rewrites": [
         {
-            "source": "/(.*)",
+            "source": "/sitemap.xml",
+            "destination": "/sitemap.xml"
+        },
+        {
+            "source": "/robots.txt",
+            "destination": "/robots.txt"
+        },
+        {
+            "source": "/manifest.webmanifest",
+            "destination": "/manifest.webmanifest"
+        },
+        {
+            "source": "/sw.js",
+            "destination": "/sw.js"
+        },
+        {
+            "source": "/workbox-(.*)",
+            "destination": "/workbox-$1"
+        },
+        {
+            "source": "/((?!assets/|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|favicon.ico).*)",
             "destination": "/index.html"
         }
     ],
