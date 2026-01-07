@@ -4,6 +4,7 @@ import { Search, Filter, ArrowRight, Beaker, Activity, Brain, Heart, Zap, BookOp
 import { usePeptides } from '../hooks/usePeptides';
 import SEO from '../components/SEO';
 import SocialShare from '../components/SocialShare';
+import { getEncyclopediaSchemas } from '../utils/pageSchemas';
 
 const Encyclopedia = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -48,8 +49,9 @@ const Encyclopedia = () => {
         <div className="page-container">
             <SEO
                 title="Peptide Encyclopedia & Database"
-                description="Browse our comprehensive database of peptides. Research dosage protocols, benefits, side effects and half-lives."
+                description="Browse our comprehensive database of peptides. Research dosage protocols, benefits, side effects and half-lives for 100+ peptides."
                 canonical="/encyclopedia"
+                jsonLd={getEncyclopediaSchemas()}
             />
             <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>

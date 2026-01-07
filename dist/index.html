@@ -5,9 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.supabase.co https://www.google-analytics.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://region1.google-analytics.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -21,45 +19,20 @@
     content="Free peptide reconstitution calculator and injection tracker. Log your doses, track half-lives, and manage your peptide protocols safely." />
   <meta name="keywords"
     content="peptide calculator, reconstitution calculator, peptide tracker, injection log, peptide dosage, peptide protocols, bpc-157, tirzepatide calculator" />
-  <script type="module" crossorigin src="/assets/index-BGkWlqQt.js"></script>
+  <script type="module" crossorigin src="/assets/index-B55pVF95.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-react-CXiJbH0b.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-charts-Bp3-pUCH.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-utils-CWRG567-.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-pdf-BHURsPEW.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-supabase-cfKfdWz3.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-ui-hgfGiW0g.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-BNTOn027.css">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-ui-Dsxw6kZU.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-Dqd3-AnM.css">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 
 <body>
   <div id="root"></div>
-  <script>
-    // Global error handler to catch "white screen" issues
-    window.addEventListener('error', function (event) {
-      console.error('Global error:', event.error);
-      const root = document.getElementById('root');
-      if (root && root.innerHTML.trim() === '') {
-        // If react hasn't rendered, show the error
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'padding: 20px; color: white; background: #991b1b; font-family: monospace; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;';
-        errorDiv.innerHTML = '<h3>Application Error</h3><pre>' + (event.error?.message || event.message || 'Unknown error') + '</pre><p>Check console for details.</p>';
-        document.body.appendChild(errorDiv);
-      }
-    });
-
-    // Check for root mount failure
-    setTimeout(() => {
-      const root = document.getElementById('root');
-      if (root && root.innerHTML.trim() === '') {
-        console.error('React failed to mount root component within 3 seconds');
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = 'padding: 20px; color: #333; background: #fef08a; font-family: sans-serif; position: fixed; top: 0; left: 0; right: 0; z-index: 9999; text-align: center';
-        errorDiv.innerHTML = '<h3>Loading taking longer than expected...</h3><p>Please try refreshing the page.</p>';
-        document.body.appendChild(errorDiv);
-      }
-    }, 4000);
-  </script>
+  <script src="/error-handler.js"></script>
 </body>
 
 </html>
