@@ -98,9 +98,39 @@
     }
 }
 
-@media (min-width: 768px) {
+/* Tablet screens (768px - 1099px) - Still use "More" menu but with larger styling */
+@media (min-width: 768px) and (max-width: 1099px) {
     .navContent {
-        max-width: 1000px;
+        max-width: 600px;
+        padding: 0 16px;
+        height: 70px;
+    }
+
+    .navItem {
+        min-width: 60px;
+        max-width: 90px;
+    }
+
+    .label {
+        font-size: 0.6875rem;
+    }
+
+    .moreMenu {
+        max-width: 500px;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%) translateY(20px);
+    }
+
+    .moreMenuOpen {
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Large screens (1100px and up) - Show all nav items directly */
+@media (min-width: 1100px) {
+    .navContent {
+        max-width: 1200px;
         padding: 0 24px;
         height: 72px;
     }
