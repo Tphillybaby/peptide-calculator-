@@ -4,6 +4,47 @@
     padding: var(--space-lg);
 }
 
+.headerActions {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.primaryBtn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 10px 20px;
+    background: var(--gradient-primary);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.primaryBtn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.primaryBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.settingRow {
+    margin-bottom: var(--space-md);
+}
+
+.settingRow label {
+    display: block;
+    margin-bottom: var(--space-xs);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
 .header {
     display: flex;
     justify-content: space-between;

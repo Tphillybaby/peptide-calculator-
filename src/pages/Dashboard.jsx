@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useOnboarding } from '../hooks/useOnboarding';
 import ProgressAnalytics from '../components/ProgressAnalytics';
 import OnboardingWizard from '../components/OnboardingWizard';
+import StackShareCard from '../components/StackShareCard';
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
@@ -334,6 +335,13 @@ const Dashboard = () => {
             {user && (
                 <section className={styles.analyticsSection}>
                     <ProgressAnalytics />
+                </section>
+            )}
+
+            {/* Viral Growth: Stack Share Card */}
+            {user && (
+                <section className={styles.section}>
+                    <StackShareCard />
                 </section>
             )}
 

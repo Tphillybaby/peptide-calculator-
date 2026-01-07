@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Calendar, ChevronRight, Lock, Download, Share2, AlertTriangle, Check, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useSchedule } from '../hooks/useSchedule';
 import styles from './TitrationPlanner.module.css';
 
 // Predefined titration protocols
@@ -211,6 +212,66 @@ const TitrationPlanner = ({ isPremium = false }) => {
         a.click();
     };
 
+    const { createRecurringSchedule } = useSchedule();
+    const [saving, setSaving] = useState(false);
+    const [preferredDay, setPreferredDay] = useState(1); // 1 = Monday
+
+    const handleApplyToSchedule = async () => {
+        if (!confirm('This will create schedule entries for the entire duration of the plan. Continue?')) return;
+
+        setSaving(true);
+        try {
+            // Map day of week (0-6) based on user selection
+            // If daily, it's [0,1,2,3,4,5,6] works automatically? 
+            // The protocol definition has 'frequency'.
+
+            let recurrenceDays = [];
+            if (drug.frequency.includes('Daily')) {
+                recurrenceDays = [0, 1, 2, 3, 4, 5, 6];
+            } else {
+                recurrenceDays = [parseInt(preferredDay)];
+            }
+
+            let successCount = 0;
+
+            for (const step of schedule) {
+                if (!step.endDate && !step.duration) continue; // Skip indefinite steps or handle them differently
+
+                // If indefinite (last step), maybe schedule for 4 weeks?
+                const effectiveEndDate = step.endDate || new Date(new Date(step.startDate).setDate(new Date(step.startDate).getDate() + 28));
+
+                await createRecurringSchedule({
+                    name: `${drug.name} - Phase ${step.weekNumber}`,
+                    peptide: drug.name.split(' ')[0], // Just the drug name
+                    dosage: step.dose,
+                    unit: step.unit,
+                    time: '08:00',
+                    recurrenceDays: recurrenceDays,
+                    notes: step.notes
+                }, step.startDate, effectiveEndDate);
+
+                successCount++;
+            }
+
+            alert(`Successfully created schedules for ${successCount} phases! Check your calendar.`);
+        } catch (error) {
+            console.error('Error applying to schedule:', error);
+            alert('Failed to save schedule. Please try again.');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const daysOfWeek = [
+        { id: 0, label: 'Sunday' },
+        { id: 1, label: 'Monday' },
+        { id: 2, label: 'Tuesday' },
+        { id: 3, label: 'Wednesday' },
+        { id: 4, label: 'Thursday' },
+        { id: 5, label: 'Friday' },
+        { id: 6, label: 'Saturday' },
+    ];
+
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -218,10 +279,19 @@ const TitrationPlanner = ({ isPremium = false }) => {
                     <h1 className={styles.title}>Titration Planner</h1>
                     <p className={styles.subtitle}>Plan and track your dose escalation schedule</p>
                 </div>
-                <button className={styles.exportBtn} onClick={handleExport}>
-                    <Download size={18} />
-                    Export Plan
-                </button>
+                <div className={styles.headerActions}>
+                    <button
+                        className={styles.primaryBtn}
+                        onClick={handleApplyToSchedule}
+                        disabled={saving}
+                    >
+                        {saving ? 'Scheduling...' : 'Add to Calendar'}
+                    </button>
+                    <button className={styles.exportBtn} onClick={handleExport}>
+                        <Download size={18} />
+                        Export
+                    </button>
+                </div>
             </div>
 
             <div className={styles.setupGrid}>
@@ -257,13 +327,30 @@ const TitrationPlanner = ({ isPremium = false }) => {
                 </div>
 
                 <div className={styles.setupCard}>
-                    <h3>Start Date</h3>
-                    <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className={styles.dateInput}
-                    />
+                    <h3>Schedule Settings</h3>
+                    <div className={styles.settingRow}>
+                        <label>Start Date</label>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            className={styles.dateInput}
+                        />
+                    </div>
+                    {!drug.frequency.includes('Daily') && (
+                        <div className={styles.settingRow}>
+                            <label>Injection Day</label>
+                            <select
+                                value={preferredDay}
+                                onChange={(e) => setPreferredDay(parseInt(e.target.value))}
+                                className={styles.select}
+                            >
+                                {daysOfWeek.map(day => (
+                                    <option key={day.id} value={day.id}>{day.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.setupCard}>
