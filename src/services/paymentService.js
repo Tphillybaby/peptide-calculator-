@@ -143,34 +143,47 @@ export const paymentService = {
     },
 
     /**
-     * PLACEHOLDER: Create checkout session
-     * When ready for real payments, implement with Stripe
+     * Create checkout session
+     * Calls Supabase Edge Function to initiate Stripe Checkout
      */
     async createCheckoutSession(userId, tierId) {
-        console.log('[Payment Service] Checkout session requested', { userId, tierId });
+        try {
+            const priceId = this.getTierDetails(tierId).priceId;
+            const returnUrl = window.location.origin + '/settings'; // Return to settings page
 
-        // Future implementation:
-        // const { data, error } = await supabase.functions.invoke('create-checkout', {
-        //   body: { userId, tierId }
-        // });
+            const { data, error } = await supabase.functions.invoke('create-checkout', {
+                body: {
+                    priceId,
+                    returnUrl
+                }
+            });
 
-        return {
-            success: false,
-            message: 'Payment processing coming soon! Premium features are currently free during beta.',
-            betaAccess: true
-        };
+            if (error) throw error;
+
+            if (data?.url) {
+                // Redirect user to Stripe Checkout
+                window.location.href = data.url;
+                return { success: true, redirecting: true };
+            } else {
+                throw new Error('No checkout URL returned');
+            }
+
+        } catch (error) {
+            console.error('[Payment Service] Checkout failed:', error);
+            return {
+                success: false,
+                message: 'Failed to start checkout. Please try again or contact support.'
+            };
+        }
     },
 
     /**
-     * PLACEHOLDER: Manage subscription (cancel, upgrade, etc.)
+     * Manage subscription (cancel, upgrade, etc.)
+     * Links to Stripe Customer Portal (future implementation)
      */
     async manageSubscription(userId) {
-        console.log('[Payment Service] Manage subscription requested', { userId });
-
-        // Future implementation:
-        // const { data, error } = await supabase.functions.invoke('customer-portal', {
-        //   body: { userId }
-        // });
+        // Ideally this also calls a backend function to get a portal link
+        alert('Subscription management portal coming soon. Please contact support to modify your plan.');
 
         return {
             success: false,
