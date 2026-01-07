@@ -93,6 +93,13 @@ export const useInjections = () => {
         if (user && user.id !== 'mock-user-id') {
             // Save to Supabase
             try {
+                const dosageInMg = injection.unit === 'mg'
+                    ? injection.dosage
+                    : injection.unit === 'mcg'
+                        ? injection.dosage / 1000
+                        : 0; // Ignore IU for mass deduction
+
+                // 1. Insert Injection
                 const { data, error: insertError } = await supabase
                     .from('injections')
                     .insert([{
@@ -114,6 +121,34 @@ export const useInjections = () => {
                     .single();
 
                 if (insertError) throw insertError;
+
+                // 2. Auto-Deduct from Inventory
+                if (dosageInMg > 0) {
+                    try {
+                        // Find oldest inventory item with stock
+                        const { data: inventoryItems } = await supabase
+                            .from('inventory')
+                            .select('id, remaining_mg, user_id')
+                            .eq('user_id', user.id)
+                            .eq('peptide_name', injection.peptide)
+                            .gt('remaining_mg', 0)
+                            .order('created_at', { ascending: true })
+                            .limit(1);
+
+                        if (inventoryItems && inventoryItems.length > 0) {
+                            const item = inventoryItems[0];
+                            const newRemaining = Math.max(0, item.remaining_mg - dosageInMg);
+
+                            await supabase
+                                .from('inventory')
+                                .update({ remaining_mg: newRemaining })
+                                .eq('id', item.id);
+                        }
+                    } catch (invError) {
+                        console.error('Silent error updating inventory:', invError);
+                        // Don't fail the injection log if inventory fails
+                    }
+                }
 
                 // Update with real ID from database
                 setInjections(prev => prev.map(i =>

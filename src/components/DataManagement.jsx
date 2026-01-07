@@ -158,6 +158,40 @@ const DataManagement = () => {
                         {loading ? <Loader size={18} className={styles.spin} /> : <FileText size={18} />}
                         Export as CSV
                     </button>
+
+                    <button
+                        onClick={async () => {
+                            if (!user) return;
+                            setLoading(true);
+                            try {
+                                // 1. Fetch injections first (since exportService relies on data being passed)
+                                // We can use backupService to fetch data, or just fetch injections via Supabase directly.
+                                // But since backupService.exportAsCSV already fetches data, let's reuse that fetch logic if possible
+                                // OR simplified: just call fetchInjections from a hook? No, hooks rules.
+
+                                // Let's use the backupService.exportUserData to get the raw JSON, then pass injections to exportService
+                                const result = await backupService.exportUserData(user.id);
+                                if (result.success && result.data.injections) {
+                                    const { exportService } = await import('../services/exportService');
+                                    exportService.toPDF(result.data.injections, {
+                                        title: `Peptide Log Report - ${user.user_metadata?.full_name || 'User'}`
+                                    });
+                                    setMessage({ type: 'success', text: 'PDF Report downloaded!' });
+                                } else {
+                                    throw new Error('No data available for PDF');
+                                }
+                            } catch (error) {
+                                setMessage({ type: 'error', text: 'PDF Export failed: ' + error.message });
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}
+                        disabled={loading}
+                        className={styles.exportBtn}
+                    >
+                        {loading ? <Loader size={18} className={styles.spin} /> : <FileText size={18} />}
+                        Doctor's Report (PDF)
+                    </button>
                 </div>
             </div>
 
