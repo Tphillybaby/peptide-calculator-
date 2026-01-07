@@ -72,7 +72,30 @@ const Layout = () => {
                 paddingTop: 'var(--safe-area-top, 0px)'
             }}
         >
+            {/* Accessibility: Skip to main content link */}
+            <a
+                href="#main-content"
+                className="skip-link"
+                style={{
+                    position: 'absolute',
+                    top: '-50px',
+                    left: '16px',
+                    background: 'var(--accent-primary)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    borderRadius: '0 0 8px 8px',
+                    zIndex: 9999,
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    transition: 'top 0.3s ease',
+                }}
+            >
+                Skip to main content
+            </a>
+
             <main
+                id="main-content"
+                role="main"
                 style={{
                     flex: 1,
                     paddingBottom: 'calc(80px + var(--safe-area-bottom, 0px))'

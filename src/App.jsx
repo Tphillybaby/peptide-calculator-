@@ -45,10 +45,14 @@ const ForumPage = lazy(() => import('./pages/Forum'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 
 import { initAnalytics } from './lib/analytics';
+import { initSentry } from './lib/sentry';
 import { initializeNativeServices } from './services/nativeService';
 
 function App() {
   React.useEffect(() => {
+    // Initialize error tracking first
+    initSentry();
+    // Initialize analytics
     initAnalytics();
     // Initialize native mobile features (only runs on iOS/Android)
     initializeNativeServices();
