@@ -4,7 +4,7 @@ import {
     Activity, Syringe, Calendar, ArrowRight, TrendingDown,
     Package, BookOpen, Users, Bell, ChevronRight,
     Droplet, Clock, Target, Sparkles, BarChart3,
-    AlertCircle, CheckCircle2, Plus, History
+    AlertCircle, CheckCircle2, Plus, History, Beaker
 } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +18,6 @@ const Dashboard = () => {
     const { getStats, injections } = useInjections();
     const { user } = useAuth();
     const { showOnboarding, completeOnboarding, skipOnboarding } = useOnboarding();
-    const [showAllActions, setShowAllActions] = useState(false);
 
     const stats = useMemo(() => getStats(), [getStats]);
 
@@ -101,9 +100,12 @@ const Dashboard = () => {
         return 'Good evening';
     }, []);
 
-    // Quick actions
-    const quickActions = [
+    const [activeFolder, setActiveFolder] = useState(null);
+
+    // Consolidated Quick Actions with Folders
+    const rootActions = [
         {
+            id: 'log',
             to: '/log',
             icon: Syringe,
             title: 'Log Injection',
@@ -112,41 +114,7 @@ const Dashboard = () => {
             primary: true
         },
         {
-            to: '/calculator',
-            icon: Activity,
-            title: 'Calculator',
-            desc: 'Reconstitute peptides',
-            color: '#3b82f6'
-        },
-        {
-            to: '/injection-sites',
-            icon: Target,
-            title: 'Injection Sites',
-            desc: 'Where to inject',
-            color: '#8b5cf6'
-        },
-        {
-            to: '/encyclopedia',
-            icon: BookOpen,
-            title: 'Encyclopedia',
-            desc: 'Learn about peptides',
-            color: '#f59e0b'
-        },
-        {
-            to: '/price-checker',
-            icon: TrendingDown,
-            title: 'Price Checker',
-            desc: 'Compare prices',
-            color: '#06b6d4'
-        },
-        {
-            to: '/reviews',
-            icon: Users,
-            title: 'Vendor Reviews',
-            desc: 'Community ratings',
-            color: '#ec4899'
-        },
-        {
+            id: 'inventory',
             to: '/inventory',
             icon: Package,
             title: 'Inventory',
@@ -154,24 +122,82 @@ const Dashboard = () => {
             color: '#14b8a6'
         },
         {
+            id: 'tools',
+            icon: Beaker,
+            title: 'Tools & Education',
+            desc: 'Calculator, Sites, Encyclopedia',
+            color: '#3b82f6',
+            isFolder: true,
+            items: [
+                {
+                    to: '/calculator',
+                    icon: Activity,
+                    title: 'Peptide Calculator',
+                    desc: 'Reconstitute peptides',
+                    color: '#3b82f6'
+                },
+                {
+                    to: '/encyclopedia',
+                    icon: BookOpen,
+                    title: 'Encyclopedia',
+                    desc: 'Learn about peptides',
+                    color: '#f59e0b'
+                },
+                {
+                    to: '/injection-sites',
+                    icon: Target,
+                    title: 'Injection Sites',
+                    desc: 'Where to inject',
+                    color: '#8b5cf6'
+                }
+            ]
+        },
+        {
+            id: 'market',
+            icon: Users,
+            title: 'Sourcing & Community',
+            desc: 'Prices, Reviews',
+            color: '#ec4899',
+            isFolder: true,
+            items: [
+                {
+                    to: '/price-checker',
+                    icon: TrendingDown,
+                    title: 'Price Checker',
+                    desc: 'Compare prices',
+                    color: '#06b6d4'
+                },
+                {
+                    to: '/reviews',
+                    icon: Users,
+                    title: 'Vendor Reviews',
+                    desc: 'Community ratings',
+                    color: '#ec4899'
+                }
+            ]
+        },
+        {
+            id: 'titration',
+            to: '/titration',
+            icon: Sparkles,
+            title: 'Titration Planner',
+            desc: 'Dose escalation',
+            color: '#f97316',
+            premium: true
+        },
+        {
+            id: 'blood-work',
             to: '/blood-work',
             icon: BarChart3,
             title: 'Blood Work',
             desc: 'Track lab results',
             color: '#6366f1',
             premium: true
-        },
-        {
-            to: '/titration',
-            icon: Sparkles,
-            title: 'Titration Plan',
-            desc: 'Dose escalation',
-            color: '#f97316',
-            premium: true
         }
     ];
 
-    const displayedActions = showAllActions ? quickActions : quickActions.slice(0, 4);
+    const currentActions = activeFolder ? activeFolder.items : rootActions;
+    const currentTitle = activeFolder ? activeFolder.title : 'Quick Actions';
 
     return (
         <div className={styles.container}>
@@ -257,39 +283,65 @@ const Dashboard = () => {
                 {/* Quick Actions */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader}>
-                        <h2><Sparkles size={20} /> Quick Actions</h2>
-                        {quickActions.length > 4 && (
-                            <button
-                                className={styles.showMoreBtn}
-                                onClick={() => setShowAllActions(!showAllActions)}
-                            >
-                                {showAllActions ? 'Show Less' : 'Show All'}
-                                <ChevronRight size={16} className={showAllActions ? styles.rotated : ''} />
-                            </button>
-                        )}
+                        <h2>
+                            {activeFolder ? (
+                                <button
+                                    onClick={() => setActiveFolder(null)}
+                                    className={styles.backBtn}
+                                >
+                                    <ChevronRight size={20} className={styles.backArrow} />
+                                    Back
+                                </button>
+                            ) : (
+                                <>
+                                    <Sparkles size={20} /> {currentTitle}
+                                </>
+                            )}
+                        </h2>
                     </div>
                     <div className={styles.actionsGrid}>
-                        {displayedActions.map((action, index) => (
-                            <Link
-                                key={action.to}
-                                to={action.to}
-                                className={`${styles.actionCard} ${action.primary ? styles.actionPrimary : ''}`}
-                                style={{ '--action-color': action.color }}
-                            >
-                                {action.premium && <span className={styles.premiumBadge}>PRO</span>}
-                                <div
-                                    className={styles.actionIcon}
-                                    style={{ background: `${action.color}15`, color: action.color }}
+                        {currentActions.map((action, index) => {
+                            const CardContent = (
+                                <>
+                                    {action.premium && <span className={styles.premiumBadge}>PRO</span>}
+                                    <div
+                                        className={styles.actionIcon}
+                                        style={{ background: `${action.color}15`, color: action.color }}
+                                    >
+                                        <action.icon size={24} />
+                                    </div>
+                                    <div className={styles.actionContent}>
+                                        <span className={styles.actionTitle}>{action.title}</span>
+                                        <span className={styles.actionDesc}>{action.desc}</span>
+                                    </div>
+                                    <ArrowRight size={18} className={styles.actionArrow} />
+                                </>
+                            );
+
+                            if (action.isFolder) {
+                                return (
+                                    <button
+                                        key={action.id}
+                                        className={`${styles.actionCard} ${styles.folderCard}`}
+                                        style={{ '--action-color': action.color }}
+                                        onClick={() => setActiveFolder(action)}
+                                    >
+                                        {CardContent}
+                                    </button>
+                                );
+                            }
+
+                            return (
+                                <Link
+                                    key={action.to}
+                                    to={action.to}
+                                    className={`${styles.actionCard} ${action.primary ? styles.actionPrimary : ''}`}
+                                    style={{ '--action-color': action.color }}
                                 >
-                                    <action.icon size={24} />
-                                </div>
-                                <div className={styles.actionContent}>
-                                    <span className={styles.actionTitle}>{action.title}</span>
-                                    <span className={styles.actionDesc}>{action.desc}</span>
-                                </div>
-                                <ArrowRight size={18} className={styles.actionArrow} />
-                            </Link>
-                        ))}
+                                    {CardContent}
+                                </Link>
+                            );
+                        })}
                     </div>
                 </section>
 

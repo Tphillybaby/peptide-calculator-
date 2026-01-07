@@ -190,6 +190,28 @@
     color: var(--accent-primary);
 }
 
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    transition: color var(--transition-base);
+}
+
+.backBtn:hover {
+    color: var(--accent-primary);
+}
+
+.backArrow {
+    transform: rotate(180deg);
+}
+
 .showMoreBtn,
 .viewAllBtn {
     display: flex;
@@ -254,6 +276,16 @@
     transform: translateY(-2px);
     border-color: var(--action-color, var(--accent-primary));
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.folderCard {
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+    border-style: dashed;
+}
+
+.folderCard:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
 }
 
 .actionPrimary {
