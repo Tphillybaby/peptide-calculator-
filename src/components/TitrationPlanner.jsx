@@ -112,6 +112,8 @@ const titrationProtocols = {
     }
 };
 
+import UpgradeModal from './UpgradeModal';
+
 const TitrationPlanner = ({ isPremium = false }) => {
     const { user } = useAuth();
     const [selectedDrug, setSelectedDrug] = useState('semaglutide');
@@ -119,6 +121,7 @@ const TitrationPlanner = ({ isPremium = false }) => {
     const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
     const [currentWeight, setCurrentWeight] = useState('');
     const [goalWeight, setGoalWeight] = useState('');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Check if premium feature
     if (!isPremium) {
@@ -135,10 +138,14 @@ const TitrationPlanner = ({ isPremium = false }) => {
                         <li>Export your plan to share with your doctor</li>
                         <li>Access FDA-approved and alternative protocols</li>
                     </ul>
-                    <button className={styles.upgradeBtn}>
+                    <button
+                        className={styles.upgradeBtn}
+                        onClick={() => setShowUpgradeModal(true)}
+                    >
                         Upgrade to Premium
                     </button>
                 </div>
+                <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
             </div>
         );
     }

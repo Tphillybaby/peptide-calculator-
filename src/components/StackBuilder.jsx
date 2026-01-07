@@ -4,6 +4,7 @@ import {
     Search, Beaker, ArrowRight, RotateCcw, Lock
 } from 'lucide-react';
 import { INTERACTION_RULES, PEPTIDE_CATEGORIES } from '../data/interactions';
+import UpgradeModal from './UpgradeModal';
 import styles from './StackBuilder.module.css';
 
 const ALL_PEPTIDES = Object.values(PEPTIDE_CATEGORIES).flat().sort();
@@ -11,6 +12,7 @@ const ALL_PEPTIDES = Object.values(PEPTIDE_CATEGORIES).flat().sort();
 const StackBuilder = ({ isPremium = false }) => {
     const [stack, setStack] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Normalize name for comparison
     const normalize = (name) => name.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -160,7 +162,12 @@ const StackBuilder = ({ isPremium = false }) => {
                             <Lock size={48} className={styles.lockIcon} />
                             <h4>Premium Feature</h4>
                             <p>Upgrade to Pro to see detailed interaction analysis, synergies, and safety warnings for your custom stack.</p>
-                            <button className={styles.upgradeBtn}>Upgrade to Unlock</button>
+                            <button
+                                className={styles.upgradeBtn}
+                                onClick={() => setShowUpgradeModal(true)}
+                            >
+                                Upgrade to Unlock
+                            </button>
                         </div>
                     ) : (
                         <>
@@ -205,6 +212,7 @@ const StackBuilder = ({ isPremium = false }) => {
                     </div>
                 </div>
             </div>
+            <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </div>
     );
 };

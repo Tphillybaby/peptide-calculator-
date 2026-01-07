@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity, Sun, Moon, Globe, Share2, FileText } from 'lucide-react';
+import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity, Sun, Moon, Globe, Share2, FileText, CreditCard, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
@@ -13,10 +13,11 @@ import { useInjections } from '../hooks/useInjections';
 import { useTwoFactor } from '../hooks/useTwoFactor';
 import ShareProgress from '../components/ShareProgress';
 import DataManagement from '../components/DataManagement';
+import UpgradeModal from '../components/UpgradeModal';
 import styles from './Settings.module.css';
 
 const Settings = () => {
-    const { user, signOut } = useAuth();
+    const { user, signOut, isPremium, isAdmin } = useAuth();
     const { theme, toggleTheme, setThemeMode } = useTheme();
     const { t, i18n } = useTranslation();
     const { injections } = useInjections();
@@ -48,6 +49,7 @@ const Settings = () => {
 
     const [darkMode, setDarkMode] = useState(theme === 'dark');
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
     const [notifications, setNotifications] = useState({
         injectionReminders: true,
@@ -148,6 +150,7 @@ const Settings = () => {
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User },
         { id: 'activity', label: 'Activity', icon: Activity },
+        { id: 'subscription', label: 'Subscription', icon: CreditCard },
         { id: 'security', label: 'Security', icon: Lock },
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'data', label: 'Data & Backup', icon: Database },
@@ -411,6 +414,67 @@ const Settings = () => {
                                         {new Set(userReviews.map(r => r.peptide_name)).size}
                                     </div>
                                     <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>Peptides Reviewed</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'subscription' && (
+                        <div className={styles.section}>
+                            <h2>Subscription & Billing</h2>
+                            <p className={styles.subtitle}>Manage your plan and billing details</p>
+
+                            <div className={`card ${styles.infoCard} ${isPremium ? styles.premiumCard : ''}`} style={{ background: isPremium ? 'linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(15, 23, 42, 0.4) 100%)' : undefined, borderColor: isPremium ? 'var(--accent-primary)' : undefined }}>
+                                <CreditCard size={24} color={isPremium ? 'var(--accent-primary)' : 'var(--text-secondary)'} />
+                                <div>
+                                    <h3>{isAdmin ? 'Administrator Access' : isPremium ? 'Premium Plan' : 'Free Plan'}</h3>
+                                    <p>{isPremium
+                                        ? 'You have full access to all features'
+                                        : 'Basic access. Upgrade to unlock all features.'}
+                                    </p>
+                                    {isAdmin && <span className={styles.statusActive} style={{ marginTop: '0.5rem', display: 'inline-block' }}>Admin Override</span>}
+                                </div>
+                                {isPremium && !isAdmin ? (
+                                    <button className={styles.secondaryBtn} onClick={() => alert('Manage subscription via Stripe Portal (Coming Soon)')}>
+                                        Manage Plan
+                                    </button>
+                                ) : !isPremium ? (
+                                    <button className="btn-primary" onClick={() => setShowUpgradeModal(true)}>
+                                        Upgrade Now
+                                    </button>
+                                ) : null}
+                            </div>
+
+                            <div className={styles.divider}></div>
+
+                            <h3>Plan Features</h3>
+                            <div className={styles.featuresList} style={{ display: 'grid', gap: '1rem' }}>
+                                <div className={styles.featureItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                    <div style={{ background: isPremium ? 'var(--accent-primary)' : 'var(--text-tertiary)', padding: '8px', borderRadius: '50%', display: 'flex' }}>
+                                        <Check size={16} color="white" />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: 0 }}>Unlimited Peptide Tracking</h4>
+                                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Track as many peptides as you need</p>
+                                    </div>
+                                </div>
+                                <div className={styles.featureItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                    <div style={{ background: isPremium ? 'var(--accent-primary)' : 'var(--bg-input)', padding: '8px', borderRadius: '50%', display: 'flex' }}>
+                                        <Check size={16} color={isPremium ? "white" : "var(--text-muted)"} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: 0, color: isPremium ? 'var(--text-primary)' : 'var(--text-muted)' }}>Titration Planner</h4>
+                                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Advanced dosing schedules</p>
+                                    </div>
+                                </div>
+                                <div className={styles.featureItem} style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                    <div style={{ background: isPremium ? 'var(--accent-primary)' : 'var(--bg-input)', padding: '8px', borderRadius: '50%', display: 'flex' }}>
+                                        <Check size={16} color={isPremium ? "white" : "var(--text-muted)"} />
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: 0, color: isPremium ? 'var(--text-primary)' : 'var(--text-muted)' }}>Blood Work Analysis</h4>
+                                        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Track biomarkers and trends</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -843,7 +907,8 @@ const Settings = () => {
                     <ShareProgress onClose={() => setShowShareModal(false)} />
                 )
             }
-        </div >
+            <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
+        </div>
     );
 };
 

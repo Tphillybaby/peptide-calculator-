@@ -35,7 +35,7 @@ export const SUBSCRIPTION_TIERS = {
         id: 'premium',
         name: 'Premium',
         price: 9.99,
-        priceId: 'price_premium_monthly', // Stripe Price ID (future)
+        priceId: 'price_1SmsqkIsqdbNeRDSszArcnnx',
         features: [
             'Unlimited injection tracking',
             'Advanced analytics & charts',
@@ -54,7 +54,7 @@ export const SUBSCRIPTION_TIERS = {
         id: 'pro',
         name: 'Pro',
         price: 19.99,
-        priceId: 'price_pro_monthly', // Stripe Price ID (future)
+        priceId: 'price_1SmsrjIsqdbNeRDShyC0mdgf',
         features: [
             'Everything in Premium',
             'API access',

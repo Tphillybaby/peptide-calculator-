@@ -53,6 +53,8 @@ const bloodMarkers = {
     ],
 };
 
+import UpgradeModal from './UpgradeModal';
+
 const BloodWorkTracker = ({ isPremium = false }) => {
     const { user } = useAuth();
     const [entries, setEntries] = useState([]);
@@ -61,6 +63,7 @@ const BloodWorkTracker = ({ isPremium = false }) => {
     const [selectedCategory, setSelectedCategory] = useState('hormones');
     const [selectedMarker, setSelectedMarker] = useState(null);
     const [newEntry, setNewEntry] = useState({ date: new Date().toISOString().split('T')[0], values: {} });
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     // Check if premium feature
     if (!isPremium) {
@@ -77,10 +80,14 @@ const BloodWorkTracker = ({ isPremium = false }) => {
                         <li>Export reports for your doctor</li>
                         <li>Correlate with your peptide protocols</li>
                     </ul>
-                    <button className={styles.upgradeBtn}>
+                    <button
+                        className={styles.upgradeBtn}
+                        onClick={() => setShowUpgradeModal(true)}
+                    >
                         Upgrade to Premium
                     </button>
                 </div>
+                <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
             </div>
         );
     }
