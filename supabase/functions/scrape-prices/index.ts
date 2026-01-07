@@ -60,9 +60,9 @@ interface ScrapedProduct {
 
 // Target Peptides Definition
 const TARGET_PEPTIDES = [
-    { name: 'Semaglutide', slug: 'semaglutide', searchTerms: ['semaglutide', 'ozempic', 'wegovy'] },
-    { name: 'Tirzepatide', slug: 'tirzepatide', searchTerms: ['tirzepatide', 'mounjaro'] },
-    { name: 'Retatrutide', slug: 'retatrutide', searchTerms: ['retatrutide'] },
+    { name: 'Semaglutide', slug: 'semaglutide', searchTerms: ['semaglutide', 'ozempic', 'wegovy', 'glp-1 s', 'glp-1s'] },
+    { name: 'Tirzepatide', slug: 'tirzepatide', searchTerms: ['tirzepatide', 'mounjaro', 'glp-2 t', 'glp-2t'] },
+    { name: 'Retatrutide', slug: 'retatrutide', searchTerms: ['retatrutide', 'glp-3 r', 'glp-3r'] },
     { name: 'BPC-157', slug: 'bpc-157', searchTerms: ['bpc-157', 'bpc157', 'body protection compound'] },
     { name: 'TB-500', slug: 'tb-500', searchTerms: ['tb-500', 'tb500', 'thymosin beta'] },
     { name: 'Ipamorelin', slug: 'ipamorelin', searchTerms: ['ipamorelin'] },

@@ -26,8 +26,8 @@ export const VENDORS = [
         shipping: 'Free over $150',
         shippingDays: '2-4 days',
         paymentMethods: ['Credit Card', 'Zelle', 'CashApp'],
-        features: ['Third-party tested', 'Fast Shipping', 'High Purity'],
-        priceModifier: 1.0,
+        features: ['Third-party tested', 'Fast Shipping', 'Great Bundles'],
+        priceModifier: 0.6,
         trusted: true
     },
     {
