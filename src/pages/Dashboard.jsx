@@ -102,7 +102,7 @@ const Dashboard = () => {
     // Quick actions
     const quickActions = [
         {
-            to: '/tracker',
+            to: '/log',
             icon: Syringe,
             title: 'Log Injection',
             desc: 'Record a new dose',
@@ -117,18 +117,11 @@ const Dashboard = () => {
             color: '#3b82f6'
         },
         {
-            to: '/schedule',
-            icon: Calendar,
-            title: 'Schedule',
-            desc: 'Plan your doses',
+            to: '/injection-sites',
+            icon: Target,
+            title: 'Injection Sites',
+            desc: 'Where to inject',
             color: '#8b5cf6'
-        },
-        {
-            to: '/price-checker',
-            icon: TrendingDown,
-            title: 'Price Checker',
-            desc: 'Compare prices',
-            color: '#06b6d4'
         },
         {
             to: '/encyclopedia',
@@ -138,11 +131,41 @@ const Dashboard = () => {
             color: '#f59e0b'
         },
         {
+            to: '/price-checker',
+            icon: TrendingDown,
+            title: 'Price Checker',
+            desc: 'Compare prices',
+            color: '#06b6d4'
+        },
+        {
+            to: '/reviews',
+            icon: Users,
+            title: 'Vendor Reviews',
+            desc: 'Community ratings',
+            color: '#ec4899'
+        },
+        {
             to: '/inventory',
             icon: Package,
             title: 'Inventory',
             desc: 'Manage your stock',
-            color: '#ec4899'
+            color: '#14b8a6'
+        },
+        {
+            to: '/blood-work',
+            icon: BarChart3,
+            title: 'Blood Work',
+            desc: 'Track lab results',
+            color: '#6366f1',
+            premium: true
+        },
+        {
+            to: '/titration',
+            icon: Sparkles,
+            title: 'Titration Plan',
+            desc: 'Dose escalation',
+            color: '#f97316',
+            premium: true
         }
     ];
 
@@ -251,6 +274,7 @@ const Dashboard = () => {
                                 className={`${styles.actionCard} ${action.primary ? styles.actionPrimary : ''}`}
                                 style={{ '--action-color': action.color }}
                             >
+                                {action.premium && <span className={styles.premiumBadge}>PRO</span>}
                                 <div
                                     className={styles.actionIcon}
                                     style={{ background: `${action.color}15`, color: action.color }}
@@ -272,7 +296,7 @@ const Dashboard = () => {
                     <div className={styles.sectionHeader}>
                         <h2><History size={20} /> Recent Activity</h2>
                         {recentActivity.length > 0 && (
-                            <Link to="/tracker" className={styles.viewAllBtn}>
+                            <Link to="/log" className={styles.viewAllBtn}>
                                 View All <ChevronRight size={16} />
                             </Link>
                         )}

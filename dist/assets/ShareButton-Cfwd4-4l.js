@@ -1,0 +1,1 @@
+import{j as a}from"./react-vendor-9c8TE4CQ.js";import{S as i}from"./SocialShare-CQxgrFJH.js";const m=({title:t,text:r,url:o,className:s=""})=>a.jsx(i,{title:t,description:r,url:o,className:s,variant:"button",size:"md"});export{m as S};

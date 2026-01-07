@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Syringe, Calculator, Activity, TrendingDown, BookOpen, User, LogIn, MoreHorizontal, X, MessageCircle, Package } from 'lucide-react';
+import { LayoutDashboard, Syringe, Calculator, Activity, TrendingDown, BookOpen, User, LogIn, MoreHorizontal, X, MessageCircle, Package, MapPin, TestTubes, TrendingUp, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { haptics } from '../services/nativeService';
 import styles from './Navigation.module.css';
@@ -49,7 +49,7 @@ const Navigation = () => {
   };
 
   // Check if any "more" menu item is active
-  const isMoreItemActive = ['/half-life', '/guides', '/price-checker', '/forum'].includes(location.pathname);
+  const isMoreItemActive = ['/half-life', '/guides', '/price-checker', '/forum', '/injection-sites', '/blood-work', '/titration', '/reviews'].includes(location.pathname);
 
   // Haptic feedback on navigation tap
   const handleNavClick = () => {
@@ -58,10 +58,14 @@ const Navigation = () => {
 
   // Secondary navigation items (shown in More menu on mobile)
   const secondaryItems = [
+    { to: '/injection-sites', icon: MapPin, label: 'Inject Sites', ariaLabel: 'Injection Site Guide' },
     { to: '/half-life', icon: Activity, label: 'Decay Plot', ariaLabel: 'Half-Life Plotter' },
     { to: '/guides', icon: BookOpen, label: 'Guides', ariaLabel: 'Peptide Guides' },
     { to: '/price-checker', icon: TrendingDown, label: 'Prices', ariaLabel: 'Price Checker' },
     { to: '/inventory', icon: Package, label: 'Stock', ariaLabel: 'Peptide Inventory' },
+    { to: '/reviews', icon: Star, label: 'Reviews', ariaLabel: 'Vendor Reviews' },
+    { to: '/blood-work', icon: TestTubes, label: 'Blood Work', ariaLabel: 'Blood Work Tracker', premium: true },
+    { to: '/titration', icon: TrendingUp, label: 'Titration', ariaLabel: 'Dose Titration Planner', premium: true },
     { to: '/forum', icon: MessageCircle, label: 'Forum', ariaLabel: 'Community Forum' },
   ];
 
@@ -94,11 +98,12 @@ const Navigation = () => {
               key={item.to}
               to={item.to}
               aria-label={item.ariaLabel}
-              className={({ isActive }) => `${styles.moreMenuItem} ${isActive ? styles.moreMenuItemActive : ''}`}
+              className={({ isActive }) => `${styles.moreMenuItem} ${isActive ? styles.moreMenuItemActive : ''} ${item.premium ? styles.premiumItem : ''}`}
               onClick={() => setMoreMenuOpen(false)}
             >
               <div className={styles.moreMenuIcon}>
                 <item.icon size={22} />
+                {item.premium && <span className={styles.premiumBadge}>PRO</span>}
               </div>
               <span className={styles.moreMenuLabel}>{item.label}</span>
             </NavLink>
