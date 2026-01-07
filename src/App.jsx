@@ -30,6 +30,7 @@ import AdminMonitoring from './components/AdminMonitoring';
 import AdminSecurityAudit from './components/AdminSecurityAudit';
 import PromotionalAuthPopup from './components/PromotionalAuthPopup';
 import SEO from './components/SEO';
+import PageLoader from './components/PageLoader';
 
 const Calculator = lazy(() => import('./pages/Calculator'));
 const HalfLife = lazy(() => import('./pages/HalfLife'));
@@ -70,12 +71,12 @@ function App() {
               <Route path="tracker" element={<Navigate to="/log" replace />} />
               <Route path="schedule" element={<Navigate to="/log" replace />} />
               <Route path="calculator" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading calculator...</div>}>
+                <Suspense fallback={<PageLoader type="calculator" />}>
                   <Calculator />
                 </Suspense>
               } />
               <Route path="half-life" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading half-life tools...</div>}>
+                <Suspense fallback={<PageLoader type="calculator" />}>
                   <HalfLife />
                 </Suspense>
               } />
@@ -83,47 +84,47 @@ function App() {
               <Route path="signup" element={<SignUp />} />
               <Route path="forgot-password" element={<ForgotPassword />} />
               <Route path="price-checker" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading price checker...</div>}>
+                <Suspense fallback={<PageLoader type="prices" />}>
                   <PriceChecker />
                 </Suspense>
               } />
               <Route path="encyclopedia" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading encyclopedia...</div>}>
+                <Suspense fallback={<PageLoader type="encyclopedia" />}>
                   <Encyclopedia />
                 </Suspense>
               } />
               <Route path="encyclopedia/:name" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading...</div>}>
+                <Suspense fallback={<PageLoader type="guide" />}>
                   <PeptideDetail />
                 </Suspense>
               } />
               <Route path="guides" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading guides...</div>}>
+                <Suspense fallback={<PageLoader type="guide" />}>
                   <Guides />
                 </Suspense>
               } />
               <Route path="guides/beginner" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading guide...</div>}>
+                <Suspense fallback={<PageLoader type="guide" />}>
                   <BeginnerGuide />
                 </Suspense>
               } />
               <Route path="guides/injection" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading guide...</div>}>
+                <Suspense fallback={<PageLoader type="guide" />}>
                   <InjectionGuide />
                 </Suspense>
               } />
               <Route path="safety" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading safety info...</div>}>
+                <Suspense fallback={<PageLoader type="guide" />}>
                   <Safety />
                 </Suspense>
               } />
               <Route path="forum" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading forum...</div>}>
+                <Suspense fallback={<PageLoader type="forum" />}>
                   <ForumPage />
                 </Suspense>
               } />
               <Route path="inventory" element={
-                <Suspense fallback={<div style={{ padding: '20px' }}>Loading inventory...</div>}>
+                <Suspense fallback={<PageLoader type="inventory" />}>
                   <Inventory />
                 </Suspense>
               } />

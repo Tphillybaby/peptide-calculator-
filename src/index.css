@@ -76,3 +76,47 @@ textarea::placeholder {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
 }
+
+/* ====== CLS Prevention Styles ====== */
+
+/* Ensure system font is used immediately before web font loads */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Ensure text doesn't jump when Inter loads by matching x-height */
+  font-size-adjust: 0.5;
+}
+
+/* Reserve space for icons to prevent layout shift */
+svg {
+  flex-shrink: 0;
+}
+
+/* Prevent layout shift from images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Reserve minimum heights for common components */
+.card,
+.glass-panel {
+  min-height: 80px;
+}
+
+/* Ensure buttons have consistent size */
+button,
+.btn-primary {
+  min-height: 44px;
+}
+
+/* Prevent shift from dynamic content by reserving space */
+[data-loading="true"] {
+  min-height: 200px;
+}
+
+/* Optimize content below the fold */
+.analytics-section,
+.guest-cta {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 400px;
+}
