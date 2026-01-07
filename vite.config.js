@@ -85,12 +85,16 @@ export default defineConfig(async ({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            vendor: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
-            ui: ['lucide-react', 'recharts', 'chart.js', 'react-chartjs-2'],
-            utils: ['date-fns', 'jspdf', 'jspdf-autotable', 'html2canvas']
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-ui': ['lucide-react'],
+            'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
+            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+            'vendor-utils': ['date-fns', 'i18next', 'react-i18next', 'uuid']
           }
         }
-      }
+      },
+      chunkSizeWarningLimit: 1000
     },
     test: {
       globals: true,
