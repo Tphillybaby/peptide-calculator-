@@ -13,6 +13,11 @@ export const AuthProvider = ({ children }) => {
         // Check active sessions and sets the user
         supabase.auth.getSession().then(({ data: { session } }) => {
             setUser(session?.user ?? null);
+        }).catch((err) => {
+            console.error('Auth session check failed:', err);
+            // Default to no user if session check fails
+            setUser(null);
+        }).finally(() => {
             setLoading(false);
         });
 
