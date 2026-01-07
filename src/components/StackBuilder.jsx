@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import {
     Plus, X, AlertTriangle, CheckCircle, Zap, Info,
-    Search, Beaker, ArrowRight, RotateCcw
+    Search, Beaker, ArrowRight, RotateCcw, Lock
 } from 'lucide-react';
 import { INTERACTION_RULES, PEPTIDE_CATEGORIES } from '../data/interactions';
 import styles from './StackBuilder.module.css';
 
 const ALL_PEPTIDES = Object.values(PEPTIDE_CATEGORIES).flat().sort();
 
-const StackBuilder = () => {
+const StackBuilder = ({ isPremium = false }) => {
     const [stack, setStack] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -155,36 +155,47 @@ const StackBuilder = () => {
                 <div className={styles.analysisCol}>
                     <h3>Stack Analysis</h3>
 
-                    {stack.length < 2 && stack.length > 0 && (
-                        <div className={styles.infoCard}>
-                            <Info size={20} />
-                            <p>Add more peptides to check for interactions and synergies.</p>
+                    {!isPremium && stack.length >= 2 ? (
+                        <div className={styles.premiumOverlay}>
+                            <Lock size={48} className={styles.lockIcon} />
+                            <h4>Premium Feature</h4>
+                            <p>Upgrade to Pro to see detailed interaction analysis, synergies, and safety warnings for your custom stack.</p>
+                            <button className={styles.upgradeBtn}>Upgrade to Unlock</button>
                         </div>
-                    )}
-
-                    {analysis.length > 0 ? (
-                        <div className={styles.resultsList}>
-                            {analysis.map((rule, idx) => (
-                                <div key={idx} className={`${styles.resultCard} ${styles[rule.type.toLowerCase()]}`}>
-                                    <div className={styles.resultHeader}>
-                                        {rule.type === 'WARNING' && <AlertTriangle size={20} />}
-                                        {rule.type === 'SYNERGY' && <Zap size={20} />}
-                                        {rule.type === 'INFO' && <Info size={20} />}
-                                        <h4>{rule.title}</h4>
-                                    </div>
-                                    <p>{rule.description}</p>
+                    ) : (
+                        <>
+                            {stack.length < 2 && stack.length > 0 && (
+                                <div className={styles.infoCard}>
+                                    <Info size={20} />
+                                    <p>Add more peptides to check for interactions and synergies.</p>
                                 </div>
-                            ))}
-                        </div>
-                    ) : stack.length >= 2 ? (
-                        <div className={styles.safeCard}>
-                            <div className={styles.checkIcon}>
-                                <Zap size={24} />
-                            </div>
-                            <h4>No Known Interactions</h4>
-                            <p>We didn't detect any specific conflicts or well-known synergies for this combination.</p>
-                        </div>
-                    ) : null}
+                            )}
+
+                            {analysis.length > 0 ? (
+                                <div className={styles.resultsList}>
+                                    {analysis.map((rule, idx) => (
+                                        <div key={idx} className={`${styles.resultCard} ${styles[rule.type.toLowerCase()]}`}>
+                                            <div className={styles.resultHeader}>
+                                                {rule.type === 'WARNING' && <AlertTriangle size={20} />}
+                                                {rule.type === 'SYNERGY' && <Zap size={20} />}
+                                                {rule.type === 'INFO' && <Info size={20} />}
+                                                <h4>{rule.title}</h4>
+                                            </div>
+                                            <p>{rule.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : stack.length >= 2 ? (
+                                <div className={styles.safeCard}>
+                                    <div className={styles.checkIcon}>
+                                        <Zap size={24} />
+                                    </div>
+                                    <h4>No Known Interactions</h4>
+                                    <p>We didn't detect any specific conflicts or well-known synergies for this combination.</p>
+                                </div>
+                            ) : null}
+                        </>
+                    )}
 
                     <div className={styles.disclaimer}>
                         <p>

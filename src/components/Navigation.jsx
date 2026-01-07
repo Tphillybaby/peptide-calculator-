@@ -66,7 +66,7 @@ const Navigation = () => {
     { to: '/reviews', icon: Star, label: 'Reviews', ariaLabel: 'Vendor Reviews' },
     { to: '/blood-work', icon: TestTubes, label: 'Blood Work', ariaLabel: 'Blood Work Tracker', premium: true },
     { to: '/titration', icon: TrendingUp, label: 'Titration', ariaLabel: 'Dose Titration Planner', premium: true },
-    { to: '/stack-builder', icon: Beaker, label: 'Stack Builder', ariaLabel: 'Peptide Stack Interaction Checker' },
+    { to: '/stack-builder', icon: Beaker, label: 'Stack Builder', ariaLabel: 'Peptide Stack Interaction Checker', premium: true },
     { to: '/forum', icon: MessageCircle, label: 'Forum', ariaLabel: 'Community Forum' },
   ];
 
