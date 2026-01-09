@@ -11,6 +11,7 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { getRedirectUrl } from '../utils/authRedirect';
 
 export const emailService = {
     /**
@@ -20,7 +21,7 @@ export const emailService = {
     async requestPasswordReset(email) {
         try {
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/reset-password`
+                redirectTo: getRedirectUrl('/reset-password')
             });
 
             if (error) throw error;
@@ -40,7 +41,7 @@ export const emailService = {
             const { error } = await supabase.auth.signInWithOtp({
                 email,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/`
+                    emailRedirectTo: getRedirectUrl('/')
                 }
             });
 
@@ -62,7 +63,7 @@ export const emailService = {
                 type: 'signup',
                 email,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/`
+                    emailRedirectTo: getRedirectUrl('/')
                 }
             });
 

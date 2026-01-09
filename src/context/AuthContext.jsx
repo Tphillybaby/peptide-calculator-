@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { getRedirectUrl } from '../utils/authRedirect';
 
 const AuthContext = createContext({});
 
@@ -128,7 +129,7 @@ export const AuthProvider = ({ children }) => {
 
     const resetPassword = async (email) => {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/update-password`,
+            redirectTo: getRedirectUrl('/update-password'),
         });
         if (error) throw error;
     };
@@ -144,7 +145,7 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider,
             options: {
-                redirectTo: `${window.location.origin}/settings`
+                redirectTo: getRedirectUrl('/settings')
             }
         });
         if (error) throw error;
