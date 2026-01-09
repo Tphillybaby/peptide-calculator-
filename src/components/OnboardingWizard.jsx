@@ -88,7 +88,7 @@ const OnboardingWizard = ({ onComplete, onSkip }) => {
             ],
             tip: {
                 icon: Lightbulb,
-                text: 'All core features are <strong>completely free</strong>. No credit card required!'
+                content: <>All core features are <strong>completely free</strong>. No credit card required!</>
             }
         },
         {
@@ -296,12 +296,9 @@ const OnboardingWizard = ({ onComplete, onSkip }) => {
                                     size={20}
                                     className={styles.tipIcon}
                                 />
-                                <p
-                                    className={styles.tipText}
-                                    dangerouslySetInnerHTML={{
-                                        __html: currentStepData.tip.text
-                                    }}
-                                />
+                                <p className={styles.tipText}>
+                                    {currentStepData.tip.content}
+                                </p>
                             </div>
                         )}
                     </div>

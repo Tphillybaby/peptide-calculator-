@@ -152,6 +152,11 @@ export const AuthProvider = ({ children }) => {
     };
 
     const mockLogin = () => {
+        // Only allow mock login in development mode for security
+        if (import.meta.env.PROD) {
+            console.warn('Mock login is disabled in production');
+            return;
+        }
         setUser({
             id: 'mock-user-id',
             email: 'demo@example.com',

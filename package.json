@@ -39,7 +39,7 @@
     "dotenv": "^17.2.3",
     "html2canvas": "^1.4.1",
     "i18next": "^25.7.2",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.0.0",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.554.0",
     "qrcode": "^1.5.4",
