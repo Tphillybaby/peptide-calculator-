@@ -142,14 +142,62 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signInWithOAuth = async (provider) => {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                redirectTo: getRedirectUrl('/settings')
+        const { isNativeApp } = await import('../utils/authRedirect');
+
+        if (isNativeApp()) {
+            // On native platforms, we need to use a different flow
+            // Get the OAuth URL and open it in an in-app browser
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo: getRedirectUrl('/callback'),
+                    skipBrowserRedirect: true // Don't auto-redirect, we'll handle it
+                }
+            });
+
+            if (error) throw error;
+
+            if (data?.url) {
+                // Open OAuth URL in in-app browser
+                const { Browser } = await import('@capacitor/browser');
+
+                // Listen for the app to reopen with the auth callback
+                const { App } = await import('@capacitor/app');
+
+                const urlListener = App.addListener('appUrlOpen', async (event) => {
+                    // Close the browser
+                    await Browser.close();
+
+                    // Parse the callback URL for tokens
+                    if (event.url.includes('access_token') || event.url.includes('code')) {
+                        // The deep link handler will process this
+                        console.log('[OAuth] Callback received:', event.url);
+                    }
+
+                    // Remove listener
+                    urlListener.remove();
+                });
+
+                // Open the OAuth URL
+                await Browser.open({
+                    url: data.url,
+                    windowName: '_self',
+                    presentationStyle: 'popover'
+                });
             }
-        });
-        if (error) throw error;
-        return data;
+
+            return data;
+        } else {
+            // Web platform - use normal OAuth flow
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider,
+                options: {
+                    redirectTo: getRedirectUrl('/settings')
+                }
+            });
+            if (error) throw error;
+            return data;
+        }
     };
 
     const mockLogin = () => {
