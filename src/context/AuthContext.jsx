@@ -15,51 +15,85 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let mounted = true;
 
-        const checkUser = async () => {
+        const checkUser = async (retryCount = 0) => {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                // Simple session check without aggressive timeout
+                // Supabase has its own internal timeout handling
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                // If there's a transient error and we haven't retried yet, try once more
+                if (sessionError && retryCount < 1) {
+                    console.warn('Session check failed, retrying...', sessionError);
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    return checkUser(retryCount + 1);
+                }
 
                 if (session?.user) {
                     const currentUser = session.user;
-                    setUser(currentUser);
+                    if (mounted) setUser(currentUser);
 
                     // Fetch profile (admin status) and subscription in parallel
-                    const [profileResult, subResult] = await Promise.all([
-                        supabase.from('profiles').select('is_admin').eq('id', currentUser.id).single(),
-                        supabase.from('user_subscriptions').select('plan, status, current_period_end').eq('user_id', currentUser.id).single()
-                    ]);
+                    // Use a gentler timeout approach
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-                    const adminStatus = profileResult.data?.is_admin || false;
-                    setIsAdmin(adminStatus);
+                        const [profileResult, subResult] = await Promise.all([
+                            supabase.from('profiles').select('is_admin').eq('id', currentUser.id).single(),
+                            supabase.from('user_subscriptions').select('plan, status, current_period_end').eq('user_id', currentUser.id).single()
+                        ]);
 
-                    // Determine premium status: Admin OR Active Subscription
-                    let premiumStatus = adminStatus;
+                        clearTimeout(timeoutId);
 
-                    if (!premiumStatus && subResult.data && subResult.data.status === 'active') {
-                        // Check valid plans
-                        if (['premium', 'pro'].includes(subResult.data.plan)) {
-                            const endDate = subResult.data.current_period_end;
-                            if (!endDate || new Date(endDate) > new Date()) {
-                                premiumStatus = true;
+                        if (mounted) {
+                            const adminStatus = profileResult.data?.is_admin || false;
+                            setIsAdmin(adminStatus);
+
+                            // Determine premium status: Admin OR Active Subscription
+                            let premiumStatus = adminStatus;
+
+                            if (!premiumStatus && subResult.data && subResult.data.status === 'active') {
+                                // Check valid plans
+                                if (['premium', 'pro'].includes(subResult.data.plan)) {
+                                    const endDate = subResult.data.current_period_end;
+                                    if (!endDate || new Date(endDate) > new Date()) {
+                                        premiumStatus = true;
+                                    }
+                                }
                             }
-                        }
-                    }
 
-                    setIsPremium(premiumStatus);
+                            setIsPremium(premiumStatus);
+                        }
+                    } catch (profileErr) {
+                        console.warn('Profile fetch failed:', profileErr.message);
+                        // Continue without admin/premium status - user can still use the app
+                    }
                 } else {
+                    if (mounted) {
+                        setUser(null);
+                        setIsAdmin(false);
+                        setIsPremium(false);
+                    }
+                }
+            } catch (err) {
+                // Handle AbortError and other transient errors gracefully
+                if (err.name === 'AbortError') {
+                    console.warn('Auth check was aborted (likely a timeout or navigation issue)');
+                } else {
+                    console.error('Auth check failed:', err.message || err);
+                }
+                if (mounted) {
                     setUser(null);
                     setIsAdmin(false);
                     setIsPremium(false);
                 }
-            } catch (err) {
-                console.error('Auth check failed:', err);
-                setUser(null);
             } finally {
                 if (mounted) setLoading(false);
             }
         };
 
         checkUser();
+
 
         // Listen for changes on auth state
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -230,7 +264,30 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {loading ? (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: '100vh',
+                    background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%)',
+                    color: '#f8fafc',
+                    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                    gap: '1rem'
+                }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        border: '3px solid rgba(59, 130, 246, 0.2)',
+                        borderTopColor: '#3b82f6',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                    }} />
+                    <p style={{ color: '#94a3b8' }}>Loading...</p>
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+            ) : children}
         </AuthContext.Provider>
     );
 };
