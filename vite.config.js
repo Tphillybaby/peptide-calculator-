@@ -9,6 +9,7 @@ import { sentryVitePlugin } from '@sentry/vite-plugin'
 export default defineConfig(async ({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  // eslint-disable-next-line no-undef
   const env = loadEnv(mode, process.cwd(), '')
 
   let dynamicRoutes = [
@@ -54,9 +55,12 @@ export default defineConfig(async ({ mode }) => {
       }),
       VitePWA({
         registerType: 'autoUpdate',
-        // Disable auto-injection to prevent unhandled promise rejections
-        // We'll handle registration manually with proper error handling
-        injectRegister: false,
+        // Use inline registration which includes error handling
+        injectRegister: 'inline',
+        // Disable service worker during development
+        devOptions: {
+          enabled: false
+        },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'Peptide Tracker',
