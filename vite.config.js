@@ -54,6 +54,9 @@ export default defineConfig(async ({ mode }) => {
       }),
       VitePWA({
         registerType: 'autoUpdate',
+        // Disable auto-injection to prevent unhandled promise rejections
+        // We'll handle registration manually with proper error handling
+        injectRegister: false,
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
           name: 'Peptide Tracker',

@@ -11,6 +11,9 @@ import { initSentry } from './lib/sentry'
 // Initialize Sentry as early as possible
 initSentry()
 
+// Register service worker with proper error handling
+import('./lib/serviceWorkerRegistration')
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
