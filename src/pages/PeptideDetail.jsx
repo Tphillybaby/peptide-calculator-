@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Clock, AlertTriangle, Shield, BookOpen, Activity, ExternalLink, Loader2 } from 'lucide-react';
 import { usePeptides } from '../hooks/usePeptides';
@@ -7,12 +7,51 @@ import SEO from '../components/SEO';
 import ShareButton from '../components/ShareButton';
 
 const PeptideDetail = () => {
-    // ... (existing code)
+    const { name } = useParams();
+    const { getPeptideByName, loading } = usePeptides();
+
+    // We don't use useMemo here for the finding logic because getPeptideByName 
+    // depends on state that updates (peptides list)
+    const decodedName = decodeURIComponent(name);
+    const peptide = getPeptideByName(decodedName);
+
+    if (loading) {
+        return (
+            <div className="page-container" style={{ display: 'flex', justifyContent: 'center', paddingTop: '4rem' }}>
+                <Loader2 className="spinning" size={48} color="var(--accent-primary)" />
+            </div>
+        );
+    }
+
+    if (!peptide) {
+        return <Navigate to="/encyclopedia" replace />;
+    }
 
     return (
         <div className="page-container">
             <SEO
-            // ... (props)
+                title={`${peptide.name} Protocol & Dosage Guide`}
+                description={peptide.description ? peptide.description.substring(0, 160) : `Complete guide for ${peptide.name} peptide including dosage, protocols, benefits, and side effects.`}
+                canonical={`/encyclopedia/${encodeURIComponent(peptide.name)}`}
+                jsonLd={{
+                    "@context": "https://schema.org/",
+                    "@type": "Product",
+                    "name": peptide.name,
+                    "description": peptide.description,
+                    "category": peptide.category,
+                    "review": {
+                        "@type": "Review",
+                        "reviewRating": {
+                            "@type": "Rating",
+                            "ratingValue": "5",
+                            "bestRating": "5"
+                        },
+                        "author": {
+                            "@type": "Organization",
+                            "name": "PeptideLog Community"
+                        }
+                    }
+                }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <Link to="/encyclopedia" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', textDecoration: 'none' }}>
