@@ -15,120 +15,79 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         let mounted = true;
 
-        const checkUser = async (retryCount = 0) => {
+        // Failsafe: Force app to load after 3 seconds even if auth is slow
+        const safetyTimeout = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('Auth check timed out, forcing app load');
+                setLoading(false);
+            }
+        }, 3000);
+
+        // Fetch additional user details (Admin/Premium) without blocking the UI
+        const fetchUserDetails = async (userId) => {
             try {
-                // Simple session check without aggressive timeout
-                // Supabase has its own internal timeout handling
-                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                // Fetch independently to avoid one failing the other
+                const profilePromise = supabase.from('profiles').select('is_admin').eq('id', userId).single();
+                const subPromise = supabase.from('user_subscriptions').select('plan, status, current_period_end').eq('user_id', userId).single();
 
-                // If there's a transient error and we haven't retried yet, try once more
-                if (sessionError && retryCount < 1) {
-                    console.warn('Session check failed, retrying...', sessionError);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    return checkUser(retryCount + 1);
-                }
+                const [profileResult, subResult] = await Promise.all([profilePromise, subPromise]);
 
-                if (session?.user) {
-                    const currentUser = session.user;
-                    if (mounted) setUser(currentUser);
+                if (!mounted) return;
 
-                    // Fetch profile (admin status) and subscription in parallel
-                    // Use a gentler timeout approach
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const adminStatus = profileResult.data?.is_admin || false;
+                setIsAdmin(adminStatus);
 
-                        const [profileResult, subResult] = await Promise.all([
-                            supabase.from('profiles').select('is_admin').eq('id', currentUser.id).single(),
-                            supabase.from('user_subscriptions').select('plan, status, current_period_end').eq('user_id', currentUser.id).single()
-                        ]);
-
-                        clearTimeout(timeoutId);
-
-                        if (mounted) {
-                            const adminStatus = profileResult.data?.is_admin || false;
-                            setIsAdmin(adminStatus);
-
-                            // Determine premium status: Admin OR Active Subscription
-                            let premiumStatus = adminStatus;
-
-                            if (!premiumStatus && subResult.data && subResult.data.status === 'active') {
-                                // Check valid plans
-                                if (['premium', 'pro'].includes(subResult.data.plan)) {
-                                    const endDate = subResult.data.current_period_end;
-                                    if (!endDate || new Date(endDate) > new Date()) {
-                                        premiumStatus = true;
-                                    }
-                                }
-                            }
-
-                            setIsPremium(premiumStatus);
+                // Determine premium status
+                let premiumStatus = adminStatus;
+                if (!premiumStatus && subResult.data && subResult.data.status === 'active') {
+                    if (['premium', 'pro'].includes(subResult.data.plan)) {
+                        const endDate = subResult.data.current_period_end;
+                        if (!endDate || new Date(endDate) > new Date()) {
+                            premiumStatus = true;
                         }
-                    } catch (profileErr) {
-                        console.warn('Profile fetch failed:', profileErr.message);
-                        // Continue without admin/premium status - user can still use the app
-                    }
-                } else {
-                    if (mounted) {
-                        setUser(null);
-                        setIsAdmin(false);
-                        setIsPremium(false);
                     }
                 }
-            } catch (err) {
-                // Handle AbortError and other transient errors gracefully
-                if (err.name === 'AbortError') {
-                    console.warn('Auth check was aborted (likely a timeout or navigation issue)');
-                } else {
-                    console.error('Auth check failed:', err.message || err);
+                setIsPremium(premiumStatus);
+            } catch (error) {
+                console.error('Background user details fetch failed:', error);
+            }
+        };
+
+        // Initialize session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (mounted) {
+                if (session?.user) {
+                    setUser(session.user);
+                    // Start fetching extra data in background
+                    fetchUserDetails(session.user.id);
                 }
-                if (mounted) {
+                // Don't wait for extra data to render the app
+                setLoading(false);
+            }
+        });
+
+        // Listen for changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (mounted) {
+                if (session?.user) {
+                    setUser(session.user);
+                    // Re-fetch details on change (e.g. login/signup)
+                    // We only do this if the user ID changed or we are missing data
+                    if (user?.id !== session.user.id) {
+                        fetchUserDetails(session.user.id);
+                    }
+                } else {
                     setUser(null);
                     setIsAdmin(false);
                     setIsPremium(false);
                 }
-            } finally {
-                if (mounted) setLoading(false);
+                setLoading(false);
             }
-        };
-
-        checkUser();
-
-
-        // Listen for changes on auth state
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session?.user) {
-                setUser(session.user);
-                // Re-run checks if user changes (simplified here, but ideally we'd refactor the check logic to be reusable)
-                // For now, we reuse the robust initial check, but onAuthStateChange might fire frequently.
-                // Let's just do a quick re-check or duplicate the logic for responsiveness.
-                // To keep it clean, we'll let the user navigate and components might re-trigger if needed, 
-                // but for critical state, we should probably fetch.
-
-                // For this implementation, we will trust the session user, but we might lag on isPremium/isAdmin update 
-                // if we don't fetch. So let's fetch again.
-                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                const { data: sub } = await supabase.from('user_subscriptions').select('plan, status').eq('user_id', session.user.id).single();
-
-                const admin = profile?.is_admin || false;
-                setIsAdmin(admin);
-
-                let prem = admin;
-                if (!prem && sub?.status === 'active' && ['premium', 'pro'].includes(sub.plan)) {
-                    prem = true;
-                }
-                setIsPremium(prem);
-
-            } else {
-                setUser(null);
-                setIsAdmin(false);
-                setIsPremium(false);
-            }
-            if (mounted) setLoading(false);
         });
 
         return () => {
             mounted = false;
+            clearTimeout(safetyTimeout);
             subscription.unsubscribe();
         };
     }, []);
