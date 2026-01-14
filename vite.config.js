@@ -111,17 +111,81 @@ export default defineConfig(async ({ mode }) => {
       sourcemap: true,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-            'vendor-supabase': ['@supabase/supabase-js'],
-            'vendor-ui': ['lucide-react'],
-            'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
-            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
-            'vendor-utils': ['date-fns', 'i18next', 'react-i18next', 'uuid']
+          manualChunks(id) {
+            // Vendor chunks - split by major libraries
+            if (id.includes('node_modules')) {
+              // React ecosystem
+              if (id.includes('react-dom') || id.includes('scheduler')) {
+                return 'vendor-react-dom';
+              }
+              if (id.includes('react-router')) {
+                return 'vendor-router';
+              }
+              if (id.includes('/react/') || id.includes('react-is')) {
+                return 'vendor-react';
+              }
+
+              // Supabase
+              if (id.includes('@supabase')) {
+                return 'vendor-supabase';
+              }
+
+              // Icons
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+
+              // Charts (heavy)
+              if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) {
+                return 'vendor-charts';
+              }
+              if (id.includes('chart.js') || id.includes('react-chartjs')) {
+                return 'vendor-chartjs';
+              }
+
+              // PDF (heavy)
+              if (id.includes('jspdf') || id.includes('html2canvas')) {
+                return 'vendor-pdf';
+              }
+
+              // Date utilities
+              if (id.includes('date-fns')) {
+                return 'vendor-date';
+              }
+
+              // i18n
+              if (id.includes('i18next')) {
+                return 'vendor-i18n';
+              }
+
+              // Sentry
+              if (id.includes('@sentry')) {
+                return 'vendor-sentry';
+              }
+
+              // Helmet/SEO
+              if (id.includes('helmet')) {
+                return 'vendor-seo';
+              }
+
+              // Everything else goes to a common vendor chunk
+              return 'vendor-common';
+            }
+
+            // App chunks - split by feature area
+            if (id.includes('/pages/admin/')) {
+              return 'app-admin';
+            }
+            if (id.includes('/pages/guides/')) {
+              return 'app-guides';
+            }
+            if (id.includes('/components/Admin')) {
+              return 'app-admin-components';
+            }
           }
         }
       },
-      chunkSizeWarningLimit: 1000
+      chunkSizeWarningLimit: 600 // Lower threshold for earlier warnings
     },
     test: {
       globals: true,

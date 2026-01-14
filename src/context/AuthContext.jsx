@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getRedirectUrl } from '../utils/authRedirect';
 
 const AuthContext = createContext({});
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -12,12 +13,21 @@ export const AuthProvider = ({ children }) => {
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    // Use refs to track state without triggering effect re-runs
+    const loadingRef = useRef(loading);
+    const userRef = useRef(user);
+
+    useEffect(() => {
+        loadingRef.current = loading;
+        userRef.current = user;
+    }, [loading, user]);
+
     useEffect(() => {
         let mounted = true;
 
         // Failsafe: Force app to load after 3 seconds even if auth is slow
         const safetyTimeout = setTimeout(() => {
-            if (mounted && loading) {
+            if (mounted && loadingRef.current) {
                 console.warn('Auth check timed out, forcing app load');
                 setLoading(false);
             }
@@ -72,8 +82,8 @@ export const AuthProvider = ({ children }) => {
                 if (session?.user) {
                     setUser(session.user);
                     // Re-fetch details on change (e.g. login/signup)
-                    // We only do this if the user ID changed or we are missing data
-                    if (user?.id !== session.user.id) {
+                    // We only re-fetch if the user ID changed to avoid redundant calls
+                    if (userRef.current?.id !== session.user.id) {
                         fetchUserDetails(session.user.id);
                     }
                 } else {
@@ -250,3 +260,5 @@ export const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
+
+export default AuthProvider;

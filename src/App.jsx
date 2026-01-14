@@ -2,37 +2,28 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import AdminRoute from './components/AdminRoute';
-import Layout from './components/Layout';
-import Dashboard from './pages/Dashboard';
-import Log from './pages/Log';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
-import ForgotPassword from './pages/ForgotPassword';
-import Settings from './pages/Settings';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import NotFound from './pages/NotFound';
 import ErrorBoundary from './components/ErrorBoundary';
-import AdminLayout from './components/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminPeptides from './pages/admin/AdminPeptides';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminForum from './pages/admin/AdminForum';
-import AdminReviews from './pages/admin/AdminReviews';
-import AdminPrices from './pages/admin/AdminPrices';
-import CookieConsent from './components/CookieConsent';
-import SupportTickets from './components/SupportTickets';
-import AdminTickets from './components/AdminTickets';
-import AdminAuditLogs from './components/AdminAuditLogs';
-import AdminMonitoring from './components/AdminMonitoring';
-import AdminSecurityAudit from './components/AdminSecurityAudit';
-import AdminDatabaseMetrics from './components/AdminDatabaseMetrics';
-import PromotionalAuthPopup from './components/PromotionalAuthPopup';
-import SEO from './components/SEO';
 import PageLoader from './components/PageLoader';
 
+// Core components - keep these eagerly loaded for fast initial render
+const Layout = lazy(() => import('./components/Layout'));
+const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
+const AdminRoute = lazy(() => import('./components/AdminRoute'));
+
+// Auth pages - commonly accessed, lazy load
+const Login = lazy(() => import('./pages/Login'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+
+// Main pages - lazy load all
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Log = lazy(() => import('./pages/Log'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+
+// Feature pages
 const Calculator = lazy(() => import('./pages/Calculator'));
 const StackProtocol = lazy(() => import('./pages/StackProtocol'));
 const HalfLife = lazy(() => import('./pages/HalfLife'));
@@ -45,21 +36,37 @@ const BeginnerGuide = lazy(() => import('./pages/guides/BeginnerGuide'));
 const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
 const ForumPage = lazy(() => import('./pages/Forum'));
 const Inventory = lazy(() => import('./pages/Inventory'));
-
-// New feature pages
 const InjectionSites = lazy(() => import('./pages/InjectionSites'));
 const BloodWork = lazy(() => import('./pages/BloodWork'));
 const TitrationPlan = lazy(() => import('./pages/TitrationPlan'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const AccountSecurity = lazy(() => import('./pages/AccountSecurity'));
 
-// Admin pages (lazy loaded)
+// Admin components - lazy load entire admin section
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminPeptides = lazy(() => import('./pages/admin/AdminPeptides'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminForum = lazy(() => import('./pages/admin/AdminForum'));
+const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+const AdminPrices = lazy(() => import('./pages/admin/AdminPrices'));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminFeatureFlags = lazy(() => import('./pages/admin/AdminFeatureFlags'));
 const AdminAnnouncements = lazy(() => import('./pages/admin/AdminAnnouncements'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminPromoCodes = lazy(() => import('./pages/admin/AdminPromoCodes'));
 const AdminExport = lazy(() => import('./pages/admin/AdminExport'));
+const AdminTickets = lazy(() => import('./components/AdminTickets'));
+const AdminAuditLogs = lazy(() => import('./components/AdminAuditLogs'));
+const AdminMonitoring = lazy(() => import('./components/AdminMonitoring'));
+const AdminSecurityAudit = lazy(() => import('./components/AdminSecurityAudit'));
+const AdminDatabaseMetrics = lazy(() => import('./components/AdminDatabaseMetrics'));
+
+// Support components - lazy load
+const SupportTickets = lazy(() => import('./components/SupportTickets'));
+const CookieConsent = lazy(() => import('./components/CookieConsent'));
+const PromotionalAuthPopup = lazy(() => import('./components/PromotionalAuthPopup'));
+const SEO = lazy(() => import('./components/SEO'));
 
 import { SessionTimeoutWarning } from './hooks/useSessionTimeout';
 import { useDeepLinkHandler, initDeepLinks } from './hooks/useDeepLinkHandler';
@@ -93,7 +100,7 @@ function AppRoutes() {
   useDeepLinkHandler();
 
   return (
-    <>
+    <Suspense fallback={<PageLoader type="dashboard" />}>
       <SEO />
       <Routes>
         <Route path="/" element={
@@ -106,98 +113,38 @@ function AppRoutes() {
           {/* Backwards compatibility redirects */}
           <Route path="tracker" element={<Navigate to="/log" replace />} />
           <Route path="schedule" element={<Navigate to="/log" replace />} />
-          <Route path="calculator" element={
-            <Suspense fallback={<PageLoader type="calculator" />}>
-              <Calculator />
-            </Suspense>
-          } />
-          <Route path="half-life" element={
-            <Suspense fallback={<PageLoader type="calculator" />}>
-              <HalfLife />
-            </Suspense>
-          } />
-          <Route path="stack-builder" element={
-            <Suspense fallback={<PageLoader type="calculator" />}>
-              <StackProtocol />
-            </Suspense>
-          } />
+          <Route path="calculator" element={<Calculator />} />
+          <Route path="half-life" element={<HalfLife />} />
+          <Route path="stack-builder" element={<StackProtocol />} />
           <Route path="login" element={<Login />} />
           <Route path="signup" element={<SignUp />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           {/* Auth callback route for OAuth/Magic Links */}
           <Route path="callback" element={<Navigate to="/dashboard" replace />} />
           <Route path="reset-password" element={<Navigate to="/update-password" replace />} />
-          <Route path="price-checker" element={
-            <Suspense fallback={<PageLoader type="prices" />}>
-              <PriceChecker />
-            </Suspense>
-          } />
-          <Route path="encyclopedia" element={
-            <Suspense fallback={<PageLoader type="encyclopedia" />}>
-              <Encyclopedia />
-            </Suspense>
-          } />
-          <Route path="encyclopedia/:name" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <PeptideDetail />
-            </Suspense>
-          } />
-          <Route path="guides" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <Guides />
-            </Suspense>
-          } />
-          <Route path="guides/beginner" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <BeginnerGuide />
-            </Suspense>
-          } />
-          <Route path="guides/injection" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <InjectionGuide />
-            </Suspense>
-          } />
-          <Route path="safety" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <Safety />
-            </Suspense>
-          } />
-          <Route path="forum" element={
-            <Suspense fallback={<PageLoader type="forum" />}>
-              <ForumPage />
-            </Suspense>
-          } />
-          <Route path="inventory" element={
-            <Suspense fallback={<PageLoader type="inventory" />}>
-              <Inventory />
-            </Suspense>
-          } />
+          <Route path="price-checker" element={<PriceChecker />} />
+          <Route path="encyclopedia" element={<Encyclopedia />} />
+          <Route path="encyclopedia/:name" element={<PeptideDetail />} />
+          <Route path="guides" element={<Guides />} />
+          <Route path="guides/beginner" element={<BeginnerGuide />} />
+          <Route path="guides/injection" element={<InjectionGuide />} />
+          <Route path="safety" element={<Safety />} />
+          <Route path="forum" element={<ForumPage />} />
+          <Route path="inventory" element={<Inventory />} />
 
           {/* New Feature Routes */}
-          <Route path="injection-sites" element={
-            <Suspense fallback={<PageLoader type="guide" />}>
-              <InjectionSites />
-            </Suspense>
-          } />
+          <Route path="injection-sites" element={<InjectionSites />} />
           <Route path="blood-work" element={
             <ProtectedRoute>
-              <Suspense fallback={<PageLoader type="dashboard" />}>
-                <BloodWork />
-              </Suspense>
+              <BloodWork />
             </ProtectedRoute>
           } />
           <Route path="titration" element={
             <ProtectedRoute>
-              <Suspense fallback={<PageLoader type="calculator" />}>
-                <TitrationPlan />
-              </Suspense>
+              <TitrationPlan />
             </ProtectedRoute>
           } />
-          <Route path="reviews" element={
-            <Suspense fallback={<PageLoader type="forum" />}>
-              <Reviews />
-            </Suspense>
-          } />
+          <Route path="reviews" element={<Reviews />} />
 
           <Route path="settings" element={
             <ProtectedRoute>
@@ -211,9 +158,7 @@ function AppRoutes() {
           } />
           <Route path="account-security" element={
             <ProtectedRoute>
-              <Suspense fallback={<PageLoader type="dashboard" />}>
-                <AccountSecurity />
-              </Suspense>
+              <AccountSecurity />
             </ProtectedRoute>
           } />
 
@@ -224,19 +169,19 @@ function AppRoutes() {
             </AdminRoute>
           }>
             <Route index element={<AdminDashboard />} />
-            <Route path="analytics" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminAnalytics /></Suspense>} />
+            <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="peptides" element={<AdminPeptides />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="forum" element={<AdminForum />} />
             <Route path="reviews" element={<AdminReviews />} />
             <Route path="prices" element={<AdminPrices />} />
-            <Route path="promo-codes" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminPromoCodes /></Suspense>} />
+            <Route path="promo-codes" element={<AdminPromoCodes />} />
             <Route path="tickets" element={<AdminTickets />} />
-            <Route path="announcements" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminAnnouncements /></Suspense>} />
-            <Route path="feature-flags" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminFeatureFlags /></Suspense>} />
+            <Route path="announcements" element={<AdminAnnouncements />} />
+            <Route path="feature-flags" element={<AdminFeatureFlags />} />
             <Route path="audit-logs" element={<AdminAuditLogs />} />
-            <Route path="export" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminExport /></Suspense>} />
-            <Route path="settings" element={<Suspense fallback={<PageLoader type="dashboard" />}><AdminSettings /></Suspense>} />
+            <Route path="export" element={<AdminExport />} />
+            <Route path="settings" element={<AdminSettings />} />
             <Route path="monitoring" element={<AdminMonitoring />} />
             <Route path="database" element={<AdminDatabaseMetrics />} />
             <Route path="security" element={<AdminSecurityAudit />} />
@@ -250,7 +195,7 @@ function AppRoutes() {
       <SessionTimeoutWarning />
       <PromotionalAuthPopup />
       <CookieConsent />
-    </>
+    </Suspense>
   );
 }
 
