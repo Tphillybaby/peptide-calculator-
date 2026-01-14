@@ -48,10 +48,11 @@ export const initSentry = () => {
                     delete event.request.headers['Cookie'];
                 }
 
-                // Don't report errors in development unless explicitly enabled
-                if (!import.meta.env.PROD && !import.meta.env.VITE_SENTRY_DEV) {
-                    console.log('[Sentry] Event captured (dev mode, not sent):', event);
-                    return null;
+                // In development, log the event but still send it if we want to test Sentry
+                if (!import.meta.env.PROD) {
+                    console.log('[Sentry] Event captured (dev mode):', event);
+                    // Uncomment the next line to stop sending in dev if it gets too noisy
+                    // if (!import.meta.env.VITE_SENTRY_DEV) return null;
                 }
 
                 return event;
@@ -129,6 +130,11 @@ export const addBreadcrumb = (message, category = 'app', data = {}) => {
         level: 'info',
     });
 };
+
+// Attach to window for monitoring service
+if (typeof window !== 'undefined') {
+    window.Sentry = Sentry;
+}
 
 // Export Sentry for advanced usage
 export { Sentry };

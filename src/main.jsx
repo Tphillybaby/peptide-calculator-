@@ -6,6 +6,11 @@ import App from './App.jsx'
 
 import { HelmetProvider } from 'react-helmet-async'
 
+import { initSentry } from './lib/sentry'
+
+// Initialize Sentry as early as possible
+initSentry()
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
