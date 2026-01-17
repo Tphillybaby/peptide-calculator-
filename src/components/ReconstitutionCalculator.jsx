@@ -30,16 +30,34 @@ const getSavedCalculations = () => {
   }
 };
 
+// Parse URL params for shared calculations
+const getInitialParams = () => {
+  if (typeof window === 'undefined') return {};
+  const params = new URLSearchParams(window.location.search);
+  return {
+    p: params.get('p') ? decodeURIComponent(params.get('p')) : '',
+    v: params.get('v') || '5',
+    w: params.get('w') || '2',
+    d: params.get('d') || '250',
+    u: params.get('u') || 'mcg',
+    s: params.get('s') || 'u100'
+  };
+};
+
 const ReconstitutionCalculator = () => {
   const { user } = useAuth();
   const { peptides } = usePeptides();
+
+  // Get initial values from URL or defaults
+  const initialParams = useMemo(() => getInitialParams(), []);
+
   // Form state - use strings to allow empty input and prevent leading zeros
-  const [selectedPeptide, setSelectedPeptide] = useState('');
-  const [vialAmount, setVialAmount] = useState('5');
-  const [waterAmount, setWaterAmount] = useState('2');
-  const [doseAmount, setDoseAmount] = useState('250');
-  const [doseUnit, setDoseUnit] = useState('mcg'); // 'mcg' or 'mg'
-  const [syringeType, setSyringeType] = useState('u100');
+  const [selectedPeptide, setSelectedPeptide] = useState(initialParams.p);
+  const [vialAmount, setVialAmount] = useState(initialParams.v);
+  const [waterAmount, setWaterAmount] = useState(initialParams.w);
+  const [doseAmount, setDoseAmount] = useState(initialParams.d);
+  const [doseUnit, setDoseUnit] = useState(initialParams.u); // 'mcg' or 'mg'
+  const [syringeType, setSyringeType] = useState(initialParams.s);
 
   // Helper to get numeric values for calculations
   const numVialAmount = parseFloat(vialAmount) || 0;
@@ -295,7 +313,6 @@ const ReconstitutionCalculator = () => {
     const targetUnits = [10, 20, 25, 50, 5, 15, 30, 40];
 
     let bestWater = null;
-    let bestUnits = null;
 
     for (const targetUnit of targetUnits) {
       // Skip if target exceeds syringe capacity
@@ -314,7 +331,6 @@ const ReconstitutionCalculator = () => {
 
         if (actualUnits <= maxUnits) {
           bestWater = roundedWater;
-          bestUnits = Math.round(actualUnits * 10) / 10;
           break;
         }
       }
@@ -335,9 +351,27 @@ const ReconstitutionCalculator = () => {
     }
   }, [numVialAmount, numWaterAmount, numDoseAmount, user]);
 
-  // Share functionality
-  const shareUrl = 'https://peptidelog.net/calculator';
-  const shareText = 'Check out this free peptide reconstitution calculator - makes dosing so much easier!';
+  // Generate share URL with current calculation values
+  const getShareUrl = () => {
+    const baseUrl = 'https://peptidelog.net/calculator';
+    const params = new URLSearchParams();
+
+    if (selectedPeptide) params.set('p', selectedPeptide);
+    if (numVialAmount > 0) params.set('v', String(numVialAmount));
+    if (numWaterAmount > 0) params.set('w', String(numWaterAmount));
+    if (numDoseAmount > 0) params.set('d', String(numDoseAmount));
+    if (doseUnit !== 'mcg') params.set('u', doseUnit);
+    if (syringeType !== 'u100') params.set('s', syringeType);
+
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
+  };
+
+  // Share functionality  
+  const shareUrl = getShareUrl();
+  const shareText = result
+    ? `Check out my peptide calculation: ${selectedPeptide || 'Custom'} - ${numDoseAmount}${doseUnit} = ${result.units} units on the syringe!`
+    : 'Check out this free peptide reconstitution calculator - makes dosing so much easier!';
 
   const handleShare = async (platform) => {
     const urls = {
@@ -362,7 +396,7 @@ const ReconstitutionCalculator = () => {
           url: shareUrl
         });
         setShowShareModal(false);
-      } catch (err) {
+      } catch {
         // User cancelled or error
       }
     } else {
