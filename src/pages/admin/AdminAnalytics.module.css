@@ -261,7 +261,7 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .container {
         padding: 1rem;
     }
@@ -270,8 +270,79 @@
         flex-direction: column;
     }
 
+    .header h1 {
+        font-size: 1.25rem;
+    }
+
     .controls {
         width: 100%;
-        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .select {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .refreshBtn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .statCard {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+        gap: 0.75rem;
+    }
+
+    .statIcon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .statValue {
+        font-size: 1.25rem;
+    }
+
+    .chartCard {
+        padding: 1rem;
+    }
+
+    .chartContainer {
+        height: 200px;
+    }
+
+    .featureGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .statCard {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .chartContainer {
+        height: 180px;
+    }
+
+    .retentionCircle {
+        width: 120px;
+        height: 120px;
+    }
+
+    .retentionValue {
+        font-size: 1.5rem;
     }
 }

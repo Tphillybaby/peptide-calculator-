@@ -72,8 +72,8 @@ const AdminLayout = () => {
                     <h2>Admin Panel</h2>
                     <button
                         onClick={closeSidebar}
-                        className={styles.menuBtn}
-                        style={{ display: window.innerWidth <= 768 ? 'block' : 'none' }}
+                        className={`${styles.menuBtn} ${styles.closeBtn}`}
+                        aria-label="Close sidebar"
                     >
                         <X size={20} />
                     </button>

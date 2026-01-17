@@ -20,6 +20,7 @@
     top: 0;
     transition: transform 0.3s ease-in-out;
     z-index: 50;
+    -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
 }
 
@@ -116,7 +117,13 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
     z-index: 45;
+    -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
+}
+
+/* Close button - hidden by default on desktop */
+.closeBtn {
+    display: none;
 }
 
 /* Mobile Responsive Styles */
@@ -133,6 +140,7 @@
         transform: translateX(-100%);
         width: 280px;
         box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+        padding: 1rem;
     }
 
     .sidebar.open {
@@ -149,5 +157,54 @@
 
     .mainContent {
         padding: 1rem 0.5rem;
+        width: 100%;
+        min-height: calc(100vh - 60px);
+    }
+
+    /* Show close button on mobile */
+    .closeBtn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Larger touch targets for nav items */
+    .navLink {
+        padding: 1rem 0.75rem;
+        font-size: 0.9375rem;
+    }
+
+    .signOutBtn {
+        padding: 1rem 0.75rem;
+    }
+
+    .headerTitle {
+        margin-bottom: 1.5rem;
+        padding: 0.5rem 0.75rem 0.5rem 0;
+    }
+
+    .headerTitle h2 {
+        font-size: 1.125rem;
+    }
+
+    .nav {
+        gap: 0.25rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Even smaller screens */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .mobileHeader {
+        padding: 0.75rem 1rem;
+    }
+
+    .headerTitle h2 {
+        font-size: 1rem;
     }
 }

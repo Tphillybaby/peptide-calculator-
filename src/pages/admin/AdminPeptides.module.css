@@ -485,3 +485,111 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header h1 {
+        font-size: 1.5rem;
+    }
+
+    .addBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+
+    .searchBox {
+        min-width: unset;
+    }
+
+    .filterSelect {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .peptideHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .peptideInfo h3 {
+        font-size: 1rem;
+    }
+
+    .tags {
+        width: 100%;
+    }
+
+    .peptideActions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .peptideDetails {
+        padding: 1rem;
+    }
+
+    /* Modal Mobile */
+    .modalOverlay {
+        padding: 1rem;
+    }
+
+    .modal {
+        border-radius: var(--radius-lg);
+    }
+
+    .modalHeader {
+        padding: 1rem;
+    }
+
+    .modalHeader h2 {
+        font-size: 1.125rem;
+    }
+
+    .form {
+        padding: 1rem;
+        max-height: 60vh;
+    }
+
+    .formActions {
+        flex-direction: column-reverse;
+    }
+
+    .cancelBtn,
+    .saveBtn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .viewBtn,
+    .duplicateBtn,
+    .editBtn,
+    .deleteBtn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .categoryTag,
+    .halfLifeTag,
+    .warningTag {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+    }
+}
