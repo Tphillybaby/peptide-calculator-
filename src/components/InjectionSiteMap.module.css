@@ -95,6 +95,12 @@
     stroke-width: 0.5;
 }
 
+.bodyDetail {
+    fill: none;
+    stroke: rgba(59, 130, 246, 0.15);
+    stroke-width: 0.3;
+}
+
 .siteMarker {
     cursor: pointer;
     transition: all var(--transition-fast);
