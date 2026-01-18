@@ -40,7 +40,17 @@ export const AuthProvider = ({ children }) => {
                 const profilePromise = supabase.from('profiles').select('is_admin').eq('id', userId).single();
                 const subPromise = supabase.from('user_subscriptions').select('plan, status, current_period_end').eq('user_id', userId).single();
 
-                const [profileResult, subResult] = await Promise.all([profilePromise, subPromise]);
+                // Update last_sign_in timestamp on every auth check
+                const updateSignInPromise = supabase
+                    .from('profiles')
+                    .update({ last_sign_in: new Date().toISOString() })
+                    .eq('id', userId);
+
+                const [profileResult, subResult] = await Promise.all([
+                    profilePromise,
+                    subPromise,
+                    updateSignInPromise
+                ]);
 
                 if (!mounted) return;
 
