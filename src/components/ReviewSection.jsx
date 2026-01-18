@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Star, User, MessageSquare, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getReviews, submitReview } from '../services/reviewService';
+import { paymentService } from '../services/paymentService';
+import UpgradeModal from './UpgradeModal';
 
 const ReviewSection = ({ peptideName }) => {
     const { user } = useAuth();
@@ -11,21 +13,28 @@ const ReviewSection = ({ peptideName }) => {
     const [newComment, setNewComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [hoverRating, setHoverRating] = useState(0);
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     useEffect(() => {
+        const loadReviews = async () => {
+            setLoading(true);
+            const data = await getReviews(peptideName);
+            setReviews(data);
+            setLoading(false);
+        };
         loadReviews();
     }, [peptideName]);
-
-    const loadReviews = async () => {
-        setLoading(true);
-        const data = await getReviews(peptideName);
-        setReviews(data);
-        setLoading(false);
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!user) return;
+
+        const canWrite = await paymentService.canAccessFeature(user.id, 'write_reviews');
+        if (!canWrite) {
+            setShowUpgradeModal(true);
+            return;
+        }
+
         if (newRating === 0) return alert('Please select a rating');
 
         setSubmitting(true);
@@ -203,6 +212,7 @@ const ReviewSection = ({ peptideName }) => {
                     ))
                 )}
             </div>
+            <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </div>
     );
 };

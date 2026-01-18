@@ -8,6 +8,7 @@ import {
 import styles from './PriceChecker.module.css';
 import { supabase } from '../lib/supabase';
 import ShareButton from './ShareButton';
+import PriceAlerts from './PriceAlerts';
 
 // Fallback data in case database is not populated
 import { VENDORS, PEPTIDE_PRICES, PEPTIDE_CATEGORIES, getVendorPrices } from '../data/vendorData';
@@ -32,6 +33,7 @@ const PriceChecker = () => {
     const [paymentFilter, setPaymentFilter] = useState('all'); // all, crypto, credit, paypal
     const [copiedCode, setCopiedCode] = useState(null);
     const [showPriceHistory, setShowPriceHistory] = useState(false);
+    const [showPriceAlerts, setShowPriceAlerts] = useState(false);
 
     // Coupon codes (you can move this to database later)
     const couponCodes = {
@@ -430,6 +432,13 @@ const PriceChecker = () => {
                         History
                     </button>
                     <button
+                        onClick={() => setShowPriceAlerts(!showPriceAlerts)}
+                        className={`${styles.filterBtn} ${showPriceAlerts ? styles.active : ''}`}
+                    >
+                        <AlertCircle size={18} />
+                        Alerts
+                    </button>
+                    <button
                         onClick={refreshPrices}
                         className={`btn-primary ${styles.refreshBtn}`}
                         disabled={loading}
@@ -500,6 +509,13 @@ const PriceChecker = () => {
 
             {/* Price History Chart */}
             {showPriceHistory && <PriceHistoryChart />}
+
+            {/* Price Alerts */}
+            {showPriceAlerts && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <PriceAlerts peptideName={selectedPeptideInfo?.peptide_name || ''} />
+                </div>
+            )}
 
             {/* Selected Peptide Info */}
             {selectedPeptideInfo && (

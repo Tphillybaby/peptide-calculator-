@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { addDays, eachDayOfInterval, getDay, startOfDay, format, isAfter, isBefore, isSameDay } from 'date-fns';
 import { notificationService } from '../services/notificationService';
 import { localNotifications, device } from '../services/nativeService';
+import { paymentService } from '../services/paymentService';
 
 const STORAGE_KEY = 'peptide_tracker_schedule';
 const TEMPLATES_KEY = 'peptide_tracker_templates';
@@ -186,6 +187,12 @@ export const useSchedule = () => {
 
         if (user) {
             try {
+                // Check limits for schedules
+                const limitCheck = await paymentService.checkUsageLimits(user.id);
+                if (limitCheck.success && limitCheck.usage.schedules.remaining <= 0) {
+                    throw new Error('LIMIT_REACHED: Free limit reached (5 active schedules). Upgrade to Premium.');
+                }
+
                 const scheduleDate = new Date(schedule.date);
                 const { data, error } = await supabase
                     .from('schedules')
@@ -246,6 +253,21 @@ export const useSchedule = () => {
 
         if (user) {
             try {
+                // Check limits for schedules (templates often count as schedules or separate limit?)
+                // Assuming templates count towards schedule limit or have their own. 
+                // paymentService checks 'schedules' table count. Templates are 'schedule_templates'.
+                // If the user is creating a recurring schedule, it creates a template AND multiple schedule entries.
+                // The free tier likely limites *active schedules* or *templates*.
+                // Let's assume we check schedule count. If adding 30 days, that's 30 schedules.
+                // Free limit is 5.
+                // This effectively blocks recurring schedules for free users unless they only do 5 days.
+                // Which is intentional.
+
+                const limitCheck = await paymentService.checkUsageLimits(user.id);
+                if (limitCheck.success && limitCheck.usage.schedules.remaining < schedulesToAdd.length) {
+                    throw new Error(`LIMIT_REACHED: This would exceed your schedule limit. You have ${limitCheck.usage.schedules.remaining} remaining, but tried to add ${schedulesToAdd.length}. Upgrade to Premium.`);
+                }
+
                 // First, save the template
                 const { data: templateData, error: templateError } = await supabase
                     .from('schedule_templates')

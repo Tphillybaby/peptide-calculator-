@@ -22,6 +22,7 @@ This document outlines the planned premium features for PeptideLog, with specifi
 ## 🔧 Current Implementation Status
 
 ### Existing Infrastructure
+
 - ✅ `paymentService.js` - Tier definitions, subscription checking
 - ✅ `SUBSCRIPTION_TIERS` - Defined with limits
 - ✅ Stripe account configured
@@ -30,6 +31,7 @@ This document outlines the planned premium features for PeptideLog, with specifi
 - ⏳ Feature gating - Not yet implemented
 
 ### Database Columns Needed
+
 ```sql
 -- Add to profiles table (may already exist)
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_tier TEXT DEFAULT 'free';
@@ -59,14 +61,17 @@ Available to all users without a subscription:
 ## ⭐ Premium Tier ($9.99/month)
 
 ### 1. Unlimited Tracking
+
 **Priority:** 🔴 HIGH | **Effort:** ⬇️ LOW | **Status:** Ready to implement
 
 Remove all usage limits:
+
 - ✅ Unlimited injection logs
 - ✅ Unlimited schedules  
 - ✅ Unlimited saved calculations
 
 **Implementation:**
+
 ```javascript
 // In useInjections.js - add before adding injection
 const { tier } = await paymentService.getSubscriptionStatus(userId);
@@ -76,6 +81,7 @@ if (tier === 'free' && injections.length >= 50) {
 ```
 
 **Files to modify:**
+
 - `src/hooks/useInjections.js` - Add limit check in `addInjection`
 - `src/hooks/useSchedule.js` - Add limit check in `addSchedule`
 - `src/components/ReconstitutionCalculator.jsx` - Add limit check for saved calcs
@@ -83,16 +89,19 @@ if (tier === 'free' && injections.length >= 50) {
 ---
 
 ### 2. Data Export
+
 **Priority:** 🔴 HIGH | **Effort:** ⬇️ LOW | **Status:** Services exist
 
 Export functionality to CSV, PDF, and Excel formats.
 
 **Current state:**
+
 - ✅ `exportService.js` - Core export logic exists
 - ✅ `pdfService.js` - PDF generation ready
 - ⏳ UI buttons need paywall gate
 
 **Implementation:**
+
 ```javascript
 // In Settings.jsx or DataManagement.jsx
 import { paymentService } from '../services/paymentService';
@@ -108,17 +117,20 @@ const handleExport = async () => {
 ```
 
 **Files to modify:**
+
 - `src/components/DataManagement.jsx` - Gate export buttons
 - `src/pages/Settings.jsx` - Gate export in data section
 
 ---
 
 ### 3. Extended History
+
 **Priority:** 🟡 MEDIUM | **Effort:** ⬇️ LOW | **Status:** Ready
 
 Unlimited history access (free users limited to 30 days).
 
 **Implementation:**
+
 ```javascript
 // In useInjections.js
 const fetchInjections = async () => {
@@ -137,17 +149,20 @@ const fetchInjections = async () => {
 ```
 
 **Files to modify:**
+
 - `src/hooks/useInjections.js` - Add date filter for free users
 - `src/components/InjectionLog.jsx` - Show "Unlock history" prompt
 
 ---
 
 ### 4. Write Reviews
+
 **Priority:** 🟡 MEDIUM | **Effort:** ⬇️ LOW | **Status:** Ready
 
 Free users can read reviews; Premium can write.
 
 **Implementation:**
+
 ```javascript
 // In ReviewSection.jsx
 const canWriteReviews = await paymentService.canAccessFeature(userId, 'write_reviews');
@@ -160,16 +175,19 @@ const canWriteReviews = await paymentService.canAccessFeature(userId, 'write_rev
 ```
 
 **Files to modify:**
+
 - `src/components/ReviewSection.jsx` - Gate the review form
 
 ---
 
 ### 5. Price Drop Alerts
+
 **Priority:** 🟡 MEDIUM | **Effort:** 🔶 MEDIUM | **Status:** Needs new backend
 
 Get notified when tracked peptide prices drop.
 
 **Database additions:**
+
 ```sql
 CREATE TABLE price_alerts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -184,11 +202,13 @@ CREATE TABLE price_alerts (
 ```
 
 **Backend work:**
+
 - Supabase Edge Function to check prices against alerts
 - Email/push notification integration
 - UI for managing watchlist
 
 **Files to create/modify:**
+
 - `src/components/PriceAlerts.jsx` - New component
 - `src/services/priceAlertService.js` - New service
 - `supabase/functions/check-price-alerts/` - New edge function
@@ -196,15 +216,18 @@ CREATE TABLE price_alerts (
 ---
 
 ### 6. Advanced Analytics
+
 **Priority:** 🔴 HIGH | **Effort:** 🔶 MEDIUM | **Status:** Enhancement needed
 
 Enhanced analytics with AI insights and extended charts.
 
 **Current state:**
+
 - ✅ `ProgressAnalytics.jsx` - Basic charts exist
 - ⏳ Need advanced charts and insights
 
 **Premium features to add:**
+
 - Year-over-year comparison
 - Goal tracking with milestones
 - Compliance scoring
@@ -212,20 +235,24 @@ Enhanced analytics with AI insights and extended charts.
 - Protocol effectiveness ratings
 
 **Files to modify:**
+
 - `src/components/ProgressAnalytics.jsx` - Add premium sections
 
 ---
 
 ### 7. Smart Notifications
+
 **Priority:** 🟡 MEDIUM | **Effort:** 🔶 MEDIUM | **Status:** Enhancement needed
 
 Custom reminder schedules, SMS, and email notifications.
 
 **Current state:**
+
 - ✅ `notificationService.js` - Basic push notifications
 - ⏳ SMS/email need third-party integration
 
 **Premium features to add:**
+
 - Custom reminder times per peptide
 - SMS reminders (Twilio integration)
 - Email reminders (SendGrid/Supabase)
@@ -233,10 +260,12 @@ Custom reminder schedules, SMS, and email notifications.
 - Inventory low-stock warnings
 
 **Third-party setup:**
+
 - Twilio account for SMS
 - SendGrid or use Supabase email triggers
 
 **Files to modify:**
+
 - `src/services/notificationService.js` - Add SMS/email methods
 - `src/pages/Settings.jsx` - Add notification preferences
 
@@ -247,11 +276,13 @@ Custom reminder schedules, SMS, and email notifications.
 *Includes all Premium features, plus:*
 
 ### 8. Multi-Profile Management
+
 **Priority:** 🔴 HIGH | **Effort:** ⬆️ HIGH | **Status:** Needs major build
 
 Track multiple stacks/protocols or manage clients.
 
 **Database additions:**
+
 ```sql
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -270,27 +301,32 @@ ALTER TABLE inventory ADD COLUMN profile_id UUID REFERENCES user_profiles(id);
 ```
 
 **UI changes:**
+
 - Profile selector in navigation
 - Profile management page
 - All hooks filter by active profile
 
 **Files to create:**
+
 - `src/components/ProfileSelector.jsx`
 - `src/pages/ProfileManagement.jsx`
 - `src/context/ProfileContext.jsx`
 
 **Files to modify:**
+
 - All hooks to accept `profileId` parameter
 - `Navigation.jsx` - Add profile selector
 
 ---
 
 ### 9. API Access
+
 **Priority:** 🟡 MEDIUM | **Effort:** ⬆️ HIGH | **Status:** Needs backend build
 
 RESTful API for developers and integrations.
 
 **Backend setup:**
+
 ```sql
 CREATE TABLE api_keys (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -304,22 +340,26 @@ CREATE TABLE api_keys (
 ```
 
 **Edge functions needed:**
+
 - `supabase/functions/api/` - Main API router
 - Rate limiting (100 requests/hour)
 - API key validation
 
 **Files to create:**
+
 - `src/pages/ApiSettings.jsx` - API key management
 - `src/services/apiService.js` - Client-side helpers
 
 ---
 
 ### 10. Coach Dashboard
+
 **Priority:** 🔴 HIGH | **Effort:** ⬆️ HIGH | **Status:** Major new feature
 
 Manage multiple clients with protocol sharing.
 
 **Features:**
+
 - Client list management
 - Real-time compliance monitoring
 - Protocol templates
@@ -327,6 +367,7 @@ Manage multiple clients with protocol sharing.
 - Bulk messaging
 
 **Database additions:**
+
 ```sql
 CREATE TABLE coach_clients (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -347,6 +388,7 @@ CREATE TABLE protocol_templates (
 ```
 
 **Files to create:**
+
 - `src/pages/admin/CoachDashboard.jsx`
 - `src/components/ClientList.jsx`
 - `src/components/ProtocolBuilder.jsx`
@@ -355,16 +397,19 @@ CREATE TABLE protocol_templates (
 ---
 
 ### 11. Research Features
+
 **Priority:** 🟢 LOW | **Effort:** 🔶 MEDIUM | **Status:** Content-heavy
 
 Research summaries, interaction checker, clinical trial updates.
 
 **Data sources:**
+
 - PubMed API (free) for research papers
 - Manual curation for interactions database
 - DrugBank API (paid) for detailed interactions
 
 **Files to create:**
+
 - `src/components/ResearchPanel.jsx`
 - `src/components/InteractionChecker.jsx`
 - `src/services/researchService.js`
@@ -372,11 +417,13 @@ Research summaries, interaction checker, clinical trial updates.
 ---
 
 ### 12. Priority Support
+
 **Priority:** 🟢 LOW | **Effort:** ⬇️ LOW | **Status:** Ready
 
 Pro users get priority in support queue.
 
 **Implementation:**
+
 ```javascript
 // In SupportTickets.jsx
 const createTicket = async (ticket) => {
@@ -391,6 +438,7 @@ const createTicket = async (ticket) => {
 ```
 
 **Files to modify:**
+
 - `src/components/SupportTickets.jsx` - Auto-set priority
 - `src/pages/admin/AdminTickets.jsx` - Sort by priority
 
@@ -399,18 +447,23 @@ const createTicket = async (ticket) => {
 ## 🚀 Future Features (V2+)
 
 ### Blood Concentration Simulator
+
 Half-life visualization with stacking overlap.
 
 ### AI Protocol Assistant
+
 Natural language queries and personalized recommendations.
 
 ### Cycle Planning
+
 Visual timeline builder with PCT scheduling.
 
 ### Health Integrations
+
 Apple Health, Google Fit, wearable sync.
 
 ### Offline Mode
+
 Full offline functionality with sync.
 
 ---
@@ -420,6 +473,7 @@ Full offline functionality with sync.
 When you're ready to implement premium features:
 
 ### Phase 1: Foundation (1-2 weeks)
+
 - [ ] Create `useSubscription` hook for easy tier checking
 - [ ] Create `<PremiumGate>` wrapper component
 - [ ] Add `showUpgradeModal()` utility
@@ -428,18 +482,22 @@ When you're ready to implement premium features:
 - [ ] Set up Stripe webhooks
 
 ### Phase 2: Gate Existing Features (1 week)
-- [ ] Add limit checks to `useInjections.js`
+
+- [x] Add limit checks to `useInjections.js`
 - [ ] Add limit checks to `useSchedule.js`
-- [ ] Gate export buttons in `DataManagement.jsx`
-- [ ] Gate review form in `ReviewSection.jsx`
+- [x] Gate export buttons in `DataManagement.jsx`
+- [x] Gate review form in `ReviewSection.jsx`
 - [ ] Add date filter for free user history
+- [x] Enforce limits in `ReconstitutionCalculator.jsx`
 
 ### Phase 3: Build Premium Features (2-4 weeks)
+
 - [ ] Price alerts system
 - [ ] Enhanced analytics
 - [ ] Smart notifications (SMS/email)
 
 ### Phase 4: Build Pro Features (4-8 weeks)
+
 - [ ] Multi-profile system
 - [ ] Coach dashboard
 - [ ] API infrastructure

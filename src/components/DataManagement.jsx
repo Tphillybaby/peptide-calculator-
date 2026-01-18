@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { backupService } from '../services/backupService';
 import { useAuth } from '../context/AuthContext';
+import { paymentService } from '../services/paymentService';
+import UpgradeModal from './UpgradeModal';
 import styles from './DataManagement.module.css';
 
 const DataManagement = () => {
@@ -13,9 +15,17 @@ const DataManagement = () => {
     const [message, setMessage] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteInput, setDeleteInput] = useState('');
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const handleExportJSON = async () => {
         if (!user) return;
+
+        const canExport = await paymentService.canAccessFeature(user.id, 'data_export');
+        if (!canExport) {
+            setShowUpgradeModal(true);
+            return;
+        }
+
         setLoading(true);
         setMessage(null);
 
@@ -36,6 +46,13 @@ const DataManagement = () => {
 
     const handleExportCSV = async () => {
         if (!user) return;
+
+        const canExport = await paymentService.canAccessFeature(user.id, 'data_export');
+        if (!canExport) {
+            setShowUpgradeModal(true);
+            return;
+        }
+
         setLoading(true);
         setMessage(null);
 
@@ -162,6 +179,11 @@ const DataManagement = () => {
                     <button
                         onClick={async () => {
                             if (!user) return;
+                            const canExport = await paymentService.canAccessFeature(user.id, 'data_export');
+                            if (!canExport) {
+                                setShowUpgradeModal(true);
+                                return;
+                            }
                             setLoading(true);
                             try {
                                 // 1. Fetch injections first (since exportService relies on data being passed)
@@ -254,6 +276,8 @@ const DataManagement = () => {
                     </div>
                 )}
             </div>
+
+            <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </div>
     );
 };

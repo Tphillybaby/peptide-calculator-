@@ -5,7 +5,9 @@ import SyringeVisualizer from './SyringeVisualizer';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { usePeptides } from '../hooks/usePeptides';
+import { paymentService } from '../services/paymentService';
 import SignupPrompt, { recordInteraction } from './SignupPrompt';
+import UpgradeModal from './UpgradeModal';
 
 // Local storage key for saved calculations
 const SAVED_CALCS_KEY = 'peptide_saved_calculations';
@@ -69,6 +71,7 @@ const ReconstitutionCalculator = () => {
   const [savedCalcs, setSavedCalcs] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const autocompleteRef = useRef(null);
 
@@ -222,6 +225,13 @@ const ReconstitutionCalculator = () => {
     };
 
     if (user) {
+      // Check limits
+      const limitCheck = await paymentService.checkUsageLimits(user.id);
+      if (limitCheck.success && limitCheck.usage.savedCalculations.remaining <= 0) {
+        setShowUpgradeModal(true);
+        return;
+      }
+
       // Save to Supabase
       const { data, error } = await supabase
         .from('user_calculations')
@@ -834,6 +844,8 @@ const ReconstitutionCalculator = () => {
           </div>
         </div>
       )}
+
+      <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
     </div>
   );
 };

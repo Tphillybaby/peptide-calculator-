@@ -5,11 +5,15 @@ import {
 } from 'lucide-react';
 import { INTERACTION_RULES, PEPTIDE_CATEGORIES } from '../data/interactions';
 import UpgradeModal from './UpgradeModal';
+import { useAuth } from '../context/AuthContext';
 import styles from './StackBuilder.module.css';
 
 const ALL_PEPTIDES = Object.values(PEPTIDE_CATEGORIES).flat().sort();
 
-const StackBuilder = ({ isPremium = false }) => {
+const StackBuilder = ({ isPremium: propIsPremium }) => {
+    const { isPremium: authIsPremium } = useAuth();
+    const isPremium = propIsPremium !== undefined ? propIsPremium : authIsPremium;
+
     const [stack, setStack] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);

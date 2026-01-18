@@ -7,6 +7,8 @@ import {
 import { useInjections } from '../hooks/useInjections';
 import { useSchedule } from '../hooks/useSchedule';
 import { usePeptides } from '../hooks/usePeptides';
+import { useAuth } from '../context/AuthContext';
+import UpgradeModal from './UpgradeModal';
 import styles from './InjectionLog.module.css';
 
 const DAYS_OF_WEEK = [
@@ -30,6 +32,9 @@ const QUICK_PROTOCOLS = [
 
 const InjectionLog = () => {
     // Hooks
+    const { isPremium } = useAuth();
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
     const {
         injections, loading: injectionsLoading, error: injectionsError,
         addInjection, updateInjection, deleteInjection, getStats, isUsingLocalStorage
@@ -103,6 +108,13 @@ const InjectionLog = () => {
     const getDataForDay = useCallback((day) => {
         const dayString = day.toDateString();
 
+        // Check premium history limit (30 days)
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 30);
+        cutoffDate.setHours(0, 0, 0, 0);
+
+        const isLocked = !isPremium && day < cutoffDate;
+
         const dayInjections = injections.filter(inj => {
             const injDate = new Date(inj.date);
             return injDate.toDateString() === dayString;
@@ -113,8 +125,8 @@ const InjectionLog = () => {
             return schDate.toDateString() === dayString;
         });
 
-        return { injections: dayInjections, schedules: daySchedules };
-    }, [injections, schedules]);
+        return { injections: dayInjections, schedules: daySchedules, isLocked };
+    }, [injections, schedules, isPremium]);
 
     // Filter for autocomplete
     const filteredPeptides = useMemo(() => {
@@ -146,6 +158,10 @@ const InjectionLog = () => {
     };
 
     const handleDateClick = (day) => {
+        if (day.isLocked) {
+            setShowUpgradeModal(true);
+            return;
+        }
         setSelectedDate(day.date);
     };
 
@@ -335,22 +351,6 @@ const InjectionLog = () => {
         }
     };
 
-    const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffHours = (now - date) / (1000 * 60 * 60);
-
-        if (diffHours < 1) return 'Just now';
-        if (diffHours < 24) return `${Math.floor(diffHours)}h ago`;
-        if (diffHours < 48) return 'Yesterday';
-
-        return date.toLocaleDateString(undefined, {
-            month: 'short',
-            day: 'numeric',
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-        });
-    };
-
     const formatTime = (dateString) => {
         return new Date(dateString).toLocaleTimeString(undefined, {
             hour: 'numeric',
@@ -478,16 +478,19 @@ const InjectionLog = () => {
 
                             {daysInMonth.map((day, i) => {
                                 const dayData = getDataForDay(day.date);
-                                const hasInjections = dayData.injections.length > 0;
-                                const hasSchedules = dayData.schedules.length > 0;
-                                const completedSchedules = dayData.schedules.filter(s => s.completed).length;
-                                const pendingSchedules = dayData.schedules.filter(s => !s.completed).length;
+                                const isLocked = dayData.isLocked;
+
+                                // Hide data if locked
+                                const hasInjections = !isLocked && dayData.injections.length > 0;
+                                // hasSchedules unused
+                                const completedSchedules = !isLocked && dayData.schedules.filter(s => s.completed).length;
+                                const pendingSchedules = !isLocked && dayData.schedules.filter(s => !s.completed).length;
 
                                 return (
                                     <button
                                         key={i}
-                                        className={`${styles.day} ${day.dimmed ? styles.dimmed : ''} ${isToday(day.date) ? styles.today : ''} ${isSelected(day.date) ? styles.selected : ''}`}
-                                        onClick={() => handleDateClick(day)}
+                                        className={`${styles.day} ${day.dimmed ? styles.dimmed : ''} ${isToday(day.date) ? styles.today : ''} ${isSelected(day.date) ? styles.selected : ''} ${isLocked ? styles.lockedDay : ''}`}
+                                        onClick={() => handleDateClick({ ...day, isLocked })}
                                     >
                                         <span className={styles.dayNumber}>{day.date.getDate()}</span>
                                         <div className={styles.dots}>
@@ -503,10 +506,8 @@ const InjectionLog = () => {
                                             {completedSchedules > 0 && (
                                                 <span className={`${styles.dot} ${styles.completedDot}`} />
                                             )}
-                                            {(dayData.injections.length + dayData.schedules.length) > 3 && (
-                                                <span className={styles.moreCount}>
-                                                    +{dayData.injections.length + dayData.schedules.length - 3}
-                                                </span>
+                                            {dayData.isLocked && (
+                                                <span className={styles.lockIcon}>🔒</span>
                                             )}
                                         </div>
                                     </button>
@@ -514,6 +515,8 @@ const InjectionLog = () => {
                             })}
                         </div>
                     </div>
+
+                    <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
 
                     {/* Selected Day Details */}
                     <div className={`card glass-panel ${styles.detailsSection}`}>

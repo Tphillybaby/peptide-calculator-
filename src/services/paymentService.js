@@ -229,9 +229,10 @@ export const paymentService = {
             const tierDetails = this.getTierDetails(tier);
 
             // Get current usage counts
-            const [injections, schedules] = await Promise.all([
+            const [injections, schedules, savedCalcs] = await Promise.all([
                 supabase.from('injections').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-                supabase.from('schedules').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+                supabase.from('schedules').select('*', { count: 'exact', head: true }).eq('user_id', userId),
+                supabase.from('user_calculations').select('*', { count: 'exact', head: true }).eq('user_id', userId)
             ]);
 
             return {
@@ -247,6 +248,11 @@ export const paymentService = {
                         used: schedules.count || 0,
                         limit: tierDetails.limits.schedules,
                         remaining: tierDetails.limits.schedules - (schedules.count || 0)
+                    },
+                    savedCalculations: {
+                        used: savedCalcs.count || 0,
+                        limit: tierDetails.limits.savedCalculations,
+                        remaining: tierDetails.limits.savedCalculations - (savedCalcs.count || 0)
                     }
                 }
             };

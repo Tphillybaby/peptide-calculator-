@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { paymentService } from '../services/paymentService';
 
 const LOCAL_STORAGE_KEY = 'peptide_tracker_injections';
 
@@ -91,6 +92,19 @@ export const useInjections = () => {
         setInjections(prev => [newInjection, ...prev]);
 
         if (user && user.id !== 'mock-user-id') {
+            // Check limits for free users
+            const limitCheck = await paymentService.checkUsageLimits(user.id);
+            if (limitCheck.success && limitCheck.usage.injections.remaining <= 0) {
+                setError('Free limit reached (50 injections). Upgrade to Premium for unlimited tracking.');
+                // Revert optimistic update
+                setInjections(prev => prev.filter(i => i.id !== newInjection.id));
+                return {
+                    success: false,
+                    error: new Error('LIMIT_REACHED'),
+                    message: 'Free limit reached. Upgrade for unlimited tracking.'
+                };
+            }
+
             // Save to Supabase
             try {
                 const dosageInMg = injection.unit === 'mg'
@@ -166,6 +180,12 @@ export const useInjections = () => {
         } else {
             // Save to localStorage for guests
             const currentInjections = getLocalInjections();
+            if (currentInjections.length >= 50) {
+                setError('Free limit reached (50 injections). Sign up for more.');
+                // Revert optimistic update
+                setInjections(prev => prev.filter(i => i.id !== newInjection.id));
+                return { success: false, error: new Error('LIMIT_REACHED') };
+            }
             saveLocalInjections([newInjection, ...currentInjections]);
             return { success: true, data: newInjection };
         }
