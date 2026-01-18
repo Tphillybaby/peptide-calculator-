@@ -6,7 +6,7 @@ const injectionSites = {
         {
             id: 'abdomen',
             name: 'Abdomen',
-            x: 50, y: 44,
+            x: 100, y: 155,
             description: 'Most common site. 2 inches from navel.',
             tips: ['Rotate within a 2-inch radius', 'Pinch skin before injecting', 'Avoid scar tissue'],
             peptides: ['Semaglutide', 'Tirzepatide', 'BPC-157', 'Most peptides'],
@@ -15,7 +15,7 @@ const injectionSites = {
         {
             id: 'thigh-front-left',
             name: 'Front Thigh (Left)',
-            x: 44, y: 72,
+            x: 75, y: 290,
             description: 'Middle third of outer thigh.',
             tips: ['Sit down for easier access', 'Inject into fatty area', 'Alternate legs'],
             peptides: ['All subcutaneous peptides'],
@@ -24,7 +24,7 @@ const injectionSites = {
         {
             id: 'thigh-front-right',
             name: 'Front Thigh (Right)',
-            x: 56, y: 72,
+            x: 125, y: 290,
             description: 'Middle third of outer thigh.',
             tips: ['Sit down for easier access', 'Inject into fatty area', 'Alternate legs'],
             peptides: ['All subcutaneous peptides'],
@@ -33,7 +33,7 @@ const injectionSites = {
         {
             id: 'upper-arm-left',
             name: 'Upper Arm (Left)',
-            x: 26, y: 34,
+            x: 38, y: 160,
             description: 'Back of upper arm, tricep area.',
             tips: ['May need assistance', 'Pinch skin firmly', 'Good for thin individuals'],
             peptides: ['GLP-1 agonists', 'Growth hormone peptides'],
@@ -42,7 +42,7 @@ const injectionSites = {
         {
             id: 'upper-arm-right',
             name: 'Upper Arm (Right)',
-            x: 74, y: 34,
+            x: 162, y: 160,
             description: 'Back of upper arm, tricep area.',
             tips: ['May need assistance', 'Pinch skin firmly', 'Good for thin individuals'],
             peptides: ['GLP-1 agonists', 'Growth hormone peptides'],
@@ -51,7 +51,7 @@ const injectionSites = {
         {
             id: 'love-handle-left',
             name: 'Flank/Love Handle (Left)',
-            x: 36, y: 46,
+            x: 68, y: 170,
             description: 'Side of abdomen/waist area.',
             tips: ['Good alternative to abdomen', 'Rotate with other sites'],
             peptides: ['All subcutaneous peptides'],
@@ -60,7 +60,7 @@ const injectionSites = {
         {
             id: 'love-handle-right',
             name: 'Flank/Love Handle (Right)',
-            x: 64, y: 46,
+            x: 132, y: 170,
             description: 'Side of abdomen/waist area.',
             tips: ['Good alternative to abdomen', 'Rotate with other sites'],
             peptides: ['All subcutaneous peptides'],
@@ -71,7 +71,7 @@ const injectionSites = {
         {
             id: 'deltoid-left',
             name: 'Deltoid (Left)',
-            x: 28, y: 26,
+            x: 52, y: 95,
             description: 'Side of shoulder muscle.',
             tips: ['Locate 2-3 finger widths below acromion', 'Small volume only (1-2ml)', 'Relax arm'],
             peptides: ['TB-500', 'IGF-1', 'Some GH peptides'],
@@ -80,7 +80,7 @@ const injectionSites = {
         {
             id: 'deltoid-right',
             name: 'Deltoid (Right)',
-            x: 72, y: 26,
+            x: 148, y: 95,
             description: 'Side of shoulder muscle.',
             tips: ['Locate 2-3 finger widths below acromion', 'Small volume only (1-2ml)', 'Relax arm'],
             peptides: ['TB-500', 'IGF-1', 'Some GH peptides'],
@@ -89,7 +89,7 @@ const injectionSites = {
         {
             id: 'glute-left',
             name: 'Gluteus (Left)',
-            x: 40, y: 56,
+            x: 72, y: 195,
             description: 'Upper outer quadrant of buttock.',
             tips: ['Largest muscle - can handle larger volumes', 'Stand with weight on opposite leg', 'Locate upper outer quadrant'],
             peptides: ['TB-500', 'Large volume injections'],
@@ -98,7 +98,7 @@ const injectionSites = {
         {
             id: 'glute-right',
             name: 'Gluteus (Right)',
-            x: 60, y: 56,
+            x: 128, y: 195,
             description: 'Upper outer quadrant of buttock.',
             tips: ['Largest muscle - can handle larger volumes', 'Stand with weight on opposite leg', 'Locate upper outer quadrant'],
             peptides: ['TB-500', 'Large volume injections'],
@@ -107,7 +107,7 @@ const injectionSites = {
         {
             id: 'vastus-left',
             name: 'Vastus Lateralis (Left)',
-            x: 42, y: 68,
+            x: 65, y: 270,
             description: 'Outer middle thigh.',
             tips: ['Divide thigh into thirds, use middle third', 'Easy to self-administer', 'Can handle moderate volumes'],
             peptides: ['Growth factors', 'MGF for local effect'],
@@ -116,7 +116,7 @@ const injectionSites = {
         {
             id: 'vastus-right',
             name: 'Vastus Lateralis (Right)',
-            x: 58, y: 68,
+            x: 135, y: 270,
             description: 'Outer middle thigh.',
             tips: ['Divide thigh into thirds, use middle third', 'Easy to self-administer', 'Can handle moderate volumes'],
             peptides: ['Growth factors', 'MGF for local effect'],
@@ -173,136 +173,130 @@ const InjectionSiteMap = () => {
             <div className={styles.content}>
                 <div className={styles.bodyContainer}>
                     {/* Body outline SVG */}
-                    {/* Body outline SVG */}
-                    <svg viewBox="0 0 100 100" className={styles.bodySvg}>
-                        {/* Anatomically Accurate Human Body Figure */}
+                    <svg viewBox="0 0 200 400" className={styles.bodySvg}>
+                        {/* Clean Human Body Silhouette */}
                         <defs>
-                            {/* Gradient for body shading */}
                             <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="rgba(255,255,255,0.15)" />
-                                <stop offset="50%" stopColor="rgba(255,255,255,0.08)" />
-                                <stop offset="100%" stopColor="rgba(255,255,255,0.15)" />
+                                <stop offset="0%" stopColor="rgba(59, 130, 246, 0.15)" />
+                                <stop offset="50%" stopColor="rgba(59, 130, 246, 0.25)" />
+                                <stop offset="100%" stopColor="rgba(59, 130, 246, 0.15)" />
+                            </linearGradient>
+                            <linearGradient id="bodyStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="rgba(59, 130, 246, 0.5)" />
+                                <stop offset="100%" stopColor="rgba(6, 182, 212, 0.5)" />
                             </linearGradient>
                         </defs>
 
                         <g className={styles.bodyGroup}>
                             {/* Head */}
-                            <ellipse cx="50" cy="8" rx="5.5" ry="6.5" className={styles.bodyOutline} />
+                            <ellipse cx="100" cy="30" rx="22" ry="26"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2" />
 
                             {/* Neck */}
-                            <path d="M 47 14 L 47 17 L 53 17 L 53 14" className={styles.bodyOutline} />
-
-                            {/* Torso - Anatomically shaped */}
-                            <path
-                                d="M 47 17 
-                                   C 40 18, 36 21, 35 24
-                                   L 34 28
-                                   C 33 32, 33 38, 34 42
-                                   L 35 50
-                                   C 36 54, 38 56, 40 58
-                                   L 42 58
-                                   L 42 60
-                                   L 43 62
-                                   L 50 62
-                                   L 57 62
-                                   L 58 60
-                                   L 58 58
-                                   L 60 58
-                                   C 62 56, 64 54, 65 50
-                                   L 66 42
-                                   C 67 38, 67 32, 66 28
-                                   L 65 24
-                                   C 64 21, 60 18, 53 17
-                                   Z"
-                                className={styles.bodyOutline}
+                            <path d="M 90 54 L 90 70 L 110 70 L 110 54"
                                 fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2" />
+
+                            {/* Shoulders and Torso */}
+                            <path d="
+                                M 90 70
+                                L 55 78
+                                Q 45 82, 42 95
+                                L 42 115
+                                L 50 115
+                                L 50 100
+                                Q 52 90, 60 86
+                                L 70 84
+                                L 70 180
+                                Q 68 190, 65 200
+                                L 65 205
+                                L 135 205
+                                L 135 200
+                                Q 132 190, 130 180
+                                L 130 84
+                                L 140 86
+                                Q 148 90, 150 100
+                                L 150 115
+                                L 158 115
+                                L 158 95
+                                Q 155 82, 145 78
+                                L 110 70
+                                Z"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2"
                             />
-
-                            {/* Chest/Pec lines */}
-                            <path d="M 42 24 Q 50 28, 58 24" className={styles.bodyDetail} />
-                            <path d="M 43 28 Q 50 30, 57 28" className={styles.bodyDetail} />
-
-                            {/* Abs lines */}
-                            <line x1="50" y1="32" x2="50" y2="52" className={styles.bodyDetail} />
-                            <path d="M 45 36 L 55 36" className={styles.bodyDetail} />
-                            <path d="M 44 42 L 56 42" className={styles.bodyDetail} />
-                            <path d="M 44 48 L 56 48" className={styles.bodyDetail} />
 
                             {/* Left Arm */}
-                            <path
-                                d="M 35 24
-                                   C 32 25, 28 26, 25 28
-                                   L 22 32
-                                   C 19 36, 16 42, 15 48
-                                   L 17 48
-                                   C 18 44, 20 39, 22 36
-                                   L 24 33
-                                   C 26 30, 29 28, 32 27
-                                   L 34 28
-                                   Z"
-                                className={styles.bodyOutline}
-                            />
-                            {/* Left forearm */}
-                            <path
-                                d="M 15 48 L 13 52 L 11 58 L 10 62 L 12 63 L 15 58 L 17 52 L 17 48 Z"
-                                className={styles.bodyOutline}
+                            <path d="
+                                M 42 115
+                                Q 38 130, 35 150
+                                L 32 180
+                                Q 30 195, 28 210
+                                L 38 212
+                                Q 42 200, 45 185
+                                L 48 160
+                                Q 50 140, 50 115
+                                Z"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2"
                             />
 
                             {/* Right Arm */}
-                            <path
-                                d="M 65 24
-                                   C 68 25, 72 26, 75 28
-                                   L 78 32
-                                   C 81 36, 84 42, 85 48
-                                   L 83 48
-                                   C 82 44, 80 39, 78 36
-                                   L 76 33
-                                   C 74 30, 71 28, 68 27
-                                   L 66 28
-                                   Z"
-                                className={styles.bodyOutline}
-                            />
-                            {/* Right forearm */}
-                            <path
-                                d="M 85 48 L 87 52 L 89 58 L 90 62 L 88 63 L 85 58 L 83 52 L 83 48 Z"
-                                className={styles.bodyOutline}
+                            <path d="
+                                M 158 115
+                                Q 162 130, 165 150
+                                L 168 180
+                                Q 170 195, 172 210
+                                L 162 212
+                                Q 158 200, 155 185
+                                L 152 160
+                                Q 150 140, 150 115
+                                Z"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2"
                             />
 
                             {/* Left Leg */}
-                            <path
-                                d="M 43 62
-                                   L 42 68
-                                   L 40 78
-                                   L 38 88
-                                   L 36 96
-                                   L 42 96
-                                   L 44 88
-                                   L 46 78
-                                   L 48 68
-                                   L 50 62
-                                   Z"
-                                className={styles.bodyOutline}
+                            <path d="
+                                M 65 205
+                                L 62 250
+                                L 58 300
+                                L 55 350
+                                Q 54 365, 52 380
+                                L 75 380
+                                Q 78 365, 80 350
+                                L 85 300
+                                L 90 250
+                                L 100 205
+                                Z"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2"
                             />
 
                             {/* Right Leg */}
-                            <path
-                                d="M 57 62
-                                   L 58 68
-                                   L 60 78
-                                   L 62 88
-                                   L 64 96
-                                   L 58 96
-                                   L 56 88
-                                   L 54 78
-                                   L 52 68
-                                   L 50 62
-                                   Z"
-                                className={styles.bodyOutline}
+                            <path d="
+                                M 135 205
+                                L 138 250
+                                L 142 300
+                                L 145 350
+                                Q 146 365, 148 380
+                                L 125 380
+                                Q 122 365, 120 350
+                                L 115 300
+                                L 110 250
+                                L 100 205
+                                Z"
+                                fill="url(#bodyGradient)"
+                                stroke="url(#bodyStroke)"
+                                strokeWidth="2"
                             />
-
-                            {/* Leg muscle definition lines */}
-                            <path d="M 44 70 L 44 82" className={styles.bodyDetail} />
-                            <path d="M 56 70 L 56 82" className={styles.bodyDetail} />
                         </g>
 
                         {/* Injection site markers */}
@@ -311,13 +305,13 @@ const InjectionSiteMap = () => {
                                 <circle
                                     cx={site.x}
                                     cy={site.y}
-                                    r={selectedSite?.id === site.id ? 4 : 3}
+                                    r={selectedSite?.id === site.id ? 12 : 10}
                                     className={`${styles.siteDot} ${selectedSite?.id === site.id ? styles.selected : ''}`}
                                 />
                                 <circle
                                     cx={site.x}
                                     cy={site.y}
-                                    r={8}
+                                    r={20}
                                     className={styles.siteHitArea}
                                 />
                             </g>
