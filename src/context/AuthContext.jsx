@@ -86,7 +86,7 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
-        // Listen for changes
+        // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (mounted) {
                 if (session?.user) {
@@ -105,10 +105,54 @@ export const AuthProvider = ({ children }) => {
             }
         });
 
+        // Real-time subscription updates - unlocks features instantly after payment
+        let subscriptionChannel = null;
+        const setupRealtimeSubscription = (userId) => {
+            if (subscriptionChannel) {
+                supabase.removeChannel(subscriptionChannel);
+            }
+
+            subscriptionChannel = supabase
+                .channel('subscription-updates')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: '*',
+                        schema: 'public',
+                        table: 'user_subscriptions',
+                        filter: `user_id=eq.${userId}`
+                    },
+                    (payload) => {
+                        console.log('Subscription updated:', payload);
+                        const newData = payload.new;
+                        if (newData && newData.status === 'active' && ['premium', 'pro'].includes(newData.plan)) {
+                            const endDate = newData.current_period_end;
+                            if (!endDate || new Date(endDate) > new Date()) {
+                                setIsPremium(true);
+                                console.log('✅ Premium unlocked in real-time!');
+                            }
+                        } else if (newData && newData.status !== 'active') {
+                            setIsPremium(false);
+                        }
+                    }
+                )
+                .subscribe();
+        };
+
+        // Setup realtime when user is available
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user && mounted) {
+                setupRealtimeSubscription(session.user.id);
+            }
+        });
+
         return () => {
             mounted = false;
             clearTimeout(safetyTimeout);
             subscription.unsubscribe();
+            if (subscriptionChannel) {
+                supabase.removeChannel(subscriptionChannel);
+            }
         };
     }, []);
 
