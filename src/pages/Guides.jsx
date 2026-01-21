@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import SocialShare from '../components/SocialShare';
 import SEO from '../components/SEO';
 
+// eslint-disable-next-line no-unused-vars
 const GuideCard = ({ title, description, icon: Icon, link, color }) => (
     <Link to={link} style={{ textDecoration: 'none' }}>
         <div className="card glass-panel" style={{ padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.2s' }}>

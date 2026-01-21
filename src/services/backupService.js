@@ -243,6 +243,7 @@ export const backupService = {
                 supabase.from('reviews').delete().eq('user_id', userId),
                 supabase.from('injections').delete().eq('user_id', userId),
                 supabase.from('schedules').delete().eq('user_id', userId),
+                supabase.from('schedule_templates').delete().eq('user_id', userId),
                 supabase.from('inventory').delete().eq('user_id', userId),
                 supabase.from('ticket_messages').delete().match({ user_id: userId }),
                 supabase.from('support_tickets').delete().eq('user_id', userId)
@@ -251,6 +252,35 @@ export const backupService = {
             return { success: true, message: 'All user data has been deleted' };
         } catch (error) {
             console.error('[Backup Service] Delete failed:', error);
+            return { success: false, error: error.message };
+        }
+    },
+
+    /**
+     * Delete specific data type only
+     */
+    async deleteDataType(userId, dataType) {
+        try {
+            switch (dataType) {
+                case 'injections':
+                    await supabase.from('injections').delete().eq('user_id', userId);
+                    break;
+                case 'schedules':
+                    await supabase.from('schedules').delete().eq('user_id', userId);
+                    await supabase.from('schedule_templates').delete().eq('user_id', userId);
+                    break;
+                case 'inventory':
+                    await supabase.from('inventory').delete().eq('user_id', userId);
+                    break;
+                case 'reviews':
+                    await supabase.from('reviews').delete().eq('user_id', userId);
+                    break;
+                default:
+                    throw new Error('Unknown data type');
+            }
+            return { success: true, message: `All ${dataType} have been deleted` };
+        } catch (error) {
+            console.error(`[Backup Service] Delete ${dataType} failed:`, error);
             return { success: false, error: error.message };
         }
     },

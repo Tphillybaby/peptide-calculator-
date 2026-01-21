@@ -189,6 +189,81 @@
     background: rgba(239, 68, 68, 0.2);
 }
 
+/* Granular Delete Options */
+.deleteOptions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+}
+
+.deleteOption {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-md);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+}
+
+.deleteOptionInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.deleteOptionInfo strong {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+.deleteOptionInfo span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.deleteOptionBtn {
+    padding: var(--space-sm) var(--space-md);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: var(--radius-md);
+    color: #fbbf24;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.deleteOptionBtn:hover:not(:disabled) {
+    background: rgba(245, 158, 11, 0.2);
+}
+
+.deleteOptionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Delete Everything Section */
+.deleteEverything {
+    padding-top: var(--space-lg);
+    border-top: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.deleteEverything h4 {
+    margin: 0 0 var(--space-sm);
+    color: #f87171;
+    font-size: 1rem;
+}
+
+.deleteEverything>p {
+    margin: 0 0 var(--space-md);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 .deleteConfirm {
     display: flex;
     flex-direction: column;

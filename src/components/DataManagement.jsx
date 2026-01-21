@@ -122,6 +122,29 @@ const DataManagement = () => {
         }
     };
 
+    const handleDeleteDataType = async (dataType) => {
+        if (!user) return;
+
+        const confirmed = window.confirm(`Are you sure you want to delete all your ${dataType}? This cannot be undone.`);
+        if (!confirmed) return;
+
+        setLoading(true);
+        setMessage(null);
+
+        try {
+            const result = await backupService.deleteDataType(user.id, dataType);
+            if (result.success) {
+                setMessage({ type: 'success', text: result.message });
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: `Delete ${dataType} failed: ` + error.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const backupInfo = backupService.getBackupInfo();
 
     return (
@@ -237,44 +260,97 @@ const DataManagement = () => {
             {/* Danger Zone */}
             <div className={styles.dangerZone}>
                 <h3><Trash2 size={20} /> Danger Zone</h3>
-                <p>Permanently delete all your tracking data. This cannot be undone.</p>
+                <p>Delete your tracking data. These actions cannot be undone.</p>
 
-                {!showDeleteConfirm ? (
-                    <button
-                        onClick={() => setShowDeleteConfirm(true)}
-                        className={styles.deleteBtn}
-                    >
-                        Delete All My Data
-                    </button>
-                ) : (
-                    <div className={styles.deleteConfirm}>
-                        <p>Type <strong>DELETE</strong> to confirm:</p>
-                        <input
-                            type="text"
-                            value={deleteInput}
-                            onChange={(e) => setDeleteInput(e.target.value)}
-                            placeholder="Type DELETE"
-                        />
-                        <div className={styles.confirmButtons}>
-                            <button
-                                onClick={() => {
-                                    setShowDeleteConfirm(false);
-                                    setDeleteInput('');
-                                }}
-                                className={styles.cancelBtn}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleDeleteAllData}
-                                disabled={deleteInput !== 'DELETE' || loading}
-                                className={styles.confirmDeleteBtn}
-                            >
-                                {loading ? <Loader size={18} className={styles.spin} /> : 'Permanently Delete'}
-                            </button>
+                <div className={styles.deleteOptions}>
+                    {/* Delete Injections Only */}
+                    <div className={styles.deleteOption}>
+                        <div className={styles.deleteOptionInfo}>
+                            <strong>Delete All Injection Logs</strong>
+                            <span>Remove all logged injections but keep schedules and protocols</span>
                         </div>
+                        <button
+                            onClick={() => handleDeleteDataType('injections')}
+                            disabled={loading}
+                            className={styles.deleteOptionBtn}
+                        >
+                            {loading ? <Loader size={16} className={styles.spin} /> : 'Delete Injections'}
+                        </button>
                     </div>
-                )}
+
+                    {/* Delete Schedules/Protocols Only */}
+                    <div className={styles.deleteOption}>
+                        <div className={styles.deleteOptionInfo}>
+                            <strong>Delete All Schedules & Protocols</strong>
+                            <span>Remove all scheduled items and protocol templates</span>
+                        </div>
+                        <button
+                            onClick={() => handleDeleteDataType('schedules')}
+                            disabled={loading}
+                            className={styles.deleteOptionBtn}
+                        >
+                            {loading ? <Loader size={16} className={styles.spin} /> : 'Delete Schedules'}
+                        </button>
+                    </div>
+
+                    {/* Delete Inventory Only */}
+                    <div className={styles.deleteOption}>
+                        <div className={styles.deleteOptionInfo}>
+                            <strong>Delete All Inventory</strong>
+                            <span>Remove all tracked peptide inventory items</span>
+                        </div>
+                        <button
+                            onClick={() => handleDeleteDataType('inventory')}
+                            disabled={loading}
+                            className={styles.deleteOptionBtn}
+                        >
+                            {loading ? <Loader size={16} className={styles.spin} /> : 'Delete Inventory'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Delete Everything */}
+                <div className={styles.deleteEverything}>
+                    <h4>Delete Everything</h4>
+                    <p>Permanently delete ALL your data including injections, schedules, inventory, and reviews.</p>
+
+                    {!showDeleteConfirm ? (
+                        <button
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className={styles.deleteBtn}
+                        >
+                            Delete All My Data
+                        </button>
+                    ) : (
+                        <div className={styles.deleteConfirm}>
+                            <p>Type <strong>DELETE</strong> to confirm:</p>
+                            <input
+                                type="text"
+                                value={deleteInput}
+                                onChange={(e) => setDeleteInput(e.target.value)}
+                                placeholder="Type DELETE"
+                            />
+                            <div className={styles.confirmButtons}>
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteConfirm(false);
+                                        setDeleteInput('');
+                                    }}
+                                    className={styles.cancelBtn}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDeleteAllData}
+                                    disabled={deleteInput !== 'DELETE' || loading}
+                                    className={styles.confirmDeleteBtn}
+                                >
+                                    {loading ? <Loader size={18} className={styles.spin} /> : 'Permanently Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
