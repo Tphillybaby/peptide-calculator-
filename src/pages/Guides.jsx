@@ -56,8 +56,8 @@ const Guides = () => {
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                     <GuideCard
-                        title="Beginner's Protocol"
-                        description="Everything you need to know about starting your first peptide cycle. Dosing, timing, and what to expect."
+                        title="What Are Peptides?"
+                        description="Complete beginner's guide: understand what peptides are, how they work in your body, and get started safely step-by-step."
                         icon={BookOpen}
                         link="/guides/beginner"
                         color="#3b82f6"

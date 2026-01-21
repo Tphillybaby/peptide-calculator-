@@ -161,7 +161,7 @@
 .categoryCard:hover {
     transform: translateY(-4px);
     border-color: var(--category-color);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px color-mix(in srgb, var(--category-color) 20%, transparent);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(59, 130, 246, 0.2);
 }
 
 .categoryCard:hover::before {
@@ -181,7 +181,7 @@
     align-items: center;
     justify-content: center;
     color: white;
-    box-shadow: 0 4px 15px color-mix(in srgb, var(--category-color) 40%, transparent);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .categoryInfo h3 {
@@ -208,7 +208,7 @@
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--category-color);
-    background: color-mix(in srgb, var(--category-color) 15%, transparent);
+    background: rgba(255, 255, 255, 0.1);
     padding: 0.35rem 0.75rem;
     border-radius: var(--radius-full);
 }
@@ -259,7 +259,7 @@
 
 .peptideCard:hover {
     transform: translateY(-4px);
-    border-color: color-mix(in srgb, var(--icon-color, #3b82f6) 50%, var(--glass-border));
+    border-color: rgba(59, 130, 246, 0.5);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
 }
 
@@ -274,7 +274,7 @@
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--icon-color, #3b82f6) 15%, transparent);
+    background: rgba(59, 130, 246, 0.15);
     color: var(--icon-color, #3b82f6);
     display: flex;
     align-items: center;
