@@ -8,6 +8,7 @@ import { usePeptides } from '../hooks/usePeptides';
 import SEO from '../components/SEO';
 import SocialShare from '../components/SocialShare';
 import { getEncyclopediaSchemas } from '../utils/pageSchemas';
+import { POPULAR_PEPTIDES } from '../data/popularPeptides';
 import styles from './Encyclopedia.module.css';
 
 // Health benefit categories with keywords to match peptide benefits
@@ -152,7 +153,23 @@ const Encyclopedia = () => {
             });
         }
 
-        return results;
+        // Sort results: Popular trending items first
+        return results.sort((a, b) => {
+            const indexA = POPULAR_PEPTIDES.findIndex(p => p.name === a.name);
+            const indexB = POPULAR_PEPTIDES.findIndex(p => p.name === b.name);
+
+            // If both are popular, sort by popularity rank (lower index is better)
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+
+            // If only A is popular, it goes first
+            if (indexA !== -1) return -1;
+
+            // If only B is popular, it goes first
+            if (indexB !== -1) return 1;
+
+            // Otherwise sort alphabetically
+            return a.name.localeCompare(b.name);
+        });
     }, [peptides, searchTerm, selectedCategory]);
 
     const selectedCategoryData = HEALTH_BENEFIT_CATEGORIES.find(c => c.id === selectedCategory);

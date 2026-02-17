@@ -1,7 +1,7 @@
 // Simple analytics wrapper
 // In a real app, this would wrap Google Analytics (gtag) or similar
 
-const GA_MEASUREMENT_ID = 'G-2V2TNJFR16';
+export const GA_MEASUREMENT_ID = 'G-2V2TNJFR16';
 
 // Detect if the user agent is a bot/crawler
 const isBot = () => {
@@ -61,7 +61,8 @@ export const initAnalytics = () => {
         function gtag() { window.dataLayer.push(arguments); }
         window.gtag = gtag;
         gtag('js', new Date());
-        gtag('config', GA_MEASUREMENT_ID);
+        // Disable automatic page view tracking as we handle it manually in PageTracker
+        gtag('config', GA_MEASUREMENT_ID, { send_page_view: false });
     }
 };
 
@@ -89,7 +90,7 @@ export const trackEvent = (category, action, label = null, value = null) => {
     }
 };
 
-export const trackError = (error, errorInfo) => {
+export const trackError = (error) => {
     if (!checkRealUser()) return;
 
     console.error('[Analytics] Error tracked:', error);

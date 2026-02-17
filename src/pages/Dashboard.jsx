@@ -12,8 +12,19 @@ import { useOnboarding } from '../hooks/useOnboarding';
 import ProgressAnalytics from '../components/ProgressAnalytics';
 import OnboardingWizard from '../components/OnboardingWizard';
 import StackShareCard from '../components/StackShareCard';
+import PopularPeptides from '../components/PopularPeptides';
 import SEO from '../components/SEO';
 import styles from './Dashboard.module.css';
+
+const getTimeAgo = (date) => {
+    if (!date || isNaN(date.getTime())) return '';
+    const seconds = Math.floor((new Date() - date) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    return date.toLocaleDateString();
+};
 
 const Dashboard = () => {
     const { getStats, injections } = useInjections();
@@ -82,16 +93,6 @@ const Dashboard = () => {
             timeAgo: getTimeAgo(new Date(inj.date))
         }));
     }, [injections]);
-
-    function getTimeAgo(date) {
-        if (!date || isNaN(date.getTime())) return '';
-        const seconds = Math.floor((new Date() - date) / 1000);
-        if (seconds < 60) return 'Just now';
-        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-        return date.toLocaleDateString();
-    }
 
     // Get greeting based on time of day
     const greeting = useMemo(() => {
@@ -307,7 +308,7 @@ const Dashboard = () => {
                             </h2>
                         </div>
                         <div className={styles.actionsGrid}>
-                            {currentActions.map((action, index) => {
+                            {currentActions.map((action) => {
                                 const CardContent = (
                                     <>
                                         {action.premium && <span className={styles.premiumBadge}>PRO</span>}
@@ -403,6 +404,11 @@ const Dashboard = () => {
                         <StackShareCard />
                     </section>
                 )}
+
+                {/* Popular Peptides for SEO Internal Linking */}
+                <section className={styles.section}>
+                    <PopularPeptides limit={12} />
+                </section>
 
                 {/* Quick Stats Footer - Mobile Only */}
                 <div className={styles.mobileStats}>

@@ -13,15 +13,16 @@ export default defineConfig(async ({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
 
   let dynamicRoutes = [
-    '/login',
-    '/register',
     '/calculator',
     '/encyclopedia',
-    '/schedule',
-    '/settings',
     '/forum',
-    '/inventory',
-    '/price-checker'
+    '/price-checker',
+    '/guides',
+    '/safety',
+    '/guides/beginner',
+    '/guides/injection',
+    '/injection-sites',
+    '/reviews'
   ]
 
   // Try to fetch peptides for dynamic sitemap
@@ -51,7 +52,33 @@ export default defineConfig(async ({ mode }) => {
       react(),
       Sitemap({
         hostname: 'https://peptidelog.net',
-        dynamicRoutes
+        dynamicRoutes,
+        // Custom priority and changefreq based on route importance
+        priority: (route) => {
+          // Homepage highest priority
+          if (route === '/') return 1.0;
+          // Main tool pages - high priority
+          if (['/calculator', '/encyclopedia', '/price-checker', '/forum'].includes(route)) return 0.9;
+          // Guide pages - high priority (these have indexing issues)
+          if (route.startsWith('/guides')) return 0.9;
+          // Other important static pages
+          if (['/safety', '/injection-sites', '/reviews', '/half-life'].includes(route)) return 0.8;
+          // Individual peptide pages
+          if (route.startsWith('/encyclopedia/')) return 0.7;
+          // Default
+          return 0.5;
+        },
+        changefreq: (route) => {
+          if (route === '/') return 'daily';
+          if (route === '/forum') return 'daily';
+          if (route === '/price-checker') return 'daily';
+          if (route.startsWith('/encyclopedia')) return 'weekly';
+          if (route.startsWith('/guides')) return 'monthly';
+          return 'weekly';
+        },
+        lastmod: new Date().toISOString(),
+        // Readable XML output
+        readable: true
       }),
       VitePWA({
         registerType: 'autoUpdate',

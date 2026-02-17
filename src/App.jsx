@@ -3,7 +3,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import PageTracker from './components/PageTracker';
 import PageLoader from './components/PageLoader';
+import TikTokPixel from './components/TikTokPixel';
 
 // Core components - keep these eagerly loaded for fast initial render
 const Layout = lazy(() => import('./components/Layout'));
@@ -14,6 +16,7 @@ const AdminRoute = lazy(() => import('./components/AdminRoute'));
 const Login = lazy(() => import('./pages/Login'));
 const SignUp = lazy(() => import('./pages/SignUp'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 
 // Main pages - lazy load all
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -41,6 +44,12 @@ const BloodWork = lazy(() => import('./pages/BloodWork'));
 const TitrationPlan = lazy(() => import('./pages/TitrationPlan'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const AccountSecurity = lazy(() => import('./pages/AccountSecurity'));
+
+// New Feature Pages
+const AchievementsPage = lazy(() => import('./pages/Achievements'));
+const ResearchPage = lazy(() => import('./pages/Research'));
+const InteractionsPage = lazy(() => import('./pages/Interactions'));
+const NotificationsPage = lazy(() => import('./pages/Notifications'));
 
 // Admin components - lazy load entire admin section
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
@@ -101,6 +110,8 @@ function AppRoutes() {
 
   return (
     <Suspense fallback={<PageLoader type="dashboard" />}>
+      <PageTracker />
+      <TikTokPixel />
       <SEO />
       <Routes>
         <Route path="/" element={
@@ -120,7 +131,7 @@ function AppRoutes() {
           <Route path="signup" element={<SignUp />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
           {/* Auth callback route for OAuth/Magic Links */}
-          <Route path="callback" element={<Navigate to="/dashboard" replace />} />
+          <Route path="callback" element={<AuthCallback />} />
           <Route path="reset-password" element={<Navigate to="/update-password" replace />} />
           <Route path="price-checker" element={<PriceChecker />} />
           <Route path="encyclopedia" element={<Encyclopedia />} />
@@ -145,6 +156,16 @@ function AppRoutes() {
             </ProtectedRoute>
           } />
           <Route path="reviews" element={<Reviews />} />
+
+          {/* New Feature Routes */}
+          <Route path="achievements" element={<AchievementsPage />} />
+          <Route path="research" element={<ResearchPage />} />
+          <Route path="interactions" element={<InteractionsPage />} />
+          <Route path="notifications" element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          } />
 
           <Route path="settings" element={
             <ProtectedRoute>

@@ -9,9 +9,27 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/pwa-192x192.png" />
   <link rel="manifest" href="/manifest.json" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0f172a" />
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- TikTok Pixel Code Start -->
+  <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject = t; var ttq = w[t] = w[t] || []; ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie", "holdConsent", "revokeConsent", "grantConsent"], ttq.setAndDefer = function (t, e) { t[e] = function () { t.push([e].concat(Array.prototype.slice.call(arguments, 0))) } }; for (var i = 0; i < ttq.methods.length; i++)ttq.setAndDefer(ttq, ttq.methods[i]); ttq.instance = function (t) {
+        for (
+          var e = ttq._i[t] || [], n = 0; n < ttq.methods.length; n++)ttq.setAndDefer(e, ttq.methods[n]); return e
+      }, ttq.load = function (e, n) {
+        var r = "https://analytics.tiktok.com/i18n/pixel/events.js", o = n && n.partner; ttq._i = ttq._i || {}, ttq._i[e] = [], ttq._i[e]._u = r, ttq._t = ttq._t || {}, ttq._t[e] = +new Date, ttq._o = ttq._o || {}, ttq._o[e] = n || {}; n = document.createElement("script")
+          ; n.type = "text/javascript", n.async = !0, n.src = r + "?sdkid=" + e + "&lib=" + t; e = document.getElementsByTagName("script")[0]; e.parentNode.insertBefore(n, e)
+      };
+
+      ttq.load('D5OSC4BC77U0089ITJT0');
+      ttq.page();
+    }(window, document, 'ttq');
+  </script>
+  <!-- TikTok Pixel Code End -->
 
   <!-- SEO Meta Tags -->
   <title>PeptideLog - Free Peptide Calculator, Tracker & Encyclopedia</title>
@@ -20,10 +38,42 @@
   <meta name="keywords"
     content="peptidelog, peptide log, peptide calculator, reconstitution calculator, peptide tracker, injection log, peptide dosage, peptide protocols, bpc-157, tirzepatide calculator, semaglutide dosing, peptide encyclopedia" />
   <meta name="author" content="PeptideLog" />
-  <meta name="robots" content="index, follow" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://peptidelog.net/" />
 
-  <!-- Google Site Verification - Add your verification code here -->
-  <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" /> -->
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://peptidelog.net/" />
+  <meta property="og:title" content="PeptideLog - Free Peptide Calculator, Tracker & Encyclopedia" />
+  <meta property="og:description"
+    content="Calculate reconstitution doses, log injections, browse 190+ peptides, compare prices, and manage protocols safely." />
+  <meta property="og:image" content="https://peptidelog.net/pwa-512x512.png" />
+  <meta property="og:site_name" content="PeptideLog" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://peptidelog.net/" />
+  <meta name="twitter:title" content="PeptideLog - Free Peptide Calculator, Tracker & Encyclopedia" />
+  <meta name="twitter:description"
+    content="Calculate reconstitution doses, log injections, browse 190+ peptides, compare prices, and manage protocols safely." />
+  <meta name="twitter:image" content="https://peptidelog.net/pwa-512x512.png" />
+
+  <!-- Structured Data - Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PeptideLog",
+    "url": "https://peptidelog.net",
+    "description": "Free peptide calculator, tracker, and encyclopedia for research peptides.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://peptidelog.net/encyclopedia?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,10 +81,160 @@
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     as="style">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+  <!-- Inline critical CSS for initial render -->
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --text-primary: #f8fafc;
+      --accent-primary: #3b82f6;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+    }
+
+    .initial-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .initial-loader h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .initial-loader p {
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+
+    .noscript-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 800px;
+    }
+
+    .noscript-nav a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent-primary);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .noscript-nav a:hover {
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .noscript-section {
+      margin-top: 2rem;
+      text-align: left;
+      max-width: 800px;
+    }
+
+    .noscript-section h2 {
+      color: #f8fafc;
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .noscript-section ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .noscript-section li a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.875rem;
+    }
+
+    .noscript-section li a:hover {
+      color: var(--accent-primary);
+    }
+  </style>
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Initial content for SEO - will be replaced by React -->
+    <noscript>
+      <div class="initial-loader">
+        <h1>PeptideLog</h1>
+        <p>Free Peptide Calculator, Tracker & Encyclopedia</p>
+
+        <nav class="noscript-nav" aria-label="Main Navigation">
+          <a href="/calculator">Peptide Calculator</a>
+          <a href="/encyclopedia">Peptide Encyclopedia</a>
+          <a href="/price-checker">Price Checker</a>
+          <a href="/guides">Guides</a>
+          <a href="/safety">Safety Info</a>
+          <a href="/forum">Community Forum</a>
+        </nav>
+
+        <div class="noscript-section">
+          <h2>Popular Peptides</h2>
+          <ul>
+            <li><a href="/encyclopedia/Semaglutide">Semaglutide</a></li>
+            <li><a href="/encyclopedia/Tirzepatide">Tirzepatide</a></li>
+            <li><a href="/encyclopedia/BPC-157">BPC-157</a></li>
+            <li><a href="/encyclopedia/TB-500%20(Thymosin%20Beta-4)">TB-500</a></li>
+            <li><a href="/encyclopedia/Retatrutide">Retatrutide</a></li>
+            <li><a href="/encyclopedia/Ipamorelin">Ipamorelin</a></li>
+            <li><a href="/encyclopedia/Sermorelin">Sermorelin</a></li>
+            <li><a href="/encyclopedia/PT-141%20(Bremelanotide)">PT-141</a></li>
+            <li><a href="/encyclopedia/GHK-Cu%20(Copper%20Peptide)">GHK-Cu</a></li>
+            <li><a href="/encyclopedia/Selank">Selank</a></li>
+            <li><a href="/encyclopedia/NAD%2B%20(Nicotinamide%20Adenine%20Dinucleotide)">NAD+</a></li>
+            <li><a href="/encyclopedia/LL-37">LL-37</a></li>
+          </ul>
+        </div>
+
+        <div class="noscript-section">
+          <h2>Guides & Resources</h2>
+          <ul>
+            <li><a href="/guides/beginner">Beginner's Guide</a></li>
+            <li><a href="/guides/injection">Injection Guide</a></li>
+            <li><a href="/guides/storage">Storage Guide</a></li>
+            <li><a href="/injection-sites">Injection Sites</a></li>
+            <li><a href="/reviews">Vendor Reviews</a></li>
+          </ul>
+        </div>
+
+        <div class="noscript-section">
+          <h2>Tools</h2>
+          <ul>
+            <li><a href="/calculator">Reconstitution Calculator</a></li>
+            <li><a href="/half-life">Half-Life Calculator</a></li>
+            <li><a href="/price-checker">Price Comparison</a></li>
+          </ul>
+        </div>
+
+        <p style="margin-top: 2rem; color: #64748b; font-size: 0.875rem;">
+          JavaScript is required for the full interactive experience. Please enable JavaScript to use all features.
+        </p>
+      </div>
+    </noscript>
+  </div>
   <script src="/error-handler.js"></script>
   <script type="module" src="/src/main.jsx"></script>
 </body>

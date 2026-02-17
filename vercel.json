@@ -1,64 +1,42 @@
 {
-    "redirects": [
-        {
-            "source": "/tracker",
-            "destination": "/log",
-            "permanent": true
-        },
-        {
-            "source": "/schedule",
-            "destination": "/log",
-            "permanent": true
-        }
-    ],
     "rewrites": [
         {
-            "source": "/(.*)",
-            "has": [
-                {
-                    "type": "header",
-                    "key": "accept",
-                    "value": "(?!.*text/html).*"
-                }
-            ],
-            "destination": "/$1"
+            "source": "/sitemap.xml",
+            "destination": "/sitemap.xml"
         },
         {
-            "source": "/((?!api|_next|assets|sitemap\\.xml|robots\\.txt|manifest\\.json|manifest\\.webmanifest|sw\\.js|workbox-.*|logo\\.svg|pwa-.*\\.png|favicon\\.ico|vite\\.svg|\\.well-known).*)",
+            "source": "/robots.txt",
+            "destination": "/robots.txt"
+        },
+        {
+            "source": "/(.*)",
             "destination": "/index.html"
         }
     ],
     "headers": [
         {
+            "source": "/sitemap.xml",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/xml"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, s-maxage=3600"
+                }
+            ]
+        },
+        {
             "source": "/(.*)",
             "headers": [
                 {
-                    "key": "Strict-Transport-Security",
-                    "value": "max-age=63072000; includeSubDomains; preload"
+                    "key": "X-Robots-Tag",
+                    "value": "index, follow"
                 },
                 {
                     "key": "X-Content-Type-Options",
                     "value": "nosniff"
-                },
-                {
-                    "key": "X-Frame-Options",
-                    "value": "DENY"
-                },
-                {
-                    "key": "X-XSS-Protection",
-                    "value": "1; mode=block"
-                },
-                {
-                    "key": "Referrer-Policy",
-                    "value": "strict-origin-when-cross-origin"
-                },
-                {
-                    "key": "Permissions-Policy",
-                    "value": "camera=(), microphone=(), geolocation=()"
-                },
-                {
-                    "key": "Content-Security-Policy",
-                    "value": "default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://www.googletagmanager.com https://www.google-analytics.com https://browser.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.supabase.co https://www.google-analytics.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://www.googletagmanager.com https://region1.google-analytics.com https://*.ingest.us.sentry.io https://*.sentry.io; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
                 }
             ]
         },
@@ -70,28 +48,8 @@
                     "value": "public, max-age=31536000, immutable"
                 }
             ]
-        },
-        {
-            "source": "/sw.js",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "no-cache, no-store, must-revalidate"
-                },
-                {
-                    "key": "Service-Worker-Allowed",
-                    "value": "/"
-                }
-            ]
-        },
-        {
-            "source": "/(.*).html",
-            "headers": [
-                {
-                    "key": "Cache-Control",
-                    "value": "no-cache, no-store, must-revalidate"
-                }
-            ]
         }
-    ]
+    ],
+    "trailingSlash": false,
+    "cleanUrls": true
 }

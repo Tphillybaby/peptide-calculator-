@@ -1,10 +1,39 @@
+# PeptideLog Robots.txt
+# https://peptidelog.net
+
 User-agent: *
 Allow: /
+Allow: /encyclopedia/
+Allow: /guides/
+Allow: /calculator
+Allow: /forum
+Allow: /price-checker
+Allow: /safety
+Allow: /injection-sites
+Allow: /reviews
+Allow: /half-life
+
+# Disallow private/auth pages
 Disallow: /settings
 Disallow: /admin
 Disallow: /log
 Disallow: /login
 Disallow: /signup
 Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /dashboard
+Disallow: /inventory
+Disallow: /calendar
 
+# Allow important assets
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+
+# Sitemap location
 Sitemap: https://peptidelog.net/sitemap.xml
+
+# Crawl delay for politeness (optional, not all bots respect this)
+# Crawl-delay: 1

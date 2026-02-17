@@ -19,3 +19,11 @@ createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </StrictMode>,
 )
+
+// Dispatch render-complete event for prerendering
+// This signals to the prerenderer that the initial render is done
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.dispatchEvent(new Event('render-complete'));
+  }, 500);
+});

@@ -1,27 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Cookie, Settings, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { GA_MEASUREMENT_ID } from '../lib/analytics';
 
 const CookieConsent = () => {
-    const [isVisible, setIsVisible] = useState(false);
+    const [isVisible, setIsVisible] = useState(() => !localStorage.getItem('cookie_consent'));
     const [showSettings, setShowSettings] = useState(false);
-    const [preferences, setPreferences] = useState({
-        necessary: true, // Always required
-        analytics: true,
-        functional: true,
-        marketing: false
+
+    // Initialize preferences from localStorage if available
+    const [preferences, setPreferences] = useState(() => {
+        try {
+            const consent = localStorage.getItem('cookie_consent');
+            if (consent) {
+                return JSON.parse(consent);
+            }
+        } catch {
+            // Ignore error
+        }
+        return {
+            necessary: true,
+            analytics: true,
+            functional: true,
+            marketing: false
+        };
     });
 
-    useEffect(() => {
-        const consent = localStorage.getItem('cookie_consent');
-        if (!consent) {
-            setIsVisible(true);
+    const applyConsent = (prefs) => {
+        // Disable/enable analytics based on consent
+        if (!prefs.analytics) {
+            // Disable Google Analytics
+            window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
         } else {
+            // Re-enable Google Analytics
+            window[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
+        }
+    };
+
+    useEffect(() => {
+        // Apply consent on mount if we have saved preferences
+        const consent = localStorage.getItem('cookie_consent');
+        if (consent) {
             try {
                 const savedPrefs = JSON.parse(consent);
-                setPreferences(savedPrefs);
-            } catch (e) {
-                // Legacy format, accept all
+                applyConsent(savedPrefs);
+            } catch {
+                // Ignore
             }
         }
     }, []);
@@ -61,14 +84,7 @@ const CookieConsent = () => {
         applyConsent(preferences);
     };
 
-    const applyConsent = (prefs) => {
-        // Disable/enable analytics based on consent
-        if (!prefs.analytics) {
-            // Disable Google Analytics
-            window['ga-disable-GA_MEASUREMENT_ID'] = true;
-        }
-        // Additional consent-based logic can be added here
-    };
+
 
     const togglePreference = (key) => {
         if (key === 'necessary') return; // Can't disable necessary cookies
