@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { addDays, eachDayOfInterval, getDay, startOfDay, format, isAfter, isBefore, isSameDay } from 'date-fns';
+import { addDays, eachDayOfInterval, getDay, startOfDay, isAfter, isBefore, isSameDay } from 'date-fns';
 import { notificationService } from '../services/notificationService';
 import { localNotifications, device } from '../services/nativeService';
 import { paymentService } from '../services/paymentService';
@@ -15,23 +15,8 @@ export const useSchedule = () => {
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
-    useEffect(() => {
-        setSchedules([]);
-        setTemplates([]);
-        if (user) {
-            fetchSchedules().then((data) => {
-                if (data && device.isNative) {
-                    syncMobileNotifications(data);
-                }
-            });
-            fetchTemplates();
-        } else {
-            loadFromLocalStorage();
-        }
-    }, [user]);
-
     // Helper to explicitly sync notification from passed data
-    const syncMobileNotifications = (currentSchedules) => {
+    const syncMobileNotifications = useCallback((currentSchedules) => {
         if (!device.isNative || !currentSchedules || currentSchedules.length === 0) return;
 
         console.log('Syncing mobile notifications for', currentSchedules.length, 'schedules');
@@ -53,43 +38,9 @@ export const useSchedule = () => {
                 }
             });
         });
-    };
+    }, []);
 
-    // Schedule notifications whenever schedules change
-    useEffect(() => {
-        if (schedules.length > 0) {
-            // Web Notifications
-            if (!device.isNative) {
-                notificationService.scheduleReminders(schedules);
-            }
-            // Native Notifications
-            else {
-                // Clear all pending first to avoid duplicates (naive approach, but safe)
-                // In a real app, we'd diff them, but for now re-scheduling upcoming is safer
-                localNotifications.getPending().then(pending => {
-                    const ids = pending.map(n => n.id);
-                    if (ids.length > 0) localNotifications.cancel(ids);
-
-                    // Schedule new ones
-                    schedules.forEach(schedule => {
-                        if (schedule.completed) return;
-
-                        const scheduleDate = new Date(schedule.date);
-                        if (scheduleDate > new Date()) {
-                            localNotifications.scheduleInjectionReminder({
-                                id: parseInt(schedule.id.toString().replace(/\D/g, '').slice(-8)) || Math.floor(Math.random() * 100000), // Ensure integer ID for valid notification
-                                title: 'Time for your dose!',
-                                body: `Take ${schedule.peptide} (${schedule.dosage}${schedule.unit})`,
-                                scheduledAt: scheduleDate
-                            });
-                        }
-                    });
-                });
-            }
-        }
-    }, [schedules]);
-
-    const loadFromLocalStorage = () => {
+    const loadFromLocalStorage = useCallback(() => {
         try {
             const storedSchedules = localStorage.getItem(STORAGE_KEY);
             const storedTemplates = localStorage.getItem(TEMPLATES_KEY);
@@ -103,17 +54,17 @@ export const useSchedule = () => {
             console.error('Error loading from localStorage:', error);
         }
         setLoading(false);
-    };
+    }, []);
 
-    const saveToLocalStorage = (data, key = STORAGE_KEY) => {
+    const saveToLocalStorage = useCallback((data, key = STORAGE_KEY) => {
         try {
             localStorage.setItem(key, JSON.stringify(data));
         } catch (error) {
             console.error('Error saving to localStorage:', error);
         }
-    };
+    }, []);
 
-    const fetchSchedules = async () => {
+    const fetchSchedules = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -146,9 +97,9 @@ export const useSchedule = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, loadFromLocalStorage]);
 
-    const fetchTemplates = async () => {
+    const fetchTemplates = useCallback(async () => {
         try {
             const { data, error } = await supabase
                 .from('schedule_templates')
@@ -176,7 +127,56 @@ export const useSchedule = () => {
             console.error('Error fetching templates:', error);
             // Silent fail - templates are optional
         }
-    };
+    }, [user]);
+
+    // Initial load and sync
+    useEffect(() => {
+        setSchedules([]);
+        setTemplates([]);
+        if (user) {
+            fetchSchedules().then((data) => {
+                if (data && device.isNative) {
+                    syncMobileNotifications(data);
+                }
+            });
+            fetchTemplates();
+        } else {
+            loadFromLocalStorage();
+        }
+    }, [user, fetchSchedules, fetchTemplates, loadFromLocalStorage, syncMobileNotifications]);
+
+    // Schedule notifications whenever schedules change
+    useEffect(() => {
+        if (schedules.length > 0) {
+            // Web Notifications
+            if (!device.isNative) {
+                notificationService.scheduleReminders(schedules);
+            }
+            // Native Notifications
+            else {
+                // Clear all pending first to avoid duplicates (naive approach, but safe)
+                localNotifications.getPending().then(pending => {
+                    const ids = pending.map(n => n.id);
+                    if (ids.length > 0) localNotifications.cancel(ids);
+
+                    // Schedule new ones
+                    schedules.forEach(schedule => {
+                        if (schedule.completed) return;
+
+                        const scheduleDate = new Date(schedule.date);
+                        if (scheduleDate > new Date()) {
+                            localNotifications.scheduleInjectionReminder({
+                                id: parseInt(schedule.id.toString().replace(/\D/g, '').slice(-8)) || Math.floor(Math.random() * 100000), // Ensure integer ID for valid notification
+                                title: 'Time for your dose!',
+                                body: `Take ${schedule.peptide} (${schedule.dosage}${schedule.unit})`,
+                                scheduledAt: scheduleDate
+                            });
+                        }
+                    });
+                });
+            }
+        }
+    }, [schedules]);
 
     // Add a single schedule entry
     const addSchedule = async (schedule) => {
@@ -257,16 +257,7 @@ export const useSchedule = () => {
 
         if (user) {
             try {
-                // Check limits for schedules (templates often count as schedules or separate limit?)
-                // Assuming templates count towards schedule limit or have their own. 
-                // paymentService checks 'schedules' table count. Templates are 'schedule_templates'.
-                // If the user is creating a recurring schedule, it creates a template AND multiple schedule entries.
-                // The free tier likely limites *active schedules* or *templates*.
-                // Let's assume we check schedule count. If adding 30 days, that's 30 schedules.
-                // Free limit is 5.
-                // This effectively blocks recurring schedules for free users unless they only do 5 days.
-                // Which is intentional.
-
+                // Check limits for schedules
                 const limitCheck = await paymentService.checkUsageLimits(user.id);
                 if (limitCheck.success && limitCheck.usage.schedules.remaining < schedulesToAdd.length) {
                     throw new Error(`LIMIT_REACHED: This would exceed your schedule limit. You have ${limitCheck.usage.schedules.remaining} remaining, but tried to add ${schedulesToAdd.length}. Upgrade to Premium.`);

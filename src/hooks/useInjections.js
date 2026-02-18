@@ -59,7 +59,7 @@ export const useInjections = () => {
             console.error('Error fetching injections:', err);
             setError('Failed to load injections');
         }
-    }, []);
+    }, [user]);
 
     // Fetch injections from localStorage (for guests)
     const fetchFromLocal = useCallback(() => {

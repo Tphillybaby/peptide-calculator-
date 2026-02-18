@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { notificationService } from '../services/notificationService';
@@ -11,16 +11,7 @@ export const useInventory = () => {
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
 
-    useEffect(() => {
-        setInventory([]);
-        if (user) {
-            fetchInventory();
-        } else {
-            loadFromLocalStorage();
-        }
-    }, [user]);
-
-    const loadFromLocalStorage = () => {
+    const loadFromLocalStorage = useCallback(() => {
         try {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {
@@ -30,17 +21,37 @@ export const useInventory = () => {
             console.error('Error loading inventory from localStorage:', error);
         }
         setLoading(false);
-    };
+    }, []);
 
-    const saveToLocalStorage = (data) => {
+    const saveToLocalStorage = useCallback((data) => {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         } catch (error) {
             console.error('Error saving inventory to localStorage:', error);
         }
-    };
+    }, []);
 
-    const fetchInventory = async () => {
+    const checkLowStock = useCallback((items) => {
+        items.forEach(item => {
+            if (item.remaining_mg <= LOW_STOCK_THRESHOLD && item.remaining_mg > 0) {
+                // Check if we've already notified for this item recently
+                const lastNotified = localStorage.getItem(`low_stock_notified_${item.id}`);
+                const now = Date.now();
+                const oneDay = 24 * 60 * 60 * 1000;
+
+                if (!lastNotified || (now - parseInt(lastNotified)) > oneDay) {
+                    notificationService.sendLowStockAlert(
+                        item.peptide_name,
+                        item.remaining_mg,
+                        'mg'
+                    );
+                    localStorage.setItem(`low_stock_notified_${item.id}`, now.toString());
+                }
+            }
+        });
+    }, []);
+
+    const fetchInventory = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -59,27 +70,16 @@ export const useInventory = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, checkLowStock, loadFromLocalStorage]);
 
-    const checkLowStock = (items) => {
-        items.forEach(item => {
-            if (item.remaining_mg <= LOW_STOCK_THRESHOLD && item.remaining_mg > 0) {
-                // Check if we've already notified for this item recently
-                const lastNotified = localStorage.getItem(`low_stock_notified_${item.id}`);
-                const now = Date.now();
-                const oneDay = 24 * 60 * 60 * 1000;
-
-                if (!lastNotified || (now - parseInt(lastNotified)) > oneDay) {
-                    notificationService.sendLowStockAlert(
-                        item.peptide_name,
-                        item.remaining_mg,
-                        'mg'
-                    );
-                    localStorage.setItem(`low_stock_notified_${item.id}`, now.toString());
-                }
-            }
-        });
-    };
+    useEffect(() => {
+        setInventory([]);
+        if (user) {
+            fetchInventory();
+        } else {
+            loadFromLocalStorage();
+        }
+    }, [user, fetchInventory, loadFromLocalStorage]);
 
     const addInventory = async (item) => {
         const newItem = {
