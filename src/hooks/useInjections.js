@@ -37,6 +37,7 @@ export const useInjections = () => {
             const { data, error: fetchError } = await supabase
                 .from('injections')
                 .select('*')
+                .eq('user_id', user.id)
                 .order('injection_date', { ascending: false });
 
             if (fetchError) throw fetchError;

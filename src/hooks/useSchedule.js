@@ -117,6 +117,7 @@ export const useSchedule = () => {
             const { data, error } = await supabase
                 .from('schedules')
                 .select('*')
+                .eq('user_id', user.id)
                 .order('scheduled_date', { ascending: true });
 
             if (error) throw error;
@@ -150,6 +151,7 @@ export const useSchedule = () => {
             const { data, error } = await supabase
                 .from('schedule_templates')
                 .select('*')
+                .eq('user_id', user.id)
                 .eq('is_active', true)
                 .order('created_at', { ascending: false });
 
