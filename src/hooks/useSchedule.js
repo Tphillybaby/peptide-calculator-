@@ -16,6 +16,8 @@ export const useSchedule = () => {
     const { user } = useAuth();
 
     useEffect(() => {
+        setSchedules([]);
+        setTemplates([]);
         if (user) {
             fetchSchedules().then((data) => {
                 if (data && device.isNative) {

@@ -71,6 +71,7 @@ export const useInjections = () => {
 
     // Initial load
     useEffect(() => {
+        setInjections([]); // Clear previous user's data
         setLoading(true);
 
         if (user && user.id !== 'mock-user-id') {

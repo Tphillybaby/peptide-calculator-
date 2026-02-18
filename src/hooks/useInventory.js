@@ -12,6 +12,7 @@ export const useInventory = () => {
     const { user } = useAuth();
 
     useEffect(() => {
+        setInventory([]);
         if (user) {
             fetchInventory();
         } else {
