@@ -248,6 +248,19 @@
   scrollbar-width: thin;
 }
 
+.categories::-webkit-scrollbar {
+  height: 6px;
+}
+
+.categories::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categories::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 3px;
+}
+
 .categoryBtn {
   display: flex;
   align-items: center;
