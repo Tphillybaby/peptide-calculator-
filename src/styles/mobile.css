@@ -92,12 +92,11 @@ a,
    3. MOMENTUM SCROLLING
    ========================================== */
 
-/* Enable momentum scrolling on iOS */
+/* Enable overscroll containment */
 .scrollable,
 main,
 .modal-content,
 .drawer-content {
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
 }
 
@@ -206,8 +205,8 @@ body.keyboard-open main {
 
 /* iOS-style modal presentation */
 .modal-overlay {
-    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
 }
 
 .modal-content {
