@@ -3,7 +3,7 @@
  * Tests for main page components
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../src/context/AuthContext';
 import React from 'react';
@@ -68,27 +68,29 @@ describe('Encyclopedia Page', () => {
         renderWithProviders(<Encyclopedia />);
 
         await waitFor(() => {
-            expect(screen.getByPlaceholderText(/search peptides/i)).toBeInTheDocument();
+            expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
         });
     });
 
-    it('renders category filter', async () => {
+
+
+    it('displays categories by default and peptides after search', async () => {
         renderWithProviders(<Encyclopedia />);
 
+        // Wait for loading to complete and categories to appear
         await waitFor(() => {
-            const select = screen.getByRole('combobox');
-            expect(select).toBeInTheDocument();
+            expect(screen.getByText(/Muscle & Recovery/i)).toBeInTheDocument();
+            expect(screen.getByText(/2 Total Peptides/i)).toBeInTheDocument();
         });
-    });
 
-    it('displays peptide cards after loading', async () => {
-        renderWithProviders(<Encyclopedia />);
+        // Search for a peptide
+        const searchInput = screen.getByPlaceholderText(/search all/i);
+        fireEvent.change(searchInput, { target: { value: 'BPC-157' } });
 
-        // Wait for loading to complete and peptides to appear
+        // Verify peptide appears
         await waitFor(() => {
             expect(screen.getByText('BPC-157')).toBeInTheDocument();
-            expect(screen.getByText('Semaglutide')).toBeInTheDocument();
-        }, { timeout: 3000 });
+        });
     });
 
     it('has social share button', async () => {
