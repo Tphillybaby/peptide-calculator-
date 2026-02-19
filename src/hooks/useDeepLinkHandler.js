@@ -62,7 +62,6 @@ const handleAuthDeepLink = async (parsedUrl) => {
                 return false;
             }
 
-            console.log('[DeepLink] Session set successfully, type:', type);
             return true;
         } catch (e) {
             console.error('[DeepLink] Auth error:', e);
@@ -89,7 +88,6 @@ export const useDeepLinkHandler = () => {
 
                 // Handle URL when app is opened via deep link
                 App.addListener('appUrlOpen', async (event) => {
-                    console.log('[DeepLink] App opened with URL:', event.url);
 
                     const parsed = parseDeepLink(event.url);
                     if (!parsed) return;
@@ -110,7 +108,6 @@ export const useDeepLinkHandler = () => {
                 // Check if app was launched with a URL (cold start)
                 const launchUrl = await App.getLaunchUrl();
                 if (launchUrl?.url) {
-                    console.log('[DeepLink] App launched with URL:', launchUrl.url);
 
                     const parsed = parseDeepLink(launchUrl.url);
                     if (parsed) {

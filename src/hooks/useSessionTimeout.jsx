@@ -56,7 +56,6 @@ export const useSessionTimeout = (options = {}) => {
 
         // Set logout timer
         timeoutRef.current = setTimeout(() => {
-            console.log('Session timed out due to inactivity');
             signOut();
         }, timeoutMs);
     }, [user, signOut, timeoutMs, warningMs]);

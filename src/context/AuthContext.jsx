@@ -123,13 +123,11 @@ export const AuthProvider = ({ children }) => {
                         filter: `user_id=eq.${userId}`
                     },
                     (payload) => {
-                        console.log('Subscription updated:', payload);
                         const newData = payload.new;
                         if (newData && newData.status === 'active' && ['premium', 'pro'].includes(newData.plan)) {
                             const endDate = newData.current_period_end;
                             if (!endDate || new Date(endDate) > new Date()) {
                                 setIsPremium(true);
-                                console.log('✅ Premium unlocked in real-time!');
                             }
                         } else if (newData && newData.status !== 'active') {
                             setIsPremium(false);
@@ -228,7 +226,6 @@ export const AuthProvider = ({ children }) => {
                     // Parse the callback URL for tokens
                     if (event.url.includes('access_token') || event.url.includes('code')) {
                         // The deep link handler will process this
-                        console.log('[OAuth] Callback received:', event.url);
                     }
 
                     // Remove listener

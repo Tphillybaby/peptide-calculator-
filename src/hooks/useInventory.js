@@ -180,7 +180,6 @@ export const useInventory = () => {
             .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
 
         if (!item) {
-            console.log('No inventory found for', peptideName);
             return false;
         }
 

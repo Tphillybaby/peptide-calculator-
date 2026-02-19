@@ -19,7 +19,6 @@ export const useSchedule = () => {
     const syncMobileNotifications = useCallback((currentSchedules) => {
         if (!device.isNative || !currentSchedules || currentSchedules.length === 0) return;
 
-        console.log('Syncing mobile notifications for', currentSchedules.length, 'schedules');
 
         localNotifications.getPending().then(pending => {
             const ids = pending.map(n => n.id);

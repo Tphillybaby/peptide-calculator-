@@ -46,7 +46,6 @@ export const ThemeProvider = ({ children }) => {
                         setTheme(data.theme_preference);
                     }
                 } catch (error) {
-                    console.log('Theme preference not found, using local');
                 }
             }
         };
