@@ -4,7 +4,8 @@ import { useInjections } from '../hooks/useInjections';
 import { usePeptides } from '../hooks/usePeptides';
 import { useAuth } from '../context/AuthContext';
 import styles from './InjectionTracker.module.css';
-import SignupPrompt, { recordInteraction } from './SignupPrompt';
+import SignupPrompt from './SignupPrompt';
+import { recordInteraction } from '../utils/signupPromptUtils';
 
 const InjectionTracker = () => {
     const { injections, loading, error, addInjection, deleteInjection, updateInjection, getStats, isUsingLocalStorage } = useInjections();

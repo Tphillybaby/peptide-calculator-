@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity, Sun, Moon, Globe, Share2, FileText, CreditCard, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { notificationService } from '../services/notificationService';
 import { emailService } from '../services/emailService';
 import { exportService } from '../services/exportService';
+import { paymentService } from '../services/paymentService';
 import { getUserReviews, deleteReview } from '../services/reviewService';
 import { useInjections } from '../hooks/useInjections';
 import { useTwoFactor } from '../hooks/useTwoFactor';
@@ -18,8 +19,8 @@ import styles from './Settings.module.css';
 
 const Settings = () => {
     const { user, signOut, isPremium, isAdmin } = useAuth();
-    const { theme, toggleTheme, setThemeMode } = useTheme();
-    const { t, i18n } = useTranslation();
+    const { theme, toggleTheme } = useTheme();
+    const { i18n } = useTranslation();
     const { injections } = useInjections();
     const {
         isEnabled: is2FAEnabled,
@@ -36,6 +37,12 @@ const Settings = () => {
     const [twoFactorCode, setTwoFactorCode] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+    const [passwordMessage, setPasswordMessage] = useState(null);
+    const [passwordSaving, setPasswordSaving] = useState(false);
+    const [notifSaving, setNotifSaving] = useState(false);
     const [message, setMessage] = useState(null);
     const [activeTab, setActiveTab] = useState('profile');
 
@@ -47,7 +54,7 @@ const Settings = () => {
         weight_goal: 'weight-loss'
     });
 
-    const [darkMode, setDarkMode] = useState(theme === 'dark');
+
     const [showShareModal, setShowShareModal] = useState(false);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
@@ -66,9 +73,9 @@ const Settings = () => {
             fetchProfile();
             fetchUserReviews();
         }
-    }, [user]);
+    }, [user, fetchProfile, fetchUserReviews]);
 
-    const fetchUserReviews = async () => {
+    const fetchUserReviews = useCallback(async () => {
         if (!user) return;
         setReviewsLoading(true);
         try {
@@ -79,7 +86,7 @@ const Settings = () => {
         } finally {
             setReviewsLoading(false);
         }
-    };
+    }, [user]);
 
     const handleDeleteReview = async (reviewId) => {
         if (!confirm('Are you sure you want to delete this review?')) return;
@@ -89,7 +96,7 @@ const Settings = () => {
         }
     };
 
-    const fetchProfile = async () => {
+    const fetchProfile = useCallback(async () => {
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -110,6 +117,15 @@ const Settings = () => {
                     gender: data.gender || 'prefer-not-to-say',
                     weight_goal: data.weight_goal || 'weight-loss'
                 });
+                // Load saved notification preferences
+                if (data.notification_preferences) {
+                    try {
+                        const prefs = typeof data.notification_preferences === 'string'
+                            ? JSON.parse(data.notification_preferences)
+                            : data.notification_preferences;
+                        setNotifications(prev => ({ ...prev, ...prefs }));
+                    } catch { /* ignore malformed prefs */ }
+                }
             } else {
                 // Initialize with email if no profile exists
                 setProfile(prev => ({ ...prev, email: user.email }));
@@ -119,7 +135,7 @@ const Settings = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
     const updateProfile = async () => {
         try {
@@ -144,6 +160,57 @@ const Settings = () => {
             setMessage({ type: 'error', text: 'Failed to save settings' });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleChangePassword = async () => {
+        setPasswordMessage(null);
+        if (!newPassword || !confirmNewPassword) {
+            setPasswordMessage({ type: 'error', text: 'Please fill in all password fields.' });
+            return;
+        }
+        if (newPassword.length < 8) {
+            setPasswordMessage({ type: 'error', text: 'New password must be at least 8 characters.' });
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            setPasswordMessage({ type: 'error', text: 'New passwords do not match.' });
+            return;
+        }
+        try {
+            setPasswordSaving(true);
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            setPasswordMessage({ type: 'success', text: 'Password updated successfully!' });
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+        } catch (error) {
+            console.error('Error changing password:', error);
+            setPasswordMessage({ type: 'error', text: error.message || 'Failed to update password.' });
+        } finally {
+            setPasswordSaving(false);
+        }
+    };
+
+    const saveNotificationPreferences = async () => {
+        if (!user) return;
+        try {
+            setNotifSaving(true);
+            const { error } = await supabase
+                .from('profiles')
+                .upsert({
+                    id: user.id,
+                    notification_preferences: notifications,
+                    updated_at: new Date().toISOString()
+                });
+            if (error) throw error;
+            setMessage({ type: 'success', text: 'Notification preferences saved!' });
+        } catch (error) {
+            console.error('Error saving notification preferences:', error);
+            setMessage({ type: 'error', text: 'Failed to save notification preferences.' });
+        } finally {
+            setNotifSaving(false);
         }
     };
 
@@ -435,7 +502,12 @@ const Settings = () => {
                                     {isAdmin && <span className={styles.statusActive} style={{ marginTop: '0.5rem', display: 'inline-block' }}>Admin Override</span>}
                                 </div>
                                 {isPremium && !isAdmin ? (
-                                    <button className={styles.secondaryBtn} onClick={() => alert('Manage subscription via Stripe Portal (Coming Soon)')}>
+                                    <button className={styles.secondaryBtn} onClick={async () => {
+                                        const result = await paymentService.manageSubscription();
+                                        if (!result.success && !result.redirecting) {
+                                            alert(result.message);
+                                        }
+                                    }}>
                                         Manage Plan
                                     </button>
                                 ) : !isPremium ? (
@@ -488,25 +560,61 @@ const Settings = () => {
                                 <Lock size={24} />
                                 <div>
                                     <h3>Password</h3>
-                                    <p>Last changed 30 days ago</p>
+                                    <p>Update your account password</p>
                                 </div>
-                                <button className={styles.secondaryBtn}>Change Password</button>
                             </div>
+
+                            {passwordMessage && (
+                                <div style={{
+                                    padding: '0.75rem',
+                                    borderRadius: '8px',
+                                    marginBottom: '1rem',
+                                    background: passwordMessage.type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                    color: passwordMessage.type === 'success' ? '#10b981' : '#ef4444',
+                                    border: `1px solid ${passwordMessage.type === 'success' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`
+                                }}>
+                                    {passwordMessage.text}
+                                </div>
+                            )}
 
                             <div className={styles.formGroup}>
                                 <label>Current Password</label>
-                                <input type="password" placeholder="Enter current password" />
+                                <input
+                                    type="password"
+                                    placeholder="Enter current password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                />
                             </div>
 
                             <div className={styles.formGroup}>
                                 <label>New Password</label>
-                                <input type="password" placeholder="Enter new password" />
+                                <input
+                                    type="password"
+                                    placeholder="Enter new password (min 8 characters)"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
                             </div>
 
                             <div className={styles.formGroup}>
                                 <label>Confirm New Password</label>
-                                <input type="password" placeholder="Confirm new password" />
+                                <input
+                                    type="password"
+                                    placeholder="Confirm new password"
+                                    value={confirmNewPassword}
+                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                />
                             </div>
+
+                            <button
+                                className="btn-primary"
+                                onClick={handleChangePassword}
+                                disabled={passwordSaving || !newPassword || !confirmNewPassword}
+                                style={{ marginTop: '0.5rem' }}
+                            >
+                                {passwordSaving ? 'Updating...' : 'Update Password'}
+                            </button>
 
                             <div className={styles.divider}></div>
 
@@ -607,7 +715,13 @@ const Settings = () => {
                             <div className={`card ${styles.sessionCard}`}>
                                 <div>
                                     <h4>Current Device</h4>
-                                    <p>MacBook Pro • Chrome • San Francisco, CA</p>
+                                    <p>{(() => {
+                                        const ua = navigator.userAgent;
+                                        const browserMatch = ua.match(/(Chrome|Firefox|Safari|Edge|Opera)\/[\d.]+/);
+                                        const browser = browserMatch ? browserMatch[1] : 'Browser';
+                                        const os = /Mac/.test(ua) ? 'macOS' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : 'Unknown OS';
+                                        return `${os} • ${browser}`;
+                                    })()}</p>
                                     <span className={styles.timestamp}>Active now</span>
                                 </div>
                             </div>
@@ -764,7 +878,14 @@ const Settings = () => {
                                 </button>
                             </div>
 
-                            <button className="btn-primary" style={{ marginTop: '1.5rem' }}>Save Preferences</button>
+                            <button
+                                className="btn-primary"
+                                style={{ marginTop: '1.5rem' }}
+                                onClick={saveNotificationPreferences}
+                                disabled={notifSaving}
+                            >
+                                {notifSaving ? 'Saving...' : 'Save Preferences'}
+                            </button>
                         </div>
                     )}
 

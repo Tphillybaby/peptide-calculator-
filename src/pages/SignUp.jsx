@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserPlus, AlertCircle, CheckCircle, Mail, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { PasswordStrengthMeter, calculatePasswordStrength } from '../utils/passwordStrength';
 
 const SignUp = () => {
@@ -13,7 +13,6 @@ const SignUp = () => {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
     const { signUp } = useAuth();
-    const navigate = useNavigate();
     const passwordStrength = calculatePasswordStrength(password);
 
     const handleSubmit = async (e) => {
@@ -125,7 +124,7 @@ const SignUp = () => {
                         <UserPlus size={32} color="var(--accent-primary)" />
                     </div>
                     <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Create Account</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Join Peptide Tracker today</p>
+                    <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Join PeptideLog today</p>
                 </div>
 
                 {error && (

@@ -153,7 +153,7 @@ const ShareProgress = ({ onClose }) => {
                     <div className={styles.previewContainer}>
                         <div ref={cardRef} className={styles.progressCard}>
                             <div className={styles.cardHeader}>
-                                <div className={styles.cardLogo}>💉 Peptide Tracker</div>
+                                <div className={styles.cardLogo}>💉 PeptideLog</div>
                                 <div className={styles.cardDate}>{format(new Date(), 'MMMM yyyy')}</div>
                             </div>
 
@@ -185,7 +185,7 @@ const ShareProgress = ({ onClose }) => {
 
                             <div className={styles.cardFooter}>
                                 <span className={styles.topPeptide}>Top: {stats.topPeptide}</span>
-                                <span className={styles.watermark}>peptidetracker.app</span>
+                                <span className={styles.watermark}>peptidelog.net</span>
                             </div>
                         </div>
                     </div>

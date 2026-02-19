@@ -82,7 +82,7 @@ class ErrorBoundary extends React.Component {
                 "We're sorry, but something unexpected happened. Please try again."}
             </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
+            {import.meta.env.DEV && this.state.error && (
               <details style={styles.errorDetails}>
                 <summary style={styles.errorSummary}>Error Details</summary>
                 <pre style={styles.errorText}>

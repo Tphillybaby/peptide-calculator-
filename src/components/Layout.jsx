@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import Navigation from './Navigation';
+import Footer from './Footer';
 import LanguageSelector from './LanguageSelector';
 import { device, statusBar, appEvents } from '../services/nativeService';
 
@@ -150,6 +151,7 @@ const Layout = () => {
             >
                 <Outlet />
             </main>
+            <Footer />
             <Navigation />
         </div>
     );

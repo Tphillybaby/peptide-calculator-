@@ -522,10 +522,13 @@ img.loaded {
 
 /* ==========================================
    16. DARK MODE ENHANCEMENTS FOR OLED
+   Only applies on mobile devices when user has
+   explicitly chosen dark theme, to avoid
+   overriding theme preferences on desktop.
    ========================================== */
 
-@media (prefers-color-scheme: dark) {
-    :root {
+@media (max-width: 768px) {
+    [data-theme="dark"] {
         --bg-app: #000000;
         --bg-card: #0a0a0a;
         --bg-card-hover: #141414;

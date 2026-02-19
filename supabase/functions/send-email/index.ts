@@ -31,9 +31,9 @@ Deno.serve(async (req: Request) => {
         // Determine email content based on type
         switch (type) {
             case 'welcome':
-                subject = 'Welcome to Peptide Tracker'
+                subject = 'Welcome to PeptideLog'
                 html = `
-          <h1>Welcome to Peptide Tracker!</h1>
+          <h1>Welcome to PeptideLog!</h1>
           <p>Hi ${data.name || 'there'},</p>
           <p>Thanks for joining. We're here to help you track your protocols safely.</p>
         `
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
         `
                 break
             case 'test':
-                subject = 'Test Email from Peptide Tracker'
+                subject = 'Test Email from PeptideLog'
                 html = `
           <h1>It Works!</h1>
           <p>This is a test email sent from your Supabase Edge Function via Resend.</p>
@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
                 'Authorization': `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-                from: 'Peptide Tracker <onboarding@resend.dev>', // Update this with your verified domain later
+                from: 'PeptideLog <onboarding@resend.dev>', // Update this with your verified domain later
                 to: [email],
                 subject: subject,
                 html: html,

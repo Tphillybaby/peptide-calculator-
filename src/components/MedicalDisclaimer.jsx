@@ -26,7 +26,7 @@ const MedicalDisclaimer = ({ compact = false }) => {
                 <div className={styles.warningBox}>
                     <h3>⚠️ This is NOT Medical Advice</h3>
                     <p>
-                        Peptide Tracker is a personal tracking and informational tool only. It does NOT:
+                        PeptideLog is a personal tracking and informational tool only. It does NOT:
                     </p>
                     <ul>
                         <li>Provide medical advice, diagnosis, or treatment</li>

@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
     appId: 'net.peptidelog.app',
-    appName: 'Peptide Tracker',
+    appName: 'PeptideLog',
     webDir: 'dist',
 
     // Server configuration for development

@@ -22,7 +22,7 @@ const Privacy = () => {
                     <section>
                         <h2>1. Introduction</h2>
                         <p>
-                            Peptide Tracker ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect,
+                            PeptideLog ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect,
                             use, disclose, and safeguard your information when you use our Service.
                         </p>
                         <p>
@@ -159,7 +159,7 @@ const Privacy = () => {
                             <li>Opt-out of marketing communications</li>
                         </ul>
 
-                        <p>To exercise these rights, contact us at privacy@peptidetracker.com</p>
+                        <p>To exercise these rights, contact us at privacy@peptidelog.net</p>
                     </section>
 
                     <section>
@@ -263,8 +263,8 @@ const Privacy = () => {
                         <h2>15. Contact Us</h2>
                         <p>For questions or concerns about this Privacy Policy or our data practices:</p>
                         <p>
-                            <strong>Email:</strong> privacy@peptidetracker.com<br />
-                            <strong>Data Protection Officer:</strong> dpo@peptidetracker.com<br />
+                            <strong>Email:</strong> privacy@peptidelog.net<br />
+                            <strong>Data Protection Officer:</strong> dpo@peptidelog.net<br />
                             <strong>Address:</strong> [Your Business Address]
                         </p>
                     </section>

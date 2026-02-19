@@ -83,7 +83,7 @@ export const localNotifications = {
     async scheduleInjectionReminder({ id, title, body, scheduledAt }) {
         return this.schedule([{
             id,
-            title: title || 'Peptide Tracker Reminder',
+            title: title || 'PeptideLog Reminder',
             body,
             schedule: { at: scheduledAt },
             sound: 'default',
@@ -251,7 +251,7 @@ export const browser = {
         try {
             const { Browser } = await import('@capacitor/browser');
             await Browser.open({ url });
-        } catch (e) {
+        } catch {
             // Fallback to window.open for web
             window.open(url, '_blank');
         }
@@ -276,7 +276,7 @@ export const share = {
         try {
             const { Share } = await import('@capacitor/share');
             await Share.share({ title, text, url, files });
-        } catch (e) {
+        } catch {
             // Fallback to Web Share API
             if (navigator.share) {
                 await navigator.share({ title, text, url });
@@ -294,7 +294,7 @@ export const share = {
             const { Share } = await import('@capacitor/share');
             const result = await Share.canShare();
             return result.value;
-        } catch (e) {
+        } catch {
             return !!navigator.share;
         }
     }
@@ -308,7 +308,7 @@ export const appEvents = {
         try {
             const { App } = await import('@capacitor/app');
             App.addListener('appStateChange', callback);
-        } catch (e) {
+        } catch {
             // Not available on web
         }
     },
@@ -317,7 +317,7 @@ export const appEvents = {
         try {
             const { App } = await import('@capacitor/app');
             App.addListener('appUrlOpen', callback);
-        } catch (e) {
+        } catch {
             // Not available on web
         }
     },
@@ -327,7 +327,7 @@ export const appEvents = {
         try {
             const { App } = await import('@capacitor/app');
             App.addListener('backButton', callback);
-        } catch (e) {
+        } catch {
             // Not available
         }
     },
@@ -337,7 +337,7 @@ export const appEvents = {
         try {
             const { App } = await import('@capacitor/app');
             await App.exitApp();
-        } catch (e) {
+        } catch {
             // Not available
         }
     }
@@ -374,7 +374,7 @@ export async function initializeNativeServices() {
     // Request notification permissions
     await localNotifications.requestPermission();
 
-    console.log(`Peptide Tracker running on ${platform}`);
+    console.log(`PeptideLog running on ${platform}`);
 }
 
 export default {

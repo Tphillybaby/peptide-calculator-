@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Shield, Activity, ArrowRight } from 'lucide-react';
+import { BookOpen, Shield, Activity, ArrowRight, Thermometer } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SocialShare from '../components/SocialShare';
 import SEO from '../components/SEO';
@@ -65,9 +65,9 @@ const Guides = () => {
                     />
                     <GuideCard
                         title="Safety & Storage"
-                        description="Critical information on reconstitution, bacteriostatic water, and proper storage temperatures."
-                        icon={Shield}
-                        link="/safety"
+                        description="Critical information on reconstitution, bacteriostatic water, proper storage temperatures, and shelf life."
+                        icon={Thermometer}
+                        link="/guides/storage"
                         color="#10b981"
                     />
                     <GuideCard

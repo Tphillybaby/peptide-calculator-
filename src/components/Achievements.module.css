@@ -245,7 +245,10 @@
   overflow-x: auto;
   padding-bottom: 0.5rem;
   margin-bottom: 2rem;
-  scrollbar-width: thin;
+
+  @supports (scrollbar-width: thin) {
+    scrollbar-width: thin;
+  }
 }
 
 .categories::-webkit-scrollbar {

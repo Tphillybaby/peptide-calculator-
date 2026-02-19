@@ -113,8 +113,6 @@ export const paymentService = {
      */
     async canAccessFeature(userId, featureName) {
         const { tier } = await this.getSubscriptionStatus(userId);
-        const tierDetails = this.getTierDetails(tier);
-
         // Map feature names to tier requirements
         const premiumFeatures = [
             'unlimited_injections',
@@ -179,16 +177,34 @@ export const paymentService = {
 
     /**
      * Manage subscription (cancel, upgrade, etc.)
-     * Links to Stripe Customer Portal (future implementation)
+     * Opens Stripe Customer Portal via Supabase Edge Function
      */
-    async manageSubscription(userId) {
-        // Ideally this also calls a backend function to get a portal link
-        alert('Subscription management portal coming soon. Please contact support to modify your plan.');
+    async manageSubscription() {
+        try {
+            const returnUrl = window.location.origin + '/settings';
 
-        return {
-            success: false,
-            message: 'Subscription management coming soon!'
-        };
+            const { data, error } = await supabase.functions.invoke('create-portal', {
+                body: {
+                    returnUrl
+                }
+            });
+
+            if (error) throw error;
+
+            if (data?.url) {
+                // Redirect user to Stripe Customer Portal
+                window.location.href = data.url;
+                return { success: true, redirecting: true };
+            } else {
+                throw new Error('No portal URL returned');
+            }
+        } catch (error) {
+            console.error('[Payment Service] Portal session failed:', error);
+            return {
+                success: false,
+                message: error.message || 'Failed to open subscription manager. Please try again or contact support.'
+            };
+        }
     },
 
     /**

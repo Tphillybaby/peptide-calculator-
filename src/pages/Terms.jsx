@@ -22,7 +22,7 @@ const Terms = () => {
                     <section>
                         <h2>1. Acceptance of Terms</h2>
                         <p>
-                            By accessing and using Peptide Tracker ("the Service"), you accept and agree to be bound by the terms and provision of this agreement.
+                            By accessing and using PeptideLog ("the Service"), you accept and agree to be bound by the terms and provision of this agreement.
                             If you do not agree to these terms, please do not use the Service.
                         </p>
                     </section>
@@ -30,7 +30,7 @@ const Terms = () => {
                     <section>
                         <h2>2. Description of Service</h2>
                         <p>
-                            Peptide Tracker is a personal tracking and informational tool designed to help users:
+                            PeptideLog is a personal tracking and informational tool designed to help users:
                         </p>
                         <ul>
                             <li>Track peptide injections and dosages</li>
@@ -107,7 +107,7 @@ const Terms = () => {
                     <section>
                         <h2>7. Limitation of Liability</h2>
                         <p>
-                            TO THE MAXIMUM EXTENT PERMITTED BY LAW, PEPTIDE TRACKER AND ITS OPERATORS SHALL NOT BE LIABLE FOR:
+                            TO THE MAXIMUM EXTENT PERMITTED BY LAW, PEPTIDELOG AND ITS OPERATORS SHALL NOT BE LIABLE FOR:
                         </p>
                         <ul>
                             <li>Any health issues or adverse reactions from peptide use</li>
@@ -133,7 +133,7 @@ const Terms = () => {
                     <section>
                         <h2>9. Intellectual Property</h2>
                         <p>
-                            All content, features, and functionality of the Service are owned by Peptide Tracker and are protected by copyright,
+                            All content, features, and functionality of the Service are owned by PeptideLog and are protected by copyright,
                             trademark, and other intellectual property laws.
                         </p>
                     </section>
@@ -186,7 +186,7 @@ const Terms = () => {
                             For questions about these Terms, please contact us at:
                         </p>
                         <p>
-                            Email: legal@peptidetracker.com<br />
+                            Email: legal@peptidelog.net<br />
                             Address: [Your Business Address]
                         </p>
                     </section>

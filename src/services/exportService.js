@@ -75,7 +75,7 @@ export const exportService = {
         // Add header
         doc.setFontSize(20);
         doc.setTextColor(59, 130, 246); // Primary blue
-        doc.text('Peptide Tracker', 14, 20);
+        doc.text('PeptideLog', 14, 20);
 
         doc.setFontSize(14);
         doc.setTextColor(31, 41, 55);
@@ -173,7 +173,7 @@ export const exportService = {
             doc.setFontSize(8);
             doc.setTextColor(156, 163, 175);
             doc.text(
-                `Page ${i} of ${pageCount} | Peptide Tracker`,
+                `Page ${i} of ${pageCount} | PeptideLog`,
                 doc.internal.pageSize.width / 2,
                 doc.internal.pageSize.height - 10,
                 { align: 'center' }

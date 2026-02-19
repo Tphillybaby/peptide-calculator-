@@ -6,7 +6,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { usePeptides } from '../hooks/usePeptides';
 import { paymentService } from '../services/paymentService';
-import SignupPrompt, { recordInteraction } from './SignupPrompt';
+import SignupPrompt from './SignupPrompt';
+import { recordInteraction } from '../utils/signupPromptUtils';
 import UpgradeModal from './UpgradeModal';
 
 // Local storage key for saved calculations

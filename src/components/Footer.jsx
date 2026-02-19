@@ -11,7 +11,7 @@ const Footer = () => {
             <div className={styles.container}>
                 <div className={styles.grid}>
                     <div className={styles.section}>
-                        <h3>Peptide Tracker</h3>
+                        <h3>PeptideLog</h3>
                         <p>Your personal peptide management companion</p>
                         <div className={styles.made}>
                             Made with <Heart size={14} className={styles.heart} /> for the biohacking community
@@ -32,7 +32,7 @@ const Footer = () => {
 
                     <div className={styles.section}>
                         <h4>Support</h4>
-                        <a href="mailto:support@peptidetracker.com" className={styles.link}>
+                        <a href="mailto:support@peptidelog.net" className={styles.link}>
                             <Mail size={16} />
                             Contact Us
                         </a>
@@ -54,7 +54,7 @@ const Footer = () => {
 
                 <div className={styles.bottom}>
                     <p className={styles.copyright}>
-                        © {currentYear} Peptide Tracker. All rights reserved.
+                        © {currentYear} PeptideLog. All rights reserved.
                     </p>
                     <p className={styles.version}>
                         Version 1.0.0

@@ -25,6 +25,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const UpdatePassword = lazy(() => import('./pages/UpdatePassword'));
 
 // Feature pages
 const Calculator = lazy(() => import('./pages/Calculator'));
@@ -37,6 +38,7 @@ const Guides = lazy(() => import('./pages/Guides'));
 const Safety = lazy(() => import('./pages/Safety'));
 const BeginnerGuide = lazy(() => import('./pages/guides/BeginnerGuide'));
 const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
+const StorageGuide = lazy(() => import('./pages/guides/StorageGuide'));
 const ForumPage = lazy(() => import('./pages/Forum'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const InjectionSites = lazy(() => import('./pages/InjectionSites'));
@@ -133,12 +135,14 @@ function AppRoutes() {
           {/* Auth callback route for OAuth/Magic Links */}
           <Route path="callback" element={<AuthCallback />} />
           <Route path="reset-password" element={<Navigate to="/update-password" replace />} />
+          <Route path="update-password" element={<UpdatePassword />} />
           <Route path="price-checker" element={<PriceChecker />} />
           <Route path="encyclopedia" element={<Encyclopedia />} />
           <Route path="encyclopedia/:name" element={<PeptideDetail />} />
           <Route path="guides" element={<Guides />} />
           <Route path="guides/beginner" element={<BeginnerGuide />} />
           <Route path="guides/injection" element={<InjectionGuide />} />
+          <Route path="guides/storage" element={<StorageGuide />} />
           <Route path="safety" element={<Safety />} />
           <Route path="forum" element={<ForumPage />} />
           <Route path="inventory" element={<Inventory />} />
@@ -211,7 +215,7 @@ function AppRoutes() {
           <Route path="privacy" element={<Privacy />} />
           <Route path="*" element={<NotFound />} />
         </Route>
-        <Route path="*" element={<NotFound />} />
+
       </Routes>
       <SessionTimeoutWarning />
       <PromotionalAuthPopup />

@@ -90,9 +90,9 @@ export default defineConfig(async ({ mode }) => {
         },
         includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
         manifest: {
-          name: 'Peptide Tracker',
-          short_name: 'PeptideTracker',
-          description: 'Track your peptide injections and protocols',
+          name: 'PeptideLog',
+          short_name: 'PeptideLog',
+          description: 'Your personal peptide calculator, tracker, and encyclopedia',
           theme_color: '#0f172a',
           background_color: '#0f172a',
           display: 'standalone',

@@ -2,35 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { X, UserPlus, Bookmark, TrendingUp, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-
-const PROMPT_STORAGE_KEY = 'signup_prompt_dismissed';
-const PROMPT_INTERACTION_COUNT_KEY = 'signup_prompt_interactions';
-
-// Check if prompt was recently dismissed (within 7 days)
-const wasRecentlyDismissed = () => {
-    const dismissed = localStorage.getItem(PROMPT_STORAGE_KEY);
-    if (!dismissed) return false;
-    const dismissedTime = parseInt(dismissed, 10);
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    return Date.now() - dismissedTime < sevenDays;
-};
-
-// Get interaction count
-const getInteractionCount = () => {
-    return parseInt(localStorage.getItem(PROMPT_INTERACTION_COUNT_KEY) || '0', 10);
-};
-
-// Increment interaction count
-export const recordInteraction = () => {
-    const count = getInteractionCount() + 1;
-    localStorage.setItem(PROMPT_INTERACTION_COUNT_KEY, count.toString());
-    return count;
-};
+import { getInteractionCount, wasRecentlyDismissed, PROMPT_STORAGE_KEY } from '../utils/signupPromptUtils';
 
 const SignupPrompt = ({ trigger = 'default' }) => {
     const { user } = useAuth();
     const [visible, setVisible] = useState(false);
-    const [interactionCount, setInteractionCount] = useState(0);
 
     useEffect(() => {
         // Don't show if user is logged in
@@ -41,7 +17,6 @@ const SignupPrompt = ({ trigger = 'default' }) => {
 
         // Show after 3+ interactions
         const count = getInteractionCount();
-        setInteractionCount(count);
 
         if (count >= 3) {
             // Delay showing the prompt for better UX
@@ -68,7 +43,7 @@ const SignupPrompt = ({ trigger = 'default' }) => {
     const triggerMessages = {
         calculator: "Like using the calculator? Save your settings!",
         injection: "Want to track this injection?",
-        default: "Get more from Peptide Tracker"
+        default: "Get more from PeptideLog"
     };
 
     return (
