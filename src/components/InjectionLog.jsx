@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import {
     ChevronLeft, ChevronRight, Plus, Trash2, Calendar, Syringe, X, Clock,
     TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle, CheckCircle,
-    Circle, Repeat, Zap, CalendarPlus, Settings, MoreHorizontal, CloudOff, Loader2
+    Circle, Repeat, Zap, CalendarPlus, Settings, MoreHorizontal, CloudOff, Loader2, History
 } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { useSchedule } from '../hooks/useSchedule';
@@ -272,6 +272,19 @@ const InjectionLog = () => {
             } else {
                 await addInjection(injectionData);
             }
+
+            // Switch view to the date we just logged
+            const newDate = new Date(formData.date);
+            setSelectedDate(newDate);
+            // Update calendar month if needed
+            if (newDate.getMonth() !== currentDate.getMonth() || newDate.getFullYear() !== currentDate.getFullYear()) {
+                setCurrentDate(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
+            }
+            // If we are in history view, maybe switch to calendar or stay? 
+            // Better to default to calendar to show the "dot" and details
+            if (activeView !== 'history') {
+                setActiveView('calendar');
+            }
         } else if (formMode === 'schedule') {
             // Add as scheduled item
             await addSchedule({
@@ -443,6 +456,13 @@ const InjectionLog = () => {
                     {upcomingSchedules.length > 0 && (
                         <span className={styles.badge}>{upcomingSchedules.length}</span>
                     )}
+                </button>
+                <button
+                    className={`${styles.viewTab} ${activeView === 'history' ? styles.activeTab : ''}`}
+                    onClick={() => setActiveView('history')}
+                >
+                    <History size={18} />
+                    History
                 </button>
             </div>
 
@@ -846,6 +866,79 @@ const InjectionLog = () => {
                         </div>
                     </div>
                 </>
+            ) : activeView === 'history' ? (
+                /* History View */
+                <div className={`card glass-panel ${styles.upcomingSection}`}>
+                    <div className={styles.upcomingHeader}>
+                        <h3>
+                            <History size={20} />
+                            History Log
+                        </h3>
+                    </div>
+
+                    {injections.length === 0 ? (
+                        <div className={styles.emptyState}>
+                            <History size={40} className={styles.emptyIcon} />
+                            <p>No history yet</p>
+                            <span>Your injection log will appear here</span>
+                        </div>
+                    ) : (
+                        <div className={styles.upcomingList}>
+                            {injections.map(injection => {
+                                const injDate = new Date(injection.date);
+                                return (
+                                    <div
+                                        key={injection.id}
+                                        className={styles.upcomingItem}
+                                        onClick={() => {
+                                            setSelectedDate(injDate);
+                                            setCurrentDate(new Date(injDate.getFullYear(), injDate.getMonth(), 1));
+                                            setActiveView('calendar');
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        <div className={styles.upcomingDate}>
+                                            <span className={styles.upcomingDay}>{injDate.getDate()}</span>
+                                            <span className={styles.upcomingMonth}>{injDate.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                                        </div>
+                                        <div className={styles.upcomingInfo}>
+                                            <span className={styles.upcomingPeptide}>{injection.peptide}</span>
+                                            <span className={styles.upcomingDetails}>
+                                                {injection.dosage}{injection.unit} · {injection.site}
+                                            </span>
+                                            {injection.notes && (
+                                                <span className={styles.itemNotes} style={{ marginTop: 2 }}>{injection.notes}</span>
+                                            )}
+                                        </div>
+                                        <div className={styles.itemActions}>
+                                            <button
+                                                className={styles.editBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedDate(injDate);
+                                                    setCurrentDate(new Date(injDate.getFullYear(), injDate.getMonth(), 1));
+                                                    setActiveView('calendar');
+                                                    handleEditInjection(injection);
+                                                }}
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                className={`${styles.deleteBtn} ${confirmDelete === injection.id ? styles.confirmDelete : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteInjection(injection.id);
+                                                }}
+                                            >
+                                                {confirmDelete === injection.id ? <Check size={16} /> : <Trash2 size={16} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
             ) : (
                 /* Upcoming Schedule View */
                 <div className={`card glass-panel ${styles.upcomingSection}`}>
@@ -939,7 +1032,7 @@ const InjectionLog = () => {
                     )}
                 </div>
             )}
-        </div>
+        </div >
     );
 };
 
