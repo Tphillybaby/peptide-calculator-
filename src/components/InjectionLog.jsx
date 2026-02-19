@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { isToday } from 'date-fns';
 import {
     ChevronLeft, ChevronRight, Plus, Trash2, Calendar, Syringe, X, Clock,
     TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle, CheckCircle,
-    Circle, Repeat, Zap, CalendarPlus, Settings, MoreHorizontal, CloudOff, Loader2, History
+    Circle, Repeat, Zap, CalendarPlus, Settings, MoreHorizontal, CloudOff, Loader2
 } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { useSchedule } from '../hooks/useSchedule';
@@ -461,7 +462,7 @@ const InjectionLog = () => {
                     className={`${styles.viewTab} ${activeView === 'history' ? styles.activeTab : ''}`}
                     onClick={() => setActiveView('history')}
                 >
-                    <History size={18} />
+                    <Clock size={18} />
                     History
                 </button>
             </div>
@@ -871,14 +872,14 @@ const InjectionLog = () => {
                 <div className={`card glass-panel ${styles.upcomingSection}`}>
                     <div className={styles.upcomingHeader}>
                         <h3>
-                            <History size={20} />
+                            <Clock size={20} />
                             History Log
                         </h3>
                     </div>
 
                     {injections.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <History size={40} className={styles.emptyIcon} />
+                            <Clock size={40} className={styles.emptyIcon} />
                             <p>No history yet</p>
                             <span>Your injection log will appear here</span>
                         </div>
