@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     ios: {
         contentInset: 'automatic',
         preferredContentMode: 'mobile',
-        scheme: 'peptide-tracker',
+        scheme: 'peptidelog',
         backgroundColor: '#0f172a'
     },
 
