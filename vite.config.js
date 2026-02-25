@@ -147,12 +147,16 @@ export default defineConfig(async ({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Keep all React core together to avoid forwardRef issues
+            // Keep React core AND React-dependent chart libraries together
+            // Recharts and react-chartjs-2 use React.forwardRef at module evaluation
+            // time, so they MUST be in the same chunk as React
             if (id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/react-router-dom/') ||
               id.includes('node_modules/scheduler/') ||
-              id.includes('node_modules/react-is/')) {
+              id.includes('node_modules/react-is/') ||
+              id.includes('node_modules/recharts/') ||
+              id.includes('node_modules/react-chartjs-2/')) {
               return 'vendor-react';
             }
             // Supabase
@@ -163,11 +167,8 @@ export default defineConfig(async ({ mode }) => {
             if (id.includes('node_modules/lucide-react/')) {
               return 'vendor-icons';
             }
-            // Charts (heavy - split into own chunks)
-            if (id.includes('node_modules/recharts/')) {
-              return 'vendor-charts';
-            }
-            if (id.includes('node_modules/chart.js/') || id.includes('node_modules/react-chartjs-2/')) {
+            // Chart.js core (no React dependency at module level)
+            if (id.includes('node_modules/chart.js/')) {
               return 'vendor-chartjs';
             }
             // PDF (heavy)
