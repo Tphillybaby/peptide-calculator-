@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { isToday } from 'date-fns';
 import {
     ChevronLeft, ChevronRight, Plus, Trash2, Calendar, Syringe, X, Clock,
     TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle, CheckCircle,

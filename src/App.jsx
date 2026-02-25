@@ -25,6 +25,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const Contact = lazy(() => import('./pages/Contact'));
 const UpdatePassword = lazy(() => import('./pages/UpdatePassword'));
 
 // Feature pages
@@ -211,6 +212,7 @@ function AppRoutes() {
             <Route path="database" element={<AdminDatabaseMetrics />} />
             <Route path="security" element={<AdminSecurityAudit />} />
           </Route>
+          <Route path="contact" element={<Contact />} />
           <Route path="terms" element={<Terms />} />
           <Route path="privacy" element={<Privacy />} />
           <Route path="*" element={<NotFound />} />

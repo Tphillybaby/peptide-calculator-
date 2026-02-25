@@ -219,16 +219,54 @@ export const AuthProvider = ({ children }) => {
                 // Listen for the app to reopen with the auth callback
                 const { App } = await import('@capacitor/app');
 
-                const urlListener = App.addListener('appUrlOpen', async (event) => {
-                    // Close the browser
-                    await Browser.close();
+                // Remove any existing listener before adding new one
+                const urlListener = await App.addListener('appUrlOpen', async (event) => {
+                    console.log('[OAuth] App URL opened:', event.url);
 
-                    // Parse the callback URL for tokens
-                    if (event.url.includes('access_token') || event.url.includes('code')) {
-                        // The deep link handler will process this
+                    try {
+                        // Close the in-app browser first
+                        await Browser.close();
+                    } catch (e) {
+                        console.warn('[OAuth] Browser close error:', e);
                     }
 
-                    // Remove listener
+                    // Extract tokens from the callback URL
+                    try {
+                        const url = new URL(event.url);
+                        // OAuth tokens typically come in the hash fragment
+                        const hashParams = url.hash ? new URLSearchParams(url.hash.substring(1)) : null;
+                        const accessToken = hashParams?.get('access_token');
+                        const refreshToken = hashParams?.get('refresh_token');
+
+                        if (accessToken && refreshToken) {
+                            // Set the session directly from the tokens
+                            const { error: sessionError } = await supabase.auth.setSession({
+                                access_token: accessToken,
+                                refresh_token: refreshToken
+                            });
+
+                            if (sessionError) {
+                                console.error('[OAuth] Failed to set session:', sessionError);
+                            } else {
+                                console.log('[OAuth] Session set successfully');
+                            }
+                        } else {
+                            // Might be an authorization code flow, try to exchange
+                            const code = url.searchParams.get('code') || hashParams?.get('code');
+                            if (code) {
+                                const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+                                if (exchangeError) {
+                                    console.error('[OAuth] Code exchange failed:', exchangeError);
+                                } else {
+                                    console.log('[OAuth] Code exchanged successfully');
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.error('[OAuth] Error processing callback URL:', e);
+                    }
+
+                    // Remove this listener
                     urlListener.remove();
                 });
 

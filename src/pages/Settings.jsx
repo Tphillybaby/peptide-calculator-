@@ -68,17 +68,15 @@ const Settings = () => {
     const [userReviews, setUserReviews] = useState([]);
     const [reviewsLoading, setReviewsLoading] = useState(false);
 
-    useEffect(() => {
-        if (user) {
-            fetchProfile();
-            fetchUserReviews();
-        }
-    }, [user, fetchProfile, fetchUserReviews]);
-
     const fetchUserReviews = useCallback(async () => {
         if (!user) return;
         setReviewsLoading(true);
         try {
+            // Defensive: getUserReviews may fail if chunk loading has issues
+            if (typeof getUserReviews !== 'function') {
+                console.warn('[Settings] getUserReviews not available, skipping review fetch');
+                return;
+            }
             const reviews = await getUserReviews(user.id);
             setUserReviews(reviews);
         } catch (error) {
@@ -136,6 +134,14 @@ const Settings = () => {
             setLoading(false);
         }
     }, [user]);
+
+    // Fetch profile and reviews when user is available
+    useEffect(() => {
+        if (user) {
+            fetchProfile();
+            fetchUserReviews();
+        }
+    }, [user, fetchProfile, fetchUserReviews]);
 
     const updateProfile = async () => {
         try {

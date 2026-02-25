@@ -10,7 +10,8 @@ const config: CapacitorConfig = {
         // For development, you can enable this to connect to your dev server
         // url: 'http://localhost:5173',
         // cleartext: true, // Allow HTTP for development
-        androidScheme: 'https'
+        androidScheme: 'https',
+        iosScheme: 'https'
     },
 
     // iOS-specific configuration

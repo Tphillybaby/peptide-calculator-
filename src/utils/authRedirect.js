@@ -9,8 +9,10 @@ export const getRedirectUrl = (path = '/') => {
 
     if (isNative) {
         // Use the app's custom URL scheme for native apps
-        // This matches the scheme defined in capacitor.config.ts and iOS Info.plist
-        return `net.peptidelog.app://${path.startsWith('/') ? path.slice(1) : path}`;
+        // This matches the scheme defined in iOS Info.plist CFBundleURLSchemes
+        // Format: net.peptidelog.app://callback
+        const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+        return `net.peptidelog.app://${cleanPath}`;
     }
 
     // Use web origin for browser
@@ -43,11 +45,12 @@ export const getAllRedirectUrls = () => {
         'http://localhost:5173/**',
         'http://localhost:3000/**',
 
-        // Native app scheme
+        // Native app scheme (bundle ID format)
         'net.peptidelog.app://**',
         'net.peptidelog.app://callback',
         'net.peptidelog.app://settings',
         'net.peptidelog.app://update-password',
-        'net.peptidelog.app://reset-password'
+        'net.peptidelog.app://reset-password',
+        'net.peptidelog.app://dashboard'
     ];
 };

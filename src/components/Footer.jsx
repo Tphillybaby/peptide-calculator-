@@ -32,10 +32,10 @@ const Footer = () => {
 
                     <div className={styles.section}>
                         <h4>Support</h4>
-                        <a href="mailto:support@peptidelog.net" className={styles.link}>
+                        <Link to="/contact" className={styles.link}>
                             <Mail size={16} />
                             Contact Us
-                        </a>
+                        </Link>
                         <Link to="/settings" className={styles.link}>
                             Settings
                         </Link>

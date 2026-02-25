@@ -22,7 +22,8 @@ export default defineConfig(async ({ mode }) => {
     '/guides/beginner',
     '/guides/injection',
     '/injection-sites',
-    '/reviews'
+    '/reviews',
+    '/contact'
   ]
 
   // Try to fetch peptides for dynamic sitemap
@@ -145,24 +146,50 @@ export default defineConfig(async ({ mode }) => {
       sourcemap: true,
       rollupOptions: {
         output: {
-          manualChunks: {
+          manualChunks(id) {
             // Keep all React core together to avoid forwardRef issues
-            'vendor-react': ['react', 'react-dom', 'react-router-dom', 'scheduler', 'react-is'],
+            if (id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/react-router-dom/') ||
+              id.includes('node_modules/scheduler/') ||
+              id.includes('node_modules/react-is/')) {
+              return 'vendor-react';
+            }
             // Supabase
-            'vendor-supabase': ['@supabase/supabase-js'],
+            if (id.includes('node_modules/@supabase/')) {
+              return 'vendor-supabase';
+            }
             // Icons
-            'vendor-icons': ['lucide-react'],
+            if (id.includes('node_modules/lucide-react/')) {
+              return 'vendor-icons';
+            }
             // Charts (heavy - split into own chunks)
-            'vendor-charts': ['recharts'],
-            'vendor-chartjs': ['chart.js', 'react-chartjs-2'],
+            if (id.includes('node_modules/recharts/')) {
+              return 'vendor-charts';
+            }
+            if (id.includes('node_modules/chart.js/') || id.includes('node_modules/react-chartjs-2/')) {
+              return 'vendor-chartjs';
+            }
             // PDF (heavy)
-            'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+            if (id.includes('node_modules/jspdf/') ||
+              id.includes('node_modules/jspdf-autotable/') ||
+              id.includes('node_modules/html2canvas/')) {
+              return 'vendor-pdf';
+            }
             // Utilities
-            'vendor-utils': ['date-fns', 'uuid'],
+            if (id.includes('node_modules/date-fns/') || id.includes('node_modules/uuid/')) {
+              return 'vendor-utils';
+            }
             // i18n
-            'vendor-i18n': ['i18next', 'react-i18next'],
+            if (id.includes('node_modules/i18next/') || id.includes('node_modules/react-i18next/')) {
+              return 'vendor-i18n';
+            }
             // Sentry
-            'vendor-sentry': ['@sentry/react']
+            if (id.includes('node_modules/@sentry/')) {
+              return 'vendor-sentry';
+            }
+            // Don't split app source code — let Rollup handle it naturally
+            // This prevents TDZ errors from circular/cross-chunk dependencies
           }
         }
       },

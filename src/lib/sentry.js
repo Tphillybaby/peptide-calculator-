@@ -29,6 +29,8 @@ export const initSentry = () => {
             // Browser extensions
             'top.GLOBALS',
             'Extensions',
+            /runtime\.sendMessage/,
+            /chrome\.runtime/,
             // Network errors that aren't actionable
             'Failed to fetch',
             'NetworkError',
@@ -37,11 +39,32 @@ export const initSentry = () => {
             'AbortError',
             // Resize observers (common benign error)
             'ResizeObserver loop',
+            // Service worker registration failures (Android WebView)
+            /ServiceWorkerContainer/,
+        ],
+
+        denyUrls: [
+            // Browser extensions
+            /extensions\//i,
+            /^chrome:\/\//i,
+            /^chrome-extension:\/\//i,
+            /^moz-extension:\/\//i,
         ],
 
         // Don't send PII unless necessary
         beforeSend(event) {
             try {
+                // Filter out unhandled promise rejections from service workers
+                // These appear as "Error: Rejected" with mechanism "onunhandledrejection"
+                const mechanism = event?.exception?.values?.[0]?.mechanism;
+                if (mechanism?.type === 'onunhandledrejection') {
+                    const errorValue = event?.exception?.values?.[0]?.value;
+                    // Skip service worker registration failures
+                    if (errorValue === 'Rejected' || errorValue?.includes?.('ServiceWorker')) {
+                        return null;
+                    }
+                }
+
                 // Scrub sensitive data with defensive checks
                 if (event && event.request && event.request.headers) {
                     delete event.request.headers['Authorization'];
