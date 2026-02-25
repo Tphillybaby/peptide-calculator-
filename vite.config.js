@@ -147,50 +147,48 @@ export default defineConfig(async ({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // Keep React core AND React-dependent chart libraries together
-            // Recharts and react-chartjs-2 use React.forwardRef at module evaluation
-            // time, so they MUST be in the same chunk as React
+            // ALL libraries that use React APIs at module-level (forwardRef,
+            // createContext, etc.) MUST be in the same chunk as React.
+            // Rollup doesn't guarantee sibling chunk load order.
             if (id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/react-router-dom/') ||
               id.includes('node_modules/scheduler/') ||
               id.includes('node_modules/react-is/') ||
               id.includes('node_modules/recharts/') ||
-              id.includes('node_modules/react-chartjs-2/')) {
+              id.includes('node_modules/react-chartjs-2/') ||
+              id.includes('node_modules/react-i18next/') ||
+              id.includes('node_modules/lucide-react/') ||
+              id.includes('node_modules/@sentry/react/')) {
               return 'vendor-react';
             }
-            // Supabase
+            // Supabase (no React dependency at module level)
             if (id.includes('node_modules/@supabase/')) {
               return 'vendor-supabase';
             }
-            // Icons
-            if (id.includes('node_modules/lucide-react/')) {
-              return 'vendor-icons';
-            }
-            // Chart.js core (no React dependency at module level)
+            // Chart.js core (pure JS, no React dependency)
             if (id.includes('node_modules/chart.js/')) {
               return 'vendor-chartjs';
             }
-            // PDF (heavy)
+            // PDF (pure JS, no React dependency)
             if (id.includes('node_modules/jspdf/') ||
               id.includes('node_modules/jspdf-autotable/') ||
               id.includes('node_modules/html2canvas/')) {
               return 'vendor-pdf';
             }
-            // Utilities
+            // Pure JS utilities
             if (id.includes('node_modules/date-fns/') || id.includes('node_modules/uuid/')) {
               return 'vendor-utils';
             }
-            // i18n
-            if (id.includes('node_modules/i18next/') || id.includes('node_modules/react-i18next/')) {
+            // i18next core (pure JS, no React dependency)
+            if (id.includes('node_modules/i18next/')) {
               return 'vendor-i18n';
             }
-            // Sentry
-            if (id.includes('node_modules/@sentry/')) {
+            // Sentry core (pure JS parts)
+            if (id.includes('node_modules/@sentry/') && !id.includes('@sentry/react')) {
               return 'vendor-sentry';
             }
             // Don't split app source code — let Rollup handle it naturally
-            // This prevents TDZ errors from circular/cross-chunk dependencies
           }
         }
       },
