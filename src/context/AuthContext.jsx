@@ -196,78 +196,80 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
     };
 
+    const urlListenerRef = useRef(null);
+
     const signInWithOAuth = async (provider) => {
         const { isNativeApp } = await import('../utils/authRedirect');
 
         if (isNativeApp()) {
-            // On native platforms, we need to use a different flow
-            // Get the OAuth URL and open it in an in-app browser
+            // Clean up any existing listener
+            if (urlListenerRef.current) {
+                console.log('[OAuth] Cleaning up previous listener');
+                urlListenerRef.current.remove();
+                urlListenerRef.current = null;
+            }
+
+            // On native platforms, we use an in-app browser flow
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
                     redirectTo: getRedirectUrl('/callback'),
-                    skipBrowserRedirect: true // Don't auto-redirect, we'll handle it
+                    skipBrowserRedirect: true 
                 }
             });
 
             if (error) throw error;
 
             if (data?.url) {
-                // Open OAuth URL in in-app browser
                 const { Browser } = await import('@capacitor/browser');
-
-                // Listen for the app to reopen with the auth callback
                 const { App } = await import('@capacitor/app');
 
-                // Remove any existing listener before adding new one
-                const urlListener = await App.addListener('appUrlOpen', async (event) => {
-                    console.log('[OAuth] App URL opened:', event.url);
+                // Listen for the app to reopen with the auth callback
+                urlListenerRef.current = await App.addListener('appUrlOpen', async (event) => {
+                    console.log('[OAuth] Deep link received:', event.url);
 
                     try {
-                        // Close the in-app browser first
-                        await Browser.close();
-                    } catch (e) {
-                        console.warn('[OAuth] Browser close error:', e);
-                    }
+                        // Close the browser - wrap in try/catch as it may already be closed
+                        try {
+                            await Browser.close();
+                        } catch (e) {
+                            console.warn('[OAuth] Browser close error:', e);
+                        }
 
-                    // Extract tokens from the callback URL
-                    try {
+                        // Extract tokens/codes from the callback URL
                         const url = new URL(event.url);
-                        // OAuth tokens typically come in the hash fragment
+                        // Access hash fragment and search params
                         const hashParams = url.hash ? new URLSearchParams(url.hash.substring(1)) : null;
+                        const queryParams = url.searchParams;
+                        
                         const accessToken = hashParams?.get('access_token');
                         const refreshToken = hashParams?.get('refresh_token');
+                        const code = queryParams.get('code') || hashParams?.get('code');
 
                         if (accessToken && refreshToken) {
-                            // Set the session directly from the tokens
+                            console.log('[OAuth] Session set from tokens');
                             const { error: sessionError } = await supabase.auth.setSession({
                                 access_token: accessToken,
                                 refresh_token: refreshToken
                             });
-
-                            if (sessionError) {
-                                console.error('[OAuth] Failed to set session:', sessionError);
-                            } else {
-                                console.log('[OAuth] Session set successfully');
-                            }
-                        } else {
-                            // Might be an authorization code flow, try to exchange
-                            const code = url.searchParams.get('code') || hashParams?.get('code');
-                            if (code) {
-                                const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-                                if (exchangeError) {
-                                    console.error('[OAuth] Code exchange failed:', exchangeError);
-                                } else {
-                                    console.log('[OAuth] Code exchanged successfully');
-                                }
+                            if (sessionError) console.error('[OAuth] Session error:', sessionError);
+                        } else if (code) {
+                            console.log('[OAuth] Exchanging code for session');
+                            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+                            if (exchangeError) {
+                                // If code was already exchanged by global listener, session might exist
+                                const { data: { session } } = await supabase.auth.getSession();
+                                if (!session) console.error('[OAuth] Exchange error:', exchangeError);
                             }
                         }
                     } catch (e) {
-                        console.error('[OAuth] Error processing callback URL:', e);
+                        console.error('[OAuth] Callback processing error:', e);
+                    } finally {
+                        if (urlListenerRef.current) {
+                            urlListenerRef.current.remove();
+                            urlListenerRef.current = null;
+                        }
                     }
-
-                    // Remove this listener
-                    urlListener.remove();
                 });
 
                 // Open the OAuth URL
@@ -280,11 +282,13 @@ export const AuthProvider = ({ children }) => {
 
             return data;
         } else {
-            // Web platform - use normal OAuth flow
+            // Web platform behavior
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
-                    redirectTo: getRedirectUrl('/settings')
+                    redirectTo: getRedirectUrl('/callback'),
+                    // For Google, select_account can help users who have several gmail accounts
+                    queryParams: provider === 'google' ? { prompt: 'select_account' } : {}
                 }
             });
             if (error) throw error;
