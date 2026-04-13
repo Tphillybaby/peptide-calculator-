@@ -163,12 +163,14 @@ function AppRoutes() {
           <Route path="update-password" element={<UpdatePassword />} />
           <Route path="price-checker" element={<PriceChecker />} />
           <Route path="encyclopedia" element={<Encyclopedia />} />
+          <Route path="encyclopedia/testosterone" element={<TRTGuide />} />
           <Route path="encyclopedia/:name" element={<PeptideDetail />} />
           <Route path="guides" element={<Guides />} />
           <Route path="guides/beginner" element={<BeginnerGuide />} />
           <Route path="guides/injection" element={<InjectionGuide />} />
           <Route path="guides/storage" element={<StorageGuide />} />
-          <Route path="guides/trt" element={<TRTGuide />} />
+          {/* Redirect old guides/trt URL to encyclopedia */}
+          <Route path="guides/trt" element={<Navigate to="/encyclopedia/testosterone" replace />} />
           <Route path="safety" element={<Safety />} />
           <Route path="forum" element={<ForumPage />} />
           <Route path="inventory" element={<Inventory />} />

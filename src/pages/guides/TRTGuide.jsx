@@ -28,12 +28,12 @@ const TRTGuide = () => {
             <SEO
                 title="TRT (Testosterone Replacement Therapy) — Complete Encyclopedia"
                 description="Everything you need to know about Testosterone Replacement Therapy (TRT): protocols, dosages, esters, ancillaries, blood work, risks, and how to optimize your therapy."
-                canonical="/guides/trt"
+                canonical="/encyclopedia/testosterone"
             />
             <div className="page-container">
                 <div className={styles.container}>
-                    <Link to="/guides" className={styles.backLink}>
-                        <ArrowLeft size={20} /> Back to Guides
+                    <Link to="/encyclopedia" className={styles.backLink}>
+                        <ArrowLeft size={20} /> Back to Encyclopedia
                     </Link>
 
                     {/* Hero */}

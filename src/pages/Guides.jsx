@@ -81,7 +81,7 @@ const Guides = () => {
                         title="TRT Encyclopedia"
                         description="Complete guide to Testosterone Replacement Therapy — esters, protocols, blood work, ancillaries, side effects, and optimisation strategies."
                         icon={Zap}
-                        link="/guides/trt"
+                        link="/encyclopedia/testosterone"
                         color="#f59e0b"
                     />
                 </div>
