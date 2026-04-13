@@ -111,6 +111,20 @@ function AppRoutes() {
   // Handle deep links for native app auth callbacks
   useDeepLinkHandler();
 
+  // Handle redirects from 404.html SPA fallback
+  // When Vercel's edge routing fails, 404.html stores the intended path
+  // in sessionStorage and redirects to '/'. This picks it up.
+  React.useEffect(() => {
+    const redirect = sessionStorage.getItem('spa_redirect');
+    if (redirect) {
+      sessionStorage.removeItem('spa_redirect');
+      // Use replaceState + reload to navigate to the intended URL
+      // This preserves hash fragments (needed for OAuth implicit flow)
+      window.history.replaceState(null, '', redirect);
+      window.location.reload();
+    }
+  }, []);
+
   return (
     <Suspense fallback={<PageLoader type="dashboard" />}>
       <PageTracker />

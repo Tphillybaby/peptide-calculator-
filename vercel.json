@@ -55,6 +55,5 @@
         }
     ],
     "buildCommand": "npm run build",
-    "outputDirectory": "dist",
-    "framework": null
+    "outputDirectory": "dist"
 }

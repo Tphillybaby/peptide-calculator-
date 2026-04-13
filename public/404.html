@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redirecting... | PeptideLog</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    p { color: #94a3b8; }
+  </style>
+  <!--
+    SPA Fallback Page
+    Vercel serves this 404.html when the edge routing fails to match a route
+    (e.g., during OAuth redirects or cold-start edge 404s).
+    This script preserves the full URL (including hash fragments with auth tokens)
+    and redirects to the home page with the original path encoded, so the SPA
+    can pick it up and navigate to the correct route client-side.
+  -->
+  <script>
+    (function() {
+      // Preserve the full path + search + hash for the SPA to pick up
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+
+      // Special handling for OAuth callback - redirect immediately to home
+      // with the path stored, so the SPA can handle it
+      if (path === '/callback' || path === '/callback/') {
+        // For auth callbacks, we need to preserve the code/tokens
+        // Store the full callback URL for the SPA to process
+        sessionStorage.setItem('spa_redirect', path + search + hash);
+        // Redirect to the base URL - the SPA will check sessionStorage
+        window.location.replace('/' + search + hash);
+      } else {
+        // For all other routes, just reload the same URL
+        // This handles intermittent Vercel edge 404s by retrying
+        var retried = sessionStorage.getItem('spa_retry_' + path);
+        if (!retried) {
+          sessionStorage.setItem('spa_retry_' + path, '1');
+          window.location.reload();
+        } else {
+          // Already retried, redirect to home with path preserved
+          sessionStorage.removeItem('spa_retry_' + path);
+          sessionStorage.setItem('spa_redirect', path + search + hash);
+          window.location.replace('/');
+        }
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <p>Redirecting...</p>
+  </div>
+</body>
+</html>
