@@ -1,48 +1,47 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 /**
  * AuthCallback — handles OAuth/PKCE redirects from Supabase (Google, etc.)
  *
- * Web flow (Chrome/Safari/Firefox):
- *   - detectSessionInUrl is TRUE, so Supabase's client auto-calls
- *     exchangeCodeForSession when it sees ?code= in the URL.
- *   - We just poll getSession() until it's set, then navigate home.
- *   - We must NOT call exchangeCodeForSession manually — that would
- *     double-consume the single-use code and cause an auth error.
+ * detectSessionInUrl is FALSE, so Supabase never auto-processes the URL.
+ * This component is responsible for:
+ *   1. Reading the ?code= from the current URL
+ *   2. Calling exchangeCodeForSession(code) explicitly
+ *   3. Navigating home on success, or back to login on failure
  *
- * Native flow (iOS/Android Capacitor):
- *   - Deep link handler (useDeepLinkHandler) processes the callback.
- *   - This page should never be hit on native, but if it is, we poll.
+ * Why manual exchange instead of detectSessionInUrl:true?
+ *   - Gives full control over errors (no silent timeout)
+ *   - Avoids race conditions where the auto-exchange fires before
+ *     our onAuthStateChange listener is registered
+ *   - Works reliably in all browsers without depending on Supabase internals
  */
 const AuthCallback = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const [status, setStatus] = useState('Completing sign in...');
-    // Prevent multiple concurrent navigation attempts
     const navigatedRef = useRef(false);
 
-    const goHome = (replace = true) => {
+    const goHome = () => {
         if (!navigatedRef.current) {
             navigatedRef.current = true;
-            navigate('/', { replace });
+            navigate('/', { replace: true });
         }
     };
 
-    const goLogin = (replace = true) => {
+    const goLogin = () => {
         if (!navigatedRef.current) {
             navigatedRef.current = true;
-            navigate('/login', { replace });
+            navigate('/login', { replace: true });
         }
     };
 
     useEffect(() => {
         let mounted = true;
-        let pollTimer = null;
 
         const run = async () => {
-            // ── Fast path: session already exists ──────────────────────────
+            // ── Fast path: already have a valid session ────────────────────
+            // (e.g. user refreshed the page after logging in)
             const { data: { session: existing } } = await supabase.auth.getSession();
             if (!mounted) return;
             if (existing?.user) {
@@ -50,61 +49,72 @@ const AuthCallback = () => {
                 return;
             }
 
-            // ── On web, Supabase auto-processes the ?code= param ───────────
-            // detectSessionInUrl:true means the client already started the
-            // PKCE exchange in the background. We just wait for it.
-            // Do NOT call exchangeCodeForSession here — the code is single-use.
+            // ── Read the ?code= from the current URL ───────────────────────
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
 
-            // ── Poll until session appears or we time out ──────────────────
-            const maxWait = 10000; // 10s — generous for slow connections
-            const intervalMs = 250;
-            let elapsed = 0;
+            if (!code) {
+                // No code in URL — check for hash-based implicit flow tokens
+                const hash = window.location.hash;
+                if (hash && hash.includes('access_token')) {
+                    // Implicit flow: Supabase handles hash tokens automatically
+                    // via onAuthStateChange even with detectSessionInUrl:false
+                    // Just poll briefly for the session
+                    await waitForSession(mounted, setStatus, goHome, goLogin);
+                    return;
+                }
 
-            pollTimer = setInterval(async () => {
-                if (!mounted) { clearInterval(pollTimer); return; }
-                elapsed += intervalMs;
+                console.error('[AuthCallback] No code or token in URL');
+                if (mounted) {
+                    setStatus('No login code found. Redirecting...');
+                    setTimeout(goLogin, 1500);
+                }
+                return;
+            }
 
-                try {
+            // ── Exchange the PKCE code for a session ───────────────────────
+            if (mounted) setStatus('Completing sign in...');
+
+            try {
+                const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+                if (!mounted) return;
+
+                if (error) {
+                    console.error('[AuthCallback] Code exchange failed:', error.message);
+
+                    // Check if maybe it was already exchanged (double-load race)
                     const { data: { session } } = await supabase.auth.getSession();
-                    if (session?.user && mounted) {
-                        clearInterval(pollTimer);
+                    if (session?.user) {
                         goHome();
                         return;
                     }
-                } catch {
-                    // Ignore transient errors, keep polling
+
+                    setStatus(`Sign in failed: ${error.message}`);
+                    setTimeout(goLogin, 2000);
+                    return;
                 }
 
-                if (elapsed >= maxWait && mounted) {
-                    clearInterval(pollTimer);
-                    console.warn('[AuthCallback] Timed out waiting for session');
-                    if (mounted) {
-                        setStatus('Sign in timed out. Redirecting...');
-                        setTimeout(() => { if (mounted) goLogin(); }, 1200);
-                    }
+                if (data?.session?.user) {
+                    goHome();
+                } else {
+                    // Exchange succeeded but session not immediately available —
+                    // onAuthStateChange should fire shortly
+                    await waitForSession(mounted, setStatus, goHome, goLogin);
                 }
-            }, intervalMs);
-        };
-
-        // Also listen for Supabase's own auth state event — this fires as
-        // soon as detectSessionInUrl finishes the exchange, no polling needed.
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (!mounted) return;
-            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
-                if (pollTimer) clearInterval(pollTimer);
-                goHome();
+            } catch (e) {
+                if (!mounted) return;
+                console.error('[AuthCallback] Exchange exception:', e);
+                setStatus('Sign in failed. Redirecting...');
+                setTimeout(goLogin, 1500);
             }
-        });
+        };
 
         run();
 
-        return () => {
-            mounted = false;
-            if (pollTimer) clearInterval(pollTimer);
-            subscription.unsubscribe();
-        };
+        return () => { mounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Run once on mount — no dependency on user/location to avoid re-triggering
+    }, []); // Run once on mount only
 
     return (
         <div style={{
@@ -130,5 +140,41 @@ const AuthCallback = () => {
         </div>
     );
 };
+
+/**
+ * Poll getSession() for up to 6 seconds, navigating home when it appears.
+ * Used as a fallback after exchangeCodeForSession or for implicit flow.
+ */
+async function waitForSession(mounted, setStatus, goHome, goLogin) {
+    const maxWait = 6000;
+    const intervalMs = 300;
+    let elapsed = 0;
+
+    await new Promise((resolve) => {
+        const timer = setInterval(async () => {
+            if (!mounted) { clearInterval(timer); resolve(); return; }
+            elapsed += intervalMs;
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    clearInterval(timer);
+                    goHome();
+                    resolve();
+                    return;
+                }
+            } catch { /* keep polling */ }
+
+            if (elapsed >= maxWait) {
+                clearInterval(timer);
+                console.warn('[AuthCallback] Timed out waiting for session');
+                if (mounted) {
+                    setStatus('Sign in timed out. Redirecting...');
+                    setTimeout(goLogin, 1000);
+                }
+                resolve();
+            }
+        }, intervalMs);
+    });
+}
 
 export default AuthCallback;
