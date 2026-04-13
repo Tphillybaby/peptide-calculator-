@@ -129,6 +129,7 @@
     gap: 0.4rem;
     padding: 1.25rem 1.5rem;
     background: rgba(15, 23, 42, 0.7);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -429,7 +430,7 @@
     color: var(--text-primary);
     text-align: left;
     transition: background var(--transition-fast);
-    min-height: auto;
+    min-height: unset;
 }
 
 .accordionHeader:hover {
