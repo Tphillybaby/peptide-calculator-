@@ -40,6 +40,7 @@ const Safety = lazy(() => import('./pages/Safety'));
 const BeginnerGuide = lazy(() => import('./pages/guides/BeginnerGuide'));
 const InjectionGuide = lazy(() => import('./pages/guides/InjectionGuide'));
 const StorageGuide = lazy(() => import('./pages/guides/StorageGuide'));
+const TRTGuide = lazy(() => import('./pages/guides/TRTGuide'));
 const ForumPage = lazy(() => import('./pages/Forum'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const InjectionSites = lazy(() => import('./pages/InjectionSites'));
@@ -167,6 +168,7 @@ function AppRoutes() {
           <Route path="guides/beginner" element={<BeginnerGuide />} />
           <Route path="guides/injection" element={<InjectionGuide />} />
           <Route path="guides/storage" element={<StorageGuide />} />
+          <Route path="guides/trt" element={<TRTGuide />} />
           <Route path="safety" element={<Safety />} />
           <Route path="forum" element={<ForumPage />} />
           <Route path="inventory" element={<Inventory />} />

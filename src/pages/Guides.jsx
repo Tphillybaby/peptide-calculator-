@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Shield, Activity, ArrowRight, Thermometer } from 'lucide-react';
+import { BookOpen, Shield, Activity, ArrowRight, Thermometer, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SocialShare from '../components/SocialShare';
 import SEO from '../components/SEO';
@@ -76,6 +76,13 @@ const Guides = () => {
                         icon={Activity}
                         link="/guides/injection"
                         color="#8b5cf6"
+                    />
+                    <GuideCard
+                        title="TRT Encyclopedia"
+                        description="Complete guide to Testosterone Replacement Therapy — esters, protocols, blood work, ancillaries, side effects, and optimisation strategies."
+                        icon={Zap}
+                        link="/guides/trt"
+                        color="#f59e0b"
                     />
                 </div>
 
