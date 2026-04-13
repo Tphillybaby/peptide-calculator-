@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { peptideUrl } from '../utils/slugify';
 import {
     AlertTriangle, Check, AlertCircle, Info, Search,
     Plus, X, ChevronRight, Shield, Zap, Minus
@@ -312,7 +313,7 @@ const InteractionChecker = () => {
 
                                                 <div className={styles.interactionPair}>
                                                     <Link
-                                                        to={`/encyclopedia/${encodeURIComponent(interaction.compound_a)}`}
+                                                        to={peptideUrl(interaction.compound_a)}
                                                         className={styles.compoundLink}
                                                     >
                                                         {interaction.compound_a}
@@ -321,7 +322,7 @@ const InteractionChecker = () => {
                                                         {interaction.interaction_type === 'synergy' ? <Plus size={14} /> : <Minus size={14} />}
                                                     </span>
                                                     <Link
-                                                        to={`/encyclopedia/${encodeURIComponent(interaction.compound_b)}`}
+                                                        to={peptideUrl(interaction.compound_b)}
                                                         className={styles.compoundLink}
                                                     >
                                                         {interaction.compound_b}

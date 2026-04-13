@@ -39,7 +39,13 @@ export default defineConfig(async ({ mode }) => {
         .select('name')
 
       if (data) {
-        const peptideRoutes = data.map(p => `/encyclopedia/${encodeURIComponent(p.name)}`)
+        // Slugify function for clean, QR-code-safe URLs
+        const slugify = (text) => text.toLowerCase()
+          .replace(/\+/g, '-plus').replace(/&/g, '-and')
+          .replace(/[()[\]{}]/g, '').replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '').replace(/-{2,}/g, '-');
+
+        const peptideRoutes = data.map(p => `/encyclopedia/${slugify(p.name)}`)
         dynamicRoutes = [...dynamicRoutes, ...peptideRoutes]
         console.log(`[Sitemap] Added ${peptideRoutes.length} peptide routes`)
       }

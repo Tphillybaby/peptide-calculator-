@@ -2,18 +2,18 @@ import React from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Clock, AlertTriangle, Shield, BookOpen, Activity, ExternalLink, Loader2 } from 'lucide-react';
 import { usePeptides } from '../hooks/usePeptides';
+import { slugify } from '../utils/slugify';
 import ReviewSection from '../components/ReviewSection';
 import SEO from '../components/SEO';
 import ShareButton from '../components/ShareButton';
 
 const PeptideDetail = () => {
     const { name } = useParams();
-    const { getPeptideByName, loading } = usePeptides();
+    const { getPeptideBySlug, loading } = usePeptides();
 
-    // We don't use useMemo here for the finding logic because getPeptideByName 
-    // depends on state that updates (peptides list)
-    const decodedName = decodeURIComponent(name);
-    const peptide = getPeptideByName(decodedName);
+    // Supports both slug URLs (/encyclopedia/bpc-157) and
+    // legacy encoded URLs (/encyclopedia/BPC-157)
+    const peptide = getPeptideBySlug(name);
 
     if (loading) {
         return (
@@ -32,7 +32,7 @@ const PeptideDetail = () => {
             <SEO
                 title={`${peptide.name} Protocol & Dosage Guide`}
                 description={peptide.description ? peptide.description.substring(0, 160) : `Complete guide for ${peptide.name} peptide including dosage, protocols, benefits, and side effects.`}
-                canonical={`/encyclopedia/${encodeURIComponent(peptide.name)}`}
+                canonical={`/encyclopedia/${slugify(peptide.name)}`}
                 jsonLd={{
                     "@context": "https://schema.org/",
                     "@type": "Product",

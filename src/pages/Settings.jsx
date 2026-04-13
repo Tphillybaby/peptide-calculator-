@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { peptideUrl } from '../utils/slugify';
 import { supabase } from '../lib/supabase';
 import { notificationService } from '../services/notificationService';
 import { emailService } from '../services/emailService';
@@ -391,7 +392,7 @@ const Settings = () => {
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                                     <div>
                                                         <Link
-                                                            to={`/encyclopedia/${encodeURIComponent(review.peptide_name)}`}
+                                                            to={peptideUrl(review.peptide_name)}
                                                             style={{
                                                                 fontSize: '1.1rem',
                                                                 fontWeight: '600',

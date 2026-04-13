@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { peptideUrl } from '../utils/slugify';
 import {
     Search, Book, Filter, ChevronRight, ExternalLink,
     Bookmark, BookmarkCheck, Calendar, Users, FileText,
@@ -335,7 +336,7 @@ const ResearchLibrary = () => {
                                 {selectedPaper.peptides?.map(p => (
                                     <Link
                                         key={p}
-                                        to={`/encyclopedia/${encodeURIComponent(p)}`}
+                                        to={peptideUrl(p)}
                                         className={styles.peptideLink}
                                         onClick={() => setSelectedPaper(null)}
                                     >

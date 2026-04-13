@@ -41,6 +41,19 @@ export const initSentry = () => {
             'ResizeObserver loop',
             // Service worker registration failures (Android WebView)
             /ServiceWorkerContainer/,
+            // DOM manipulation by browser extensions or Google Translate
+            /removeChild/,
+            /insertBefore/,
+            /Failed to execute 'removeChild' on 'Node'/,
+            /Failed to execute 'insertBefore' on 'Node'/,
+            // Stale deployment assets (user has cached old HTML pointing to renamed chunks)
+            /Unable to preload CSS/,
+            /Importing a module script failed/,
+            /Failed to fetch dynamically imported module/,
+            /Loading chunk .* failed/,
+            /Loading CSS chunk .* failed/,
+            // Service worker unhandled rejections
+            /^Rejected$/,
         ],
 
         denyUrls: [
@@ -54,15 +67,36 @@ export const initSentry = () => {
         // Don't send PII unless necessary
         beforeSend(event) {
             try {
+                const exceptionValue = event?.exception?.values?.[0];
+                const mechanism = exceptionValue?.mechanism;
+                const errorValue = exceptionValue?.value || '';
+                const errorType = exceptionValue?.type || '';
+
                 // Filter out unhandled promise rejections from service workers
                 // These appear as "Error: Rejected" with mechanism "onunhandledrejection"
-                const mechanism = event?.exception?.values?.[0]?.mechanism;
                 if (mechanism?.type === 'onunhandledrejection') {
-                    const errorValue = event?.exception?.values?.[0]?.value;
-                    // Skip service worker registration failures
-                    if (errorValue === 'Rejected' || errorValue?.includes?.('ServiceWorker')) {
+                    // Skip service worker registration failures and generic rejections
+                    if (errorValue === 'Rejected' ||
+                        errorValue === 'Object Not Found Matching Id:2' ||
+                        errorValue?.includes?.('ServiceWorker') ||
+                        errorValue?.includes?.('service worker')) {
                         return null;
                     }
+                }
+
+                // Filter out DOM manipulation errors from browser extensions / Google Translate
+                if (errorType === 'NotFoundError' &&
+                    (errorValue.includes('removeChild') || errorValue.includes('insertBefore'))) {
+                    return null;
+                }
+
+                // Filter out stale deployment chunk/asset loading errors
+                if (errorValue.includes('Unable to preload CSS') ||
+                    errorValue.includes('Importing a module script failed') ||
+                    errorValue.includes('Failed to fetch dynamically imported module') ||
+                    errorValue.includes('Loading chunk') ||
+                    errorValue.includes('Loading CSS chunk')) {
+                    return null;
                 }
 
                 // Scrub sensitive data with defensive checks

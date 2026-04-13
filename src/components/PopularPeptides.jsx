@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, TrendingUp } from 'lucide-react';
+import { peptideUrl } from '../utils/slugify';
 import styles from './PopularPeptides.module.css';
 
 /**
@@ -27,7 +28,7 @@ const PopularPeptides = ({ variant = 'default', limit = 8 }) => {
                     {displayPeptides.map(peptide => (
                         <Link
                             key={peptide.name}
-                            to={`/encyclopedia/${encodeURIComponent(peptide.name)}`}
+                            to={peptideUrl(peptide.name)}
                             className={styles.compactLink}
                         >
                             {peptide.name}
@@ -56,7 +57,7 @@ const PopularPeptides = ({ variant = 'default', limit = 8 }) => {
                 {displayPeptides.map(peptide => (
                     <Link
                         key={peptide.name}
-                        to={`/encyclopedia/${encodeURIComponent(peptide.name)}`}
+                        to={peptideUrl(peptide.name)}
                         className={styles.peptideCard}
                     >
                         <div className={styles.cardContent}>

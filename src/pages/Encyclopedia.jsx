@@ -9,6 +9,7 @@ import SEO from '../components/SEO';
 import SocialShare from '../components/SocialShare';
 import { getEncyclopediaSchemas } from '../utils/pageSchemas';
 import { POPULAR_PEPTIDES } from '../data/popularPeptides';
+import { peptideUrl } from '../utils/slugify';
 import styles from './Encyclopedia.module.css';
 
 // Health benefit categories with keywords to match peptide benefits
@@ -351,7 +352,7 @@ const PeptideCard = ({ peptide, categoryColor }) => {
     };
 
     return (
-        <Link to={`/encyclopedia/${encodeURIComponent(peptide.name)}`} className={styles.peptideCard}>
+        <Link to={peptideUrl(peptide.name)} className={styles.peptideCard}>
             <div className={styles.peptideCardHeader}>
                 <div
                     className={styles.peptideIcon}

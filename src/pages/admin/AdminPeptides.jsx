@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
+import { peptideUrl } from '../../utils/slugify';
 import styles from './AdminPeptides.module.css';
 
 const CATEGORIES = [
@@ -284,7 +285,7 @@ const AdminPeptides = () => {
                                 </div>
                                 <div className={styles.peptideActions}>
                                     <Link
-                                        to={`/encyclopedia/${encodeURIComponent(peptide.name)}`}
+                                        to={peptideUrl(peptide.name)}
                                         className={styles.viewBtn}
                                         onClick={(e) => e.stopPropagation()}
                                         title="View in Encyclopedia"

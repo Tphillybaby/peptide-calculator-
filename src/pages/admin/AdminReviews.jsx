@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Link } from 'react-router-dom';
+import { peptideUrl } from '../../utils/slugify';
 import styles from './AdminReviews.module.css';
 
 const AdminReviews = () => {
@@ -251,7 +252,7 @@ const AdminReviews = () => {
                             <div className={styles.reviewHeader}>
                                 <div className={styles.peptideInfo}>
                                     <Link
-                                        to={`/encyclopedia/${encodeURIComponent(review.peptides?.name || '')}`}
+                                        to={peptideUrl(review.peptides?.name || '')}
                                         className={styles.peptideLink}
                                     >
                                         {review.peptides?.name || 'Unknown Peptide'}
