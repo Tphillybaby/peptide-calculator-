@@ -1,103 +1,110 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
+/**
+ * AuthCallback — handles OAuth/PKCE redirects from Supabase (Google, etc.)
+ *
+ * Web flow (Chrome/Safari/Firefox):
+ *   - detectSessionInUrl is TRUE, so Supabase's client auto-calls
+ *     exchangeCodeForSession when it sees ?code= in the URL.
+ *   - We just poll getSession() until it's set, then navigate home.
+ *   - We must NOT call exchangeCodeForSession manually — that would
+ *     double-consume the single-use code and cause an auth error.
+ *
+ * Native flow (iOS/Android Capacitor):
+ *   - Deep link handler (useDeepLinkHandler) processes the callback.
+ *   - This page should never be hit on native, but if it is, we poll.
+ */
 const AuthCallback = () => {
-    const { user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    const [status, setStatus] = useState('Processing login...');
+    const [status, setStatus] = useState('Completing sign in...');
+    // Prevent multiple concurrent navigation attempts
+    const navigatedRef = useRef(false);
+
+    const goHome = (replace = true) => {
+        if (!navigatedRef.current) {
+            navigatedRef.current = true;
+            navigate('/', { replace });
+        }
+    };
+
+    const goLogin = (replace = true) => {
+        if (!navigatedRef.current) {
+            navigatedRef.current = true;
+            navigate('/login', { replace });
+        }
+    };
 
     useEffect(() => {
         let mounted = true;
+        let pollTimer = null;
 
-        const handleCallback = async () => {
-            // If user is already available from AuthContext (fast path), redirect immediately.
-            if (user) {
-                navigate('/', { replace: true });
+        const run = async () => {
+            // ── Fast path: session already exists ──────────────────────────
+            const { data: { session: existing } } = await supabase.auth.getSession();
+            if (!mounted) return;
+            if (existing?.user) {
+                goHome();
                 return;
             }
 
-            // On web: detectSessionInUrl is true, so Supabase automatically processes
-            // the PKCE ?code= param when the client initialises on this page.
-            // We should NOT call exchangeCodeForSession ourselves — that would cause a
-            // "code already used" error. Instead, just poll until the session appears.
+            // ── On web, Supabase auto-processes the ?code= param ───────────
+            // detectSessionInUrl:true means the client already started the
+            // PKCE exchange in the background. We just wait for it.
+            // Do NOT call exchangeCodeForSession here — the code is single-use.
 
-            // On native: detectSessionInUrl is false, so deep links handle the exchange.
-            // The code should never appear in the URL here for native — but as a safety
-            // net we attempt a manual exchange if we detect an unused code.
-            const isNative = typeof window !== 'undefined' &&
-                window.Capacitor?.isNativePlatform?.() === true;
-
-            const params = new URLSearchParams(location.search);
-            const hashParams = location.hash ? new URLSearchParams(location.hash.substring(1)) : null;
-            const code = params.get('code') || hashParams?.get('code');
-
-            if (code && isNative) {
-                // Native-only manual exchange (web lets Supabase handle it automatically)
-                try {
-                    if (mounted) setStatus('Completing sign in...');
-                    const { error } = await supabase.auth.exchangeCodeForSession(code);
-                    if (error) {
-                        const { data: { session } } = await supabase.auth.getSession();
-                        if (session?.user) {
-                            if (mounted) navigate('/', { replace: true });
-                            return;
-                        }
-                        console.error('[AuthCallback] Code exchange failed:', error);
-                        if (mounted) setStatus('Sign in failed. Redirecting...');
-                        setTimeout(() => mounted && navigate('/login', { replace: true }), 1500);
-                        return;
-                    }
-                } catch (e) {
-                    console.error('[AuthCallback] Code exchange exception:', e);
-                    if (mounted) {
-                        setStatus('Sign in failed. Redirecting...');
-                        setTimeout(() => navigate('/login', { replace: true }), 1500);
-                    }
-                    return;
-                }
-            }
-
-            // Poll for session — Supabase's auto-exchange (web) or deep link handler (native)
-            // will set it asynchronously. Poll until it appears or we time out.
-            if (mounted) setStatus('Completing sign in...');
-            const maxWait = 8000;
-            const interval = 300;
+            // ── Poll until session appears or we time out ──────────────────
+            const maxWait = 10000; // 10s — generous for slow connections
+            const intervalMs = 250;
             let elapsed = 0;
 
-            const poll = setInterval(() => {
-                elapsed += interval;
-                if (!mounted) {
-                    clearInterval(poll);
-                    return;
-                }
-                supabase.auth.getSession().then(({ data: { session } }) => {
+            pollTimer = setInterval(async () => {
+                if (!mounted) { clearInterval(pollTimer); return; }
+                elapsed += intervalMs;
+
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
                     if (session?.user && mounted) {
-                        clearInterval(poll);
-                        navigate('/', { replace: true });
-                    } else if (elapsed >= maxWait && mounted) {
-                        clearInterval(poll);
-                        console.warn('[AuthCallback] Timeout waiting for session');
-                        setStatus('Sign in timed out. Redirecting...');
-                        setTimeout(() => mounted && navigate('/login', { replace: true }), 1000);
+                        clearInterval(pollTimer);
+                        goHome();
+                        return;
                     }
-                });
-            }, interval);
+                } catch {
+                    // Ignore transient errors, keep polling
+                }
+
+                if (elapsed >= maxWait && mounted) {
+                    clearInterval(pollTimer);
+                    console.warn('[AuthCallback] Timed out waiting for session');
+                    if (mounted) {
+                        setStatus('Sign in timed out. Redirecting...');
+                        setTimeout(() => { if (mounted) goLogin(); }, 1200);
+                    }
+                }
+            }, intervalMs);
         };
 
-        handleCallback();
+        // Also listen for Supabase's own auth state event — this fires as
+        // soon as detectSessionInUrl finishes the exchange, no polling needed.
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (!mounted) return;
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+                if (pollTimer) clearInterval(pollTimer);
+                goHome();
+            }
+        });
 
-        return () => { mounted = false; };
-    }, [user, navigate, location.search, location.hash]);
+        run();
 
-    // If user is already set during render, redirect immediately
-    useEffect(() => {
-        if (user) {
-            navigate('/', { replace: true });
-        }
-    }, [user, navigate]);
+        return () => {
+            mounted = false;
+            if (pollTimer) clearInterval(pollTimer);
+            subscription.unsubscribe();
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Run once on mount — no dependency on user/location to avoid re-triggering
 
     return (
         <div style={{
@@ -105,8 +112,9 @@ const AuthCallback = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            minHeight: '80vh',
+            minHeight: '100vh',
             gap: '1rem',
+            background: 'linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%)',
             fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
         }}>
             <div style={{
@@ -117,7 +125,7 @@ const AuthCallback = () => {
                 borderRadius: '50%',
                 animation: 'spin 1s linear infinite'
             }} />
-            <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>{status}</p>
+            <p style={{ color: '#94a3b8', fontSize: '0.95rem', margin: 0 }}>{status}</p>
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );

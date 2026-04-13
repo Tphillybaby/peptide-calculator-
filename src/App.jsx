@@ -112,17 +112,26 @@ function AppRoutes() {
   useDeepLinkHandler();
 
   // Handle redirects from 404.html SPA fallback
-  // When Vercel's edge routing fails, 404.html stores the intended path
-  // in sessionStorage and redirects to '/'. This picks it up.
-  React.useEffect(() => {
+  // When Vercel's edge routing fails to serve the SPA, 404.html stores the
+  // intended path in sessionStorage and redirects to '/'. We pick it up here
+  // and do a CLIENT-SIDE navigation — no full reload — so OAuth ?code= params
+  // are preserved and Supabase can process them without a wasted round-trip.
+  React.useLayoutEffect(() => {
     const redirect = sessionStorage.getItem('spa_redirect');
-    if (redirect) {
-      sessionStorage.removeItem('spa_redirect');
-      // Use replaceState + reload to navigate to the intended URL
-      // This preserves hash fragments (needed for OAuth implicit flow)
+    if (!redirect) return;
+    sessionStorage.removeItem('spa_redirect');
+
+    // Update the browser URL to the intended path without a page reload.
+    // React Router will re-render with the new location on the next tick.
+    // IMPORTANT: do NOT call window.location.reload() here — that would:
+    //   1. Trigger an infinite loop (404 → spa_redirect → reload → 404…)
+    //   2. Invalidate the single-use OAuth ?code= param from Google/Supabase
+    if (window.location.pathname + window.location.search + window.location.hash !== redirect) {
       window.history.replaceState(null, '', redirect);
-      window.location.reload();
+      // Force React Router to pick up the new URL by dispatching a popstate
+      window.dispatchEvent(new PopStateEvent('popstate', { state: null }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

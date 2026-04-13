@@ -33,40 +33,56 @@
   </style>
   <!--
     SPA Fallback Page
-    Vercel serves this 404.html when the edge routing fails to match a route
-    (e.g., during OAuth redirects or cold-start edge 404s).
-    This script preserves the full URL (including hash fragments with auth tokens)
-    and redirects to the home page with the original path encoded, so the SPA
-    can pick it up and navigate to the correct route client-side.
+    Vercel serves this 404.html when the edge routing fails to match a route.
+
+    CRITICAL RULES:
+    1. OAuth callbacks (/callback?code=...) MUST redirect to /callback — NOT to /
+       The React Router renders <AuthCallback> only for the /callback route.
+    2. We MUST NOT call window.location.reload() — that creates infinite loops
+       and invalidates the single-use OAuth ?code= parameter.
+    3. We store the full intended URL in sessionStorage so App.jsx can pick it up
+       and perform a client-side navigation (no full reload).
   -->
   <script>
     (function() {
-      // Preserve the full path + search + hash for the SPA to pick up
       var path = window.location.pathname;
       var search = window.location.search;
       var hash = window.location.hash;
+      var fullPath = path + search + hash;
 
-      // Special handling for OAuth callback - redirect immediately to home
-      // with the path stored, so the SPA can handle it
+      // --- Auth callback: preserve /callback + query params ---
+      // The Google OAuth redirect lands as /callback?code=xxx&...
+      // We must redirect to / so the SPA loads, then the SPA navigates to
+      // /callback with the code intact — Supabase then auto-exchanges it.
       if (path === '/callback' || path === '/callback/') {
-        // For auth callbacks, we need to preserve the code/tokens
-        // Store the full callback URL for the SPA to process
-        sessionStorage.setItem('spa_redirect', path + search + hash);
-        // Redirect to the base URL - the SPA will check sessionStorage
-        window.location.replace('/' + search + hash);
+        // Store the FULL callback URL (path + code params) so App.jsx restores it
+        sessionStorage.setItem('spa_redirect', fullPath);
+        // Redirect to root — App.jsx will navigate back to /callback client-side
+        window.location.replace('/');
+        return;
+      }
+
+      // --- Magic link / password reset callbacks ---
+      if (path === '/update-password' || path === '/reset-password') {
+        sessionStorage.setItem('spa_redirect', fullPath);
+        window.location.replace('/');
+        return;
+      }
+
+      // --- All other SPA routes: retry once, then fall back to home ---
+      // This handles transient Vercel edge 404s (cold-start race conditions).
+      var retryKey = 'spa_retry_' + path;
+      var retried = sessionStorage.getItem(retryKey);
+      if (!retried) {
+        // First failure: retry the same URL directly (no reload loop risk
+        // because we only do this once per path)
+        sessionStorage.setItem(retryKey, '1');
+        sessionStorage.setItem('spa_redirect', fullPath);
+        window.location.replace('/');
       } else {
-        // For all other routes, just reload the same URL
-        // This handles intermittent Vercel edge 404s by retrying
-        var retried = sessionStorage.getItem('spa_retry_' + path);
-        if (!retried) {
-          sessionStorage.setItem('spa_retry_' + path, '1');
-          window.location.reload();
-        } else {
-          // Already retried, redirect to home with path preserved
-          sessionStorage.removeItem('spa_retry_' + path);
-          sessionStorage.setItem('spa_redirect', path + search + hash);
-          window.location.replace('/');
-        }
+        // Already retried — the path truly doesn't exist; go to home
+        sessionStorage.removeItem(retryKey);
+        window.location.replace('/');
       }
     })();
   </script>

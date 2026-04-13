@@ -16,9 +16,17 @@ initSentry()
 // After Vercel deploys a new version, users with cached HTML may reference
 // assets (e.g. PromotionalAuthPopup--nNkX2aS.css) that no longer exist.
 window.addEventListener('vite:preloadError', (event) => {
+  // Never reload on the /callback route — that would invalidate the
+  // single-use OAuth ?code= param from Google and break login.
+  if (window.location.pathname === '/callback') {
+    event.preventDefault();
+    return;
+  }
   const lastReload = sessionStorage.getItem('chunk_reload_time');
-  if (!lastReload || Date.now() - parseInt(lastReload) > 10000) {
-    sessionStorage.setItem('chunk_reload_time', Date.now().toString());
+  const now = Date.now();
+  // Only reload once per 30 seconds to prevent infinite loops
+  if (!lastReload || now - parseInt(lastReload) > 30000) {
+    sessionStorage.setItem('chunk_reload_time', now.toString());
     window.location.reload();
   }
   // Prevent the error from propagating to Sentry / global error handler
