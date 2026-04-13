@@ -11,8 +11,35 @@ if (!isConfigured) {
     console.error('Supabase is not configured. Missing environment variables.');
 }
 
+// Detect if we're running inside a Capacitor native app (iOS/Android).
+// On native, OAuth callbacks arrive via deep links, so we disable Supabase's
+// automatic URL session detection (which breaks in WKWebView).
+// On web browsers (Chrome, Safari, Firefox), we MUST keep detectSessionInUrl: true
+// so Supabase can automatically exchange the PKCE ?code= param on the /callback page.
+const isNativePlatform = (() => {
+    try {
+        // Capacitor sets window.Capacitor.isNativePlatform() at runtime
+        return typeof window !== 'undefined' &&
+            window.Capacitor?.isNativePlatform?.() === true;
+    } catch {
+        return false;
+    }
+})();
+
 export const supabase = isConfigured
-    ? createClient(supabaseUrl, supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            // On native (iOS/Android): deep link handler processes OAuth callbacks,
+            // so we disable auto URL detection to avoid conflicts with WKWebView.
+            // On web (Chrome/Safari): keep enabled so the /callback page can
+            // automatically exchange the PKCE code from the URL query params.
+            detectSessionInUrl: !isNativePlatform,
+            flowType: 'pkce',
+            autoRefreshToken: true,
+            persistSession: true,
+            storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+        }
+    })
     : (() => {
         // Mock client that returns errors but doesn't crash app
         // Supports method chaining for database queries

@@ -13,32 +13,43 @@ const AuthCallback = () => {
         let mounted = true;
 
         const handleCallback = async () => {
-            // Case 1: PKCE flow — mobile browsers often use this
-            // The URL will have ?code=... as a query parameter or #code=... in hash
+            // If user is already available from AuthContext (fast path), redirect immediately.
+            if (user) {
+                navigate('/', { replace: true });
+                return;
+            }
+
+            // On web: detectSessionInUrl is true, so Supabase automatically processes
+            // the PKCE ?code= param when the client initialises on this page.
+            // We should NOT call exchangeCodeForSession ourselves — that would cause a
+            // "code already used" error. Instead, just poll until the session appears.
+
+            // On native: detectSessionInUrl is false, so deep links handle the exchange.
+            // The code should never appear in the URL here for native — but as a safety
+            // net we attempt a manual exchange if we detect an unused code.
+            const isNative = typeof window !== 'undefined' &&
+                window.Capacitor?.isNativePlatform?.() === true;
+
             const params = new URLSearchParams(location.search);
             const hashParams = location.hash ? new URLSearchParams(location.hash.substring(1)) : null;
             const code = params.get('code') || hashParams?.get('code');
 
-            if (code) {
+            if (code && isNative) {
+                // Native-only manual exchange (web lets Supabase handle it automatically)
                 try {
                     if (mounted) setStatus('Completing sign in...');
                     const { error } = await supabase.auth.exchangeCodeForSession(code);
                     if (error) {
-                        // If the session was already exchanged by a listener elsewhere,
-                        // check if we have a session before giving up
                         const { data: { session } } = await supabase.auth.getSession();
                         if (session?.user) {
                             if (mounted) navigate('/', { replace: true });
                             return;
                         }
-                        
                         console.error('[AuthCallback] Code exchange failed:', error);
                         if (mounted) setStatus('Sign in failed. Redirecting...');
                         setTimeout(() => mounted && navigate('/login', { replace: true }), 1500);
                         return;
                     }
-                    // Session is now set — onAuthStateChange will update user
-                    // Fall through to the polling below
                 } catch (e) {
                     console.error('[AuthCallback] Code exchange exception:', e);
                     if (mounted) {
@@ -49,18 +60,9 @@ const AuthCallback = () => {
                 }
             }
 
-            // Case 2: Implicit flow — URL has #access_token=...
-            // Supabase client automatically detects and processes hash fragments
-            // via onAuthStateChange. We just need to wait for user to appear.
-
-            // Case 3: User already authenticated (e.g., fast session restore)
-            if (user) {
-                navigate('/', { replace: true });
-                return;
-            }
-
-            // Poll for the user to be set (by onAuthStateChange in AuthContext)
-            // Use a longer timeout for mobile (8 seconds)
+            // Poll for session — Supabase's auto-exchange (web) or deep link handler (native)
+            // will set it asynchronously. Poll until it appears or we time out.
+            if (mounted) setStatus('Completing sign in...');
             const maxWait = 8000;
             const interval = 300;
             let elapsed = 0;
@@ -71,7 +73,6 @@ const AuthCallback = () => {
                     clearInterval(poll);
                     return;
                 }
-                // Check if supabase has a session now
                 supabase.auth.getSession().then(({ data: { session } }) => {
                     if (session?.user && mounted) {
                         clearInterval(poll);
