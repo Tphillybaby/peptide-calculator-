@@ -36,15 +36,36 @@ class ErrorBoundary extends React.Component {
     const isChunkError = error.message && (
       error.message.includes('Failed to fetch dynamically imported module') ||
       error.message.includes('Importing a module script failed') ||
-      error.name === 'ChunkLoadError'
+      error.name === 'ChunkLoadError' ||
+      // Safari specific React.lazy chunk error when fallback HTML is served instead of JS
+      (error.name === 'TypeError' && error.message.includes('undefined is not an object') && error.message.includes('.default')) ||
+      (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined') && error.message.includes('reading \'default\''))
     );
 
     if (isChunkError) {
       const lastReload = sessionStorage.getItem('chunk_reload_time');
       if (!lastReload || Date.now() - parseInt(lastReload) > 10000) {
-        console.log('Chunk load error detected, reloading page...');
+        console.log('Chunk load error detected, clearing cache and reloading...');
         sessionStorage.setItem('chunk_reload_time', Date.now().toString());
-        window.location.reload();
+        
+        // Unregister service workers which aggressively cache the old index.html
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          }).catch(console.error).finally(() => {
+            // Append cache buster to URL to force a hard request
+            const url = new URL(window.location.href);
+            url.searchParams.set('update', Date.now().toString());
+            window.location.replace(url.toString());
+          });
+          return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('update', Date.now().toString());
+        window.location.replace(url.toString());
         return;
       }
     }

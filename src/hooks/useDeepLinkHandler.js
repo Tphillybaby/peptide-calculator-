@@ -13,24 +13,34 @@ import { supabase } from '../lib/supabase';
  */
 const parseDeepLink = (url) => {
     try {
-        // URL format: net.peptidelog.app://path?params
-        // or: net.peptidelog.app://callback#access_token=...
-        const urlObj = new URL(url);
-
-        // Get the path (after the scheme://)
-        let path = urlObj.pathname || urlObj.hostname || '/';
-        if (!path.startsWith('/')) {
-            path = '/' + path;
+        // Custom schemes can be unreliable with URL constructor on iOS WKWebView
+        // Extract manually to ensure we always get the path, search, and hash
+        const schemeEnd = url.indexOf('://');
+        if (schemeEnd === -1) return null;
+        
+        const afterScheme = url.substring(schemeEnd + 3);
+        const hashIndex = afterScheme.indexOf('#');
+        const queryIndex = afterScheme.indexOf('?');
+        
+        let path = afterScheme;
+        let search = '';
+        let hash = '';
+        
+        if (hashIndex !== -1) {
+            hash = afterScheme.substring(hashIndex);
+            path = afterScheme.substring(0, hashIndex);
         }
-
-        // Check for hash params (OAuth tokens come in hash)
-        const hashParams = urlObj.hash ? new URLSearchParams(urlObj.hash.substring(1)) : null;
-        const queryParams = new URLSearchParams(urlObj.search);
-
+        if (queryIndex !== -1 && (hashIndex === -1 || queryIndex < hashIndex)) {
+            search = afterScheme.substring(queryIndex, hashIndex !== -1 ? hashIndex : undefined);
+            path = afterScheme.substring(0, queryIndex);
+        }
+        
+        if (!path.startsWith('/')) path = '/' + path;
+        
         return {
             path,
-            hashParams,
-            queryParams,
+            hashParams: hash ? new URLSearchParams(hash.substring(1)) : null,
+            queryParams: new URLSearchParams(search),
             fullUrl: url
         };
     } catch (e) {

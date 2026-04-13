@@ -196,20 +196,13 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
     };
 
-    const urlListenerRef = useRef(null);
-
     const signInWithOAuth = async (provider) => {
         const { isNativeApp } = await import('../utils/authRedirect');
 
         if (isNativeApp()) {
-            // Clean up any existing listener
-            if (urlListenerRef.current) {
-                console.log('[OAuth] Cleaning up previous listener');
-                urlListenerRef.current.remove();
-                urlListenerRef.current = null;
-            }
-
-            // On native platforms, we use an in-app browser flow
+            // On native platforms, we open an in-app browser for OAuth.
+            // The deep link callback is handled by useDeepLinkHandler — 
+            // we do NOT add a listener here to avoid duplicate code-exchange races.
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider,
                 options: {
@@ -222,61 +215,13 @@ export const AuthProvider = ({ children }) => {
 
             if (data?.url) {
                 const { Browser } = await import('@capacitor/browser');
-                const { App } = await import('@capacitor/app');
 
-                // Listen for the app to reopen with the auth callback
-                urlListenerRef.current = await App.addListener('appUrlOpen', async (event) => {
-                    console.log('[OAuth] Deep link received:', event.url);
-
-                    try {
-                        // Close the browser - wrap in try/catch as it may already be closed
-                        try {
-                            await Browser.close();
-                        } catch (e) {
-                            console.warn('[OAuth] Browser close error:', e);
-                        }
-
-                        // Extract tokens/codes from the callback URL
-                        const url = new URL(event.url);
-                        // Access hash fragment and search params
-                        const hashParams = url.hash ? new URLSearchParams(url.hash.substring(1)) : null;
-                        const queryParams = url.searchParams;
-                        
-                        const accessToken = hashParams?.get('access_token');
-                        const refreshToken = hashParams?.get('refresh_token');
-                        const code = queryParams.get('code') || hashParams?.get('code');
-
-                        if (accessToken && refreshToken) {
-                            console.log('[OAuth] Session set from tokens');
-                            const { error: sessionError } = await supabase.auth.setSession({
-                                access_token: accessToken,
-                                refresh_token: refreshToken
-                            });
-                            if (sessionError) console.error('[OAuth] Session error:', sessionError);
-                        } else if (code) {
-                            console.log('[OAuth] Exchanging code for session');
-                            const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-                            if (exchangeError) {
-                                // If code was already exchanged by global listener, session might exist
-                                const { data: { session } } = await supabase.auth.getSession();
-                                if (!session) console.error('[OAuth] Exchange error:', exchangeError);
-                            }
-                        }
-                    } catch (e) {
-                        console.error('[OAuth] Callback processing error:', e);
-                    } finally {
-                        if (urlListenerRef.current) {
-                            urlListenerRef.current.remove();
-                            urlListenerRef.current = null;
-                        }
-                    }
-                });
-
-                // Open the OAuth URL
+                // Open the OAuth URL in a full-screen SFSafariViewController.
+                // 'fullscreen' is required on iOS — 'popover' doesn't reliably
+                // trigger the appUrlOpen deep link event on iPhone.
                 await Browser.open({
                     url: data.url,
-                    windowName: '_self',
-                    presentationStyle: 'popover'
+                    presentationStyle: 'fullscreen'
                 });
             }
 
