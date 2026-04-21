@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cookie, Settings, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { GA_MEASUREMENT_ID } from '../lib/analytics';
+import { updateConsent } from '../lib/analytics';
 
 const CookieConsent = () => {
     const [isVisible, setIsVisible] = useState(() => !localStorage.getItem('cookie_consent'));
@@ -26,14 +26,7 @@ const CookieConsent = () => {
     });
 
     const applyConsent = (prefs) => {
-        // Disable/enable analytics based on consent
-        if (!prefs.analytics) {
-            // Disable Google Analytics
-            window[`ga-disable-${GA_MEASUREMENT_ID}`] = true;
-        } else {
-            // Re-enable Google Analytics
-            window[`ga-disable-${GA_MEASUREMENT_ID}`] = false;
-        }
+        updateConsent(prefs.analytics !== false);
     };
 
     useEffect(() => {

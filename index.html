@@ -75,12 +75,41 @@
   }
   </script>
 
+  <!-- Resource Hints - tell the browser to open connections early -->
+  <link rel="preconnect" href="https://www.googletagmanager.com">
+  <link rel="preconnect" href="https://www.google-analytics.com">
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
+  <link rel="dns-prefetch" href="https://www.google-analytics.com">
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     as="style">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+  <!-- Google Analytics 4 - loaded here (not via JS) for earliest possible firing -->
+  <!-- dataLayer is initialized before gtag.js loads so no events are lost -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    // Default consent - will be updated by CookieConsent component
+    // Set analytics_storage to 'denied' until user accepts cookies
+    var savedConsent = null;
+    try { savedConsent = JSON.parse(localStorage.getItem('cookie_consent')); } catch(e) {}
+    var analyticsGranted = savedConsent && savedConsent.analytics !== false ? 'granted' : 'denied';
+    gtag('consent', 'default', {
+      'analytics_storage': analyticsGranted,
+      'ad_storage': 'denied',
+      'wait_for_update': 500
+    });
+    gtag('js', new Date());
+    gtag('config', 'G-2V2TNJFR16', {
+      send_page_view: false,
+      cookie_flags: 'SameSite=None;Secure'
+    });
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-2V2TNJFR16"></script>
 
   <!-- Inline critical CSS for initial render -->
   <style>

@@ -6,8 +6,11 @@ const PageTracker = () => {
     const location = useLocation();
 
     useEffect(() => {
-        // Track the initial page load and subsequent navigation
-        trackPageView(location.pathname + location.search);
+        // Small delay so document.title has been updated by the SEO/Helmet component
+        const timer = setTimeout(() => {
+            trackPageView(location.pathname + location.search);
+        }, 100);
+        return () => clearTimeout(timer);
     }, [location]);
 
     return null;
