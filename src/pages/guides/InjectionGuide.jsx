@@ -125,6 +125,52 @@ const InjectionGuide = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Recommended Supplies */}
+                    <div className="card glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                            🛒 Recommended Supplies
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+                            Everything you need for safe, sterile injections.
+                        </p>
+
+                        <a
+                            href="https://amzn.to/4wy1UeP"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '1rem 1.25rem',
+                                background: 'rgba(255, 153, 0, 0.08)',
+                                border: '1px solid rgba(255, 153, 0, 0.25)',
+                                borderRadius: '0.75rem',
+                                textDecoration: 'none',
+                                gap: '1rem',
+                            }}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                <span style={{ fontSize: '1.75rem' }}>🧴</span>
+                                <div>
+                                    <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                                        Alcohol Wipes (Isopropyl 70%)
+                                    </div>
+                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                        Sterile prep wipes for vial tops &amp; injection sites
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ color: '#ff9900', fontWeight: '600', fontSize: '0.875rem', flexShrink: 0 }}>
+                                View on Amazon ↗
+                            </div>
+                        </a>
+
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>
+                            As an Amazon Associate, PeptideLog earns from qualifying purchases.
+                        </p>
+                    </div>
                 </div>
             </div>
         </>
