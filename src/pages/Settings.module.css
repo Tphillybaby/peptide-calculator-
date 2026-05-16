@@ -405,38 +405,52 @@
         font-size: 1rem;
     }
 
+    /* Stack layout: sidebar on top, content below */
     .layout {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
         gap: var(--space-md);
+        width: 100%;
+        min-width: 0;
     }
 
     /* Horizontal scrollable tab bar */
     .sidebar {
+        display: flex;
         flex-direction: row;
+        width: 100%;
         overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none; /* Firefox */
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
         padding-bottom: 4px;
-        gap: var(--space-xs);
+        gap: 6px;
+        flex-wrap: nowrap;
     }
 
     .sidebar::-webkit-scrollbar {
         display: none;
     }
 
+    /* Each tab button must never shrink or wrap */
     .tabBtn {
+        flex: 0 0 auto;
+        width: auto;
         white-space: nowrap;
-        min-width: max-content;
-        padding: var(--space-sm) var(--space-md);
+        overflow: visible;
+        padding: 8px 14px;
         font-size: 0.875rem;
-        flex-shrink: 0;
-        gap: var(--space-sm);
+        gap: 6px;
+        display: inline-flex;
+        align-items: center;
     }
 
     /* Content panel */
     .content {
         padding: var(--space-md);
         border-radius: var(--radius-md);
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .section h2 {
@@ -448,7 +462,7 @@
         font-size: 1rem;
     }
 
-    /* Info cards (security, subscription) stack vertically */
+    /* Info cards stack vertically */
     .infoCard {
         flex-direction: column;
         align-items: flex-start;
@@ -509,9 +523,24 @@
         font-size: 1.5rem;
     }
 
+    /* On very small screens hide label text, show icon + abbreviated label */
+    .tabBtn span {
+        display: none;
+    }
+
     .tabBtn {
-        font-size: 0.8125rem;
-        padding: var(--space-xs) var(--space-sm);
+        padding: 10px 12px;
+        min-width: 44px;
+        justify-content: center;
+    }
+
+    .tabBtn.active {
+        padding: 10px 16px;
+    }
+
+    .tabBtn.active span {
+        display: inline;
+        font-size: 0.8rem;
     }
 
     .infoCard {
