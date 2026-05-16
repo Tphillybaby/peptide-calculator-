@@ -30,6 +30,12 @@ const QUICK_PROTOCOLS = [
     { id: 'once', label: 'Once Weekly', days: [], icon: '1️⃣' }
 ];
 
+// Returns a datetime-local string (YYYY-MM-DDTHH:mm) in the user's local timezone
+const toLocalDateTimeString = (date = new Date()) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const InjectionLog = () => {
     // Hooks
     const { isPremium } = useAuth();
@@ -67,7 +73,7 @@ const InjectionLog = () => {
         site: 'Abdomen',
         time: '08:00',
         notes: '',
-        date: new Date().toISOString().slice(0, 16),
+        date: toLocalDateTimeString(),
         recurrenceDays: [],
         duration: 28
     });
@@ -189,7 +195,7 @@ const InjectionLog = () => {
             site: 'Abdomen',
             time: '08:00',
             notes: '',
-            date: selectedDate.toISOString().slice(0, 16),
+            date: toLocalDateTimeString(selectedDate),
             recurrenceDays: [],
             duration: 28
         });
@@ -205,12 +211,12 @@ const InjectionLog = () => {
                 peptide: prefill.peptide,
                 dosage: prefill.dosage?.toString() || '',
                 unit: prefill.unit || 'mg',
-                date: new Date().toISOString().slice(0, 16)
+                date: toLocalDateTimeString()
             }));
         } else {
             setFormData(prev => ({
                 ...prev,
-                date: selectedDate.toISOString().slice(0, 16)
+                date: toLocalDateTimeString(selectedDate)
             }));
         }
         setFormMode('log');
@@ -345,7 +351,7 @@ const InjectionLog = () => {
             site: injection.site || 'Abdomen',
             time: '08:00',
             notes: injection.notes || '',
-            date: new Date(injection.date).toISOString().slice(0, 16),
+            date: toLocalDateTimeString(new Date(injection.date)),
             recurrenceDays: [],
             duration: 28
         });
@@ -667,7 +673,7 @@ const InjectionLog = () => {
                                                 type="datetime-local"
                                                 value={formData.date}
                                                 onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                                max={new Date().toISOString().slice(0, 16)}
+                                                max={toLocalDateTimeString()}
                                             />
                                         </div>
                                         <div className={styles.inputGroup}>
