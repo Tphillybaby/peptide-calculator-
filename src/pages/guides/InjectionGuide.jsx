@@ -135,39 +135,78 @@ const InjectionGuide = () => {
                             Everything you need for safe, sterile injections.
                         </p>
 
-                        <a
-                            href="https://amzn.to/4wy1UeP"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                padding: '1rem 1.25rem',
-                                background: 'rgba(255, 153, 0, 0.08)',
-                                border: '1px solid rgba(255, 153, 0, 0.25)',
-                                borderRadius: '0.75rem',
-                                textDecoration: 'none',
-                                gap: '1rem',
-                            }}
-                        >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                <span style={{ fontSize: '1.75rem' }}>🧴</span>
-                                <div>
-                                    <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                                        Alcohol Wipes (Isopropyl 70%)
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {[
+                                {
+                                    href: 'https://amzn.to/4eN6a3H',
+                                    emoji: '💉',
+                                    name: 'Insulin Syringes 31G — Box of 100',
+                                    desc: 'Easy Touch 1cc short needle, bold markings, disposable'
+                                },
+                                {
+                                    href: 'https://amzn.to/3RKVAAs',
+                                    emoji: '🖊️',
+                                    name: 'Reusable Peptide V2 Pen — 60 Unit',
+                                    desc: 'For 3ml cartridges, smooth plunger, includes 50 prep pads + travel case'
+                                },
+                                {
+                                    href: 'https://amzn.to/4wzDWjk',
+                                    emoji: '🔋',
+                                    name: '3mL Peptide Pen Cartridges — 10 Pack',
+                                    desc: 'Steam sterilized, individually packaged, V1 & V2 compatible'
+                                },
+                                {
+                                    href: 'https://amzn.to/42zQz05',
+                                    emoji: '🧊',
+                                    name: 'Peptide Storage Case — 63-Slot Organizer',
+                                    desc: 'Fridge-ready case fits 3ml bottles, mesh pocket included'
+                                },
+                                {
+                                    href: 'https://amzn.to/4wy1UeP',
+                                    emoji: '🧴',
+                                    name: 'Alcohol Wipes (Isopropyl 70%)',
+                                    desc: 'Sterile prep wipes for vial tops & injection sites'
+                                },
+                            ].map((item) => (
+                                <a
+                                    key={item.href}
+                                    href={item.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '1rem 1.25rem',
+                                        background: 'rgba(255, 153, 0, 0.06)',
+                                        border: '1px solid rgba(255, 153, 0, 0.2)',
+                                        borderRadius: '0.75rem',
+                                        textDecoration: 'none',
+                                        gap: '1rem',
+                                        transition: 'background 0.2s',
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 153, 0, 0.14)'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 153, 0, 0.06)'}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                        <span style={{ fontSize: '1.6rem' }}>{item.emoji}</span>
+                                        <div>
+                                            <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
+                                                {item.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                                                {item.desc}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                                        Sterile prep wipes for vial tops &amp; injection sites
+                                    <div style={{ color: '#ff9900', fontWeight: '600', fontSize: '0.8rem', flexShrink: 0 }}>
+                                        Amazon ↗
                                     </div>
-                                </div>
-                            </div>
-                            <div style={{ color: '#ff9900', fontWeight: '600', fontSize: '0.875rem', flexShrink: 0 }}>
-                                View on Amazon ↗
-                            </div>
-                        </a>
+                                </a>
+                            ))}
+                        </div>
 
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1.25rem', textAlign: 'center' }}>
                             As an Amazon Associate, PeptideLog earns from qualifying purchases.
                         </p>
                     </div>
