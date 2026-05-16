@@ -1,10 +1,14 @@
+// @ts-nocheck
+// Deno runtime — Deno globals and esm.sh/deno.land imports are valid at runtime.
+// IDE errors for 'Deno', 'https://esm.sh/*', and 'https://deno.land/*' are false positives.
 
 /**
  * Supabase Edge Function: scrape-prices
- * 
+ *
  * Scrapes peptide prices from vendor websites and updates the database.
- * 'Legit' version: robust error handling, UA rotation, better parsing.
+ * Robust error handling, UA rotation, pagination, and proxy API support.
  */
+
 
 import { createClient, SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { DOMParser, Element } from 'https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts';

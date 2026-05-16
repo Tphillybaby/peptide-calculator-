@@ -1,7 +1,8 @@
+/* global process */
 /**
  * Vercel Cron Job: Auto-trigger price scraping twice daily
- * Schedule: 6am and 6pm UTC
- * 
+ * Schedule: 6am and 6pm UTC (runs in Vercel Edge Runtime — process.env is available)
+ *
  * This calls the Supabase Edge Function scrape-prices
  * Authorization is checked via CRON_SECRET env var
  */
