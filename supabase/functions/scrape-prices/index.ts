@@ -58,42 +58,56 @@ interface ScrapedProduct {
     pricePerMg?: number;    // Calculated price per mg for comparison
 }
 
-// Target Peptides Definition
+// Target Peptides Definition — expanded list
 const TARGET_PEPTIDES = [
+    // GLP-1/Weight Loss
     { name: 'Semaglutide', slug: 'semaglutide', searchTerms: ['semaglutide', 'ozempic', 'wegovy', 'glp-1 s', 'glp-1s'] },
     { name: 'Tirzepatide', slug: 'tirzepatide', searchTerms: ['tirzepatide', 'mounjaro', 'glp-2 t', 'glp-2t'] },
     { name: 'Retatrutide', slug: 'retatrutide', searchTerms: ['retatrutide', 'glp-3 r', 'glp-3r'] },
-    { name: 'BPC-157', slug: 'bpc-157', searchTerms: ['bpc-157', 'bpc157', 'body protection compound'] },
-    { name: 'TB-500', slug: 'tb-500', searchTerms: ['tb-500', 'tb500', 'thymosin beta'] },
-    { name: 'Ipamorelin', slug: 'ipamorelin', searchTerms: ['ipamorelin'] },
-    { name: 'CJC-1295 (no DAC)', slug: 'cjc-1295-no-dac', searchTerms: ['cjc-1295', 'cjc1295', 'mod grf'] },
-    { name: 'CJC-1295 (DAC)', slug: 'cjc-1295-dac', searchTerms: ['cjc-1295 dac', 'cjc1295 dac', 'drug affinity complex'] },
-    { name: 'Melanotan II', slug: 'melanotan-ii', searchTerms: ['melanotan ii', 'melanotan 2', 'mt2', 'mt 2'] },
-    { name: 'PT-141', slug: 'pt-141', searchTerms: ['pt-141', 'pt141', 'bremelanotide'] },
+    { name: 'Tesofensine', slug: 'tesofensine', searchTerms: ['tesofensine'] },
     { name: 'AOD-9604', slug: 'aod-9604', searchTerms: ['aod-9604', 'aod9604'] },
-    { name: 'GHK-Cu', slug: 'ghk-cu', searchTerms: ['ghk-cu', 'ghkcu', 'copper peptide'] },
+    { name: '5-Amino-1MQ', slug: '5-amino-1mq', searchTerms: ['5-amino-1mq', '5amino1mq', '5-amino 1mq'] },
+    // Healing & Recovery
+    { name: 'BPC-157', slug: 'bpc-157', searchTerms: ['bpc-157', 'bpc157', 'body protection compound'] },
+    { name: 'BPC-157 Arginate', slug: 'bpc-157-arginate', searchTerms: ['bpc-157 arginate', 'bpc157 arginate', 'bpc 157 arginate', 'stable bpc'] },
+    { name: 'TB-500', slug: 'tb-500', searchTerms: ['tb-500', 'tb500', 'thymosin beta'] },
+    { name: 'KPV', slug: 'kpv', searchTerms: ['kpv', 'kpv tripeptide'] },
+    { name: 'LL-37', slug: 'll-37', searchTerms: ['ll-37', 'll37', 'cathelicidin'] },
+    // Growth Hormone / GHRPs
+    { name: 'Ipamorelin', slug: 'ipamorelin', searchTerms: ['ipamorelin'] },
+    { name: 'CJC-1295 (no DAC)', slug: 'cjc-1295-no-dac', searchTerms: ['cjc-1295 no dac', 'cjc1295 no dac', 'mod grf', 'cjc-1295 (no dac)'] },
+    { name: 'CJC-1295 (DAC)', slug: 'cjc-1295-dac', searchTerms: ['cjc-1295 dac', 'cjc1295 dac', 'drug affinity complex'] },
     { name: 'GHRP-2', slug: 'ghrp-2', searchTerms: ['ghrp-2', 'ghrp2'] },
     { name: 'GHRP-6', slug: 'ghrp-6', searchTerms: ['ghrp-6', 'ghrp6'] },
     { name: 'Hexarelin', slug: 'hexarelin', searchTerms: ['hexarelin'] },
+    { name: 'Sermorelin', slug: 'sermorelin', searchTerms: ['sermorelin'] },
+    { name: 'Tesamorelin', slug: 'tesamorelin', searchTerms: ['tesamorelin', 'egrifta'] },
+    { name: 'IGF-1 LR3', slug: 'igf-1-lr3', searchTerms: ['igf-1 lr3', 'igf1 lr3', 'long r3'] },
+    { name: 'PEG-MGF', slug: 'peg-mgf', searchTerms: ['peg-mgf', 'pegmgf', 'pegylated mgf'] },
+    { name: 'Follistatin 344', slug: 'follistatin-344', searchTerms: ['follistatin 344', 'follistatin-344', 'fs344'] },
+    { name: 'Fragment 176-191', slug: 'fragment-176-191', searchTerms: ['fragment 176-191', 'hgh fragment', 'frag 176', 'frag-176'] },
     { name: 'MK-677', slug: 'mk-677', searchTerms: ['mk-677', 'mk677', 'ibutamoren'] },
+    // Sexual Health / Tanning
+    { name: 'PT-141', slug: 'pt-141', searchTerms: ['pt-141', 'pt141', 'bremelanotide'] },
+    { name: 'Melanotan II', slug: 'melanotan-ii', searchTerms: ['melanotan ii', 'melanotan 2', 'mt2', 'mt 2', 'mt-2'] },
+    { name: 'Kisspeptin-10', slug: 'kisspeptin-10', searchTerms: ['kisspeptin', 'kiss-10', 'kisspeptin-10'] },
+    { name: 'Gonadorelin', slug: 'gonadorelin', searchTerms: ['gonadorelin', 'gnrh', 'gonado'] },
+    { name: 'Oxytocin', slug: 'oxytocin', searchTerms: ['oxytocin'] },
+    // Cognitive / Nootropic
     { name: 'Semax', slug: 'semax', searchTerms: ['semax'] },
     { name: 'Selank', slug: 'selank', searchTerms: ['selank'] },
+    { name: 'Dihexa', slug: 'dihexa', searchTerms: ['dihexa'] },
+    { name: 'DSIP', slug: 'dsip', searchTerms: ['dsip', 'delta sleep'] },
+    { name: 'Cerebrolysin', slug: 'cerebrolysin', searchTerms: ['cerebrolysin'] },
+    // Anti-aging / Mitochondrial
     { name: 'Epithalon', slug: 'epithalon', searchTerms: ['epithalon', 'epitalon'] },
     { name: 'MOTS-c', slug: 'mots-c', searchTerms: ['mots-c', 'motsc'] },
-    { name: 'Tesofensine', slug: 'tesofensine', searchTerms: ['tesofensine'] },
-    { name: '5-Amino-1MQ', slug: '5-amino-1mq', searchTerms: ['5-amino-1mq', '5-amino'] },
-    // New popular peptides
-    { name: 'NAD+', slug: 'nad-plus', searchTerms: ['nad+', 'nad plus', 'nicotinamide'] },
-    { name: 'DSIP', slug: 'dsip', searchTerms: ['dsip', 'delta sleep'] },
-    { name: 'Sermorelin', slug: 'sermorelin', searchTerms: ['sermorelin'] },
-    { name: 'Fragment 176-191', slug: 'fragment-176-191', searchTerms: ['fragment 176-191', 'hgh fragment', 'frag 176'] },
-    { name: 'KPV', slug: 'kpv', searchTerms: ['kpv', 'kpv tripeptide'] },
-    { name: 'LL-37', slug: 'll-37', searchTerms: ['ll-37', 'll37', 'cathelicidin'] },
-    { name: 'Tesamorelin', slug: 'tesamorelin', searchTerms: ['tesamorelin', 'egrifta'] },
-    { name: 'Kisspeptin-10', slug: 'kisspeptin-10', searchTerms: ['kisspeptin', 'kiss-10'] },
+    { name: 'SS-31', slug: 'ss-31', searchTerms: ['ss-31', 'ss31', 'elamipretide'] },
     { name: 'Thymulin', slug: 'thymulin', searchTerms: ['thymulin'] },
-    { name: 'IGF-1 LR3', slug: 'igf-1-lr3', searchTerms: ['igf-1 lr3', 'igf1 lr3', 'long r3'] },
-    { name: 'Follistatin 344', slug: 'follistatin-344', searchTerms: ['follistatin 344', 'follistatin-344', 'fs344'] },
+    { name: 'NAD+', slug: 'nad-plus', searchTerms: ['nad+', 'nad plus', 'nicotinamide adenine'] },
+    // Skin / Hair
+    { name: 'GHK-Cu', slug: 'ghk-cu', searchTerms: ['ghk-cu', 'ghkcu', 'copper peptide'] },
+    { name: 'SNAP-8', slug: 'snap-8', searchTerms: ['snap-8', 'snap8'] },
 ];
 
 /**
@@ -210,22 +224,31 @@ function extractQuantity(productName: string): { quantity: number | null; unit: 
 
     const text = productName.toLowerCase();
 
-    // Match patterns like "5mg", "10 mg", "5-mg", "5000mcg", "10iu", "20ml"
-    // Use a single regex with capturing group for unit to handle variations like "5-mg"
-    const pattern = /([\d.]+)(?:[\s-]*)(mg|mcg|iu|ml)\b/i;
+    // Match patterns like "5mg", "10 mg", "5-mg", "5000mcg", "10iu", "20ml", "1.5mg"
+    // Also handles: "(5mg)", "[10mg]", "5-MG"
+    const patterns = [
+        /([\d.]+)\s*-?\s*(mg|mcg|iu|ml)\b/i,  // 5mg, 5 mg, 5-mg
+        /([\d.]+)(mg|mcg|iu|ml)/i,               // 5mg no space
+        /(\d+)\s*milligram/i,                     // 5 milligram
+    ];
 
-    const match = text.match(pattern);
-    if (match) {
-        let quantity = parseFloat(match[1]);
-        let unit = match[2].toLowerCase();
+    for (const pattern of patterns) {
+        const match = text.match(pattern);
+        if (match) {
+            let quantity = parseFloat(match[1]);
+            let unit = (match[2] || 'mg').toLowerCase().replace('milligram', 'mg');
 
-        // Convert mcg to mg
-        if (unit === 'mcg') {
-            quantity = quantity / 1000;
-            unit = 'mg';
+            // Convert mcg to mg for fair comparison
+            if (unit === 'mcg') {
+                quantity = quantity / 1000;
+                unit = 'mg';
+            }
+
+            // Sanity check: ignore if quantity is 0 or unreasonably large
+            if (quantity <= 0 || quantity > 10000) continue;
+
+            return { quantity, unit };
         }
-
-        return { quantity, unit };
     }
 
     return { quantity: null, unit: null };
