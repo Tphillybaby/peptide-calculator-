@@ -126,46 +126,105 @@ const InjectionGuide = () => {
                         </div>
                     </div>
 
-                    {/* Recommended Supplies */}
-                    <div className="card glass-panel" style={{ padding: '2rem', marginTop: '2rem' }}>
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                            🛒 Recommended Supplies
-                        </h2>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
-                            Everything you need for safe, sterile injections.
-                        </p>
+                    {/* Recommended Supplies — Premium Grid */}
+                    <div style={{ marginTop: '2.5rem' }}>
+                        {/* Section Header */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: '1.25rem',
+                            flexWrap: 'wrap',
+                            gap: '0.75rem'
+                        }}>
+                            <div>
+                                <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <span>🛒</span> Recommended Supplies
+                                </h2>
+                                <p style={{ margin: '0.25rem 0 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                                    Everything you need for safe, sterile injections — our top picks.
+                                </p>
+                            </div>
+                            <span style={{
+                                fontSize: '0.72rem',
+                                color: 'var(--text-muted)',
+                                background: 'rgba(255,255,255,0.05)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '999px',
+                                padding: '0.3rem 0.8rem',
+                                whiteSpace: 'nowrap'
+                            }}>
+                                Affiliate links · Amazon Associate
+                            </span>
+                        </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {/* Product Cards Grid */}
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                            gap: '1rem',
+                            marginBottom: '1.5rem'
+                        }}>
                             {[
                                 {
                                     href: 'https://amzn.to/4eN6a3H',
                                     emoji: '💉',
-                                    name: 'Insulin Syringes 31G — Box of 100',
-                                    desc: 'Easy Touch 1cc short needle, bold markings, disposable'
+                                    badge: '⭐ Most Popular',
+                                    badgeColor: '#f59e0b',
+                                    name: 'Insulin Syringes 31G',
+                                    subname: 'Box of 100',
+                                    desc: 'Easy Touch 1cc, short needle, bold markings. The gold standard for peptide SubQ injections.',
+                                    tag: 'Essential',
+                                    tagColor: '#10b981',
+                                    accentColor: '#3b82f6',
                                 },
                                 {
                                     href: 'https://amzn.to/3RKVAAs',
                                     emoji: '🖊️',
-                                    name: 'Reusable Peptide V2 Pen — 60 Unit',
-                                    desc: 'For 3ml cartridges, smooth plunger, includes 50 prep pads + travel case'
+                                    badge: '🔥 Top Seller',
+                                    badgeColor: '#ef4444',
+                                    name: 'Reusable Peptide Pen V2',
+                                    subname: '60-Unit Dial',
+                                    desc: 'Smooth plunger, precision dosing, includes 50 prep pads + travel case for 3ml cartridges.',
+                                    tag: 'Premium',
+                                    tagColor: '#8b5cf6',
+                                    accentColor: '#8b5cf6',
                                 },
                                 {
                                     href: 'https://amzn.to/4wzDWjk',
                                     emoji: '🔋',
-                                    name: '3mL Peptide Pen Cartridges — 10 Pack',
-                                    desc: 'Steam sterilized, individually packaged, V1 & V2 compatible'
+                                    badge: '✅ Editor\'s Pick',
+                                    badgeColor: '#10b981',
+                                    name: '3mL Pen Cartridges',
+                                    subname: '10-Pack',
+                                    desc: 'Steam sterilized, individually packaged. Compatible with V1 & V2 peptide pens.',
+                                    tag: 'Refills',
+                                    tagColor: '#06b6d4',
+                                    accentColor: '#06b6d4',
                                 },
                                 {
                                     href: 'https://amzn.to/42zQz05',
                                     emoji: '🧊',
-                                    name: 'Peptide Storage Case — 63-Slot Organizer',
-                                    desc: 'Fridge-ready case fits 3ml bottles, mesh pocket included'
+                                    badge: '❄️ Must Have',
+                                    badgeColor: '#06b6d4',
+                                    name: 'Peptide Storage Case',
+                                    subname: '63-Slot Organizer',
+                                    desc: 'Fridge-ready, fits 3ml vials perfectly. Mesh pocket, labeled slots, keeps your stack organized.',
+                                    tag: 'Storage',
+                                    tagColor: '#f59e0b',
+                                    accentColor: '#f59e0b',
                                 },
                                 {
                                     href: 'https://amzn.to/4wy1UeP',
                                     emoji: '🧴',
-                                    name: 'Alcohol Wipes (Isopropyl 70%)',
-                                    desc: 'Sterile prep wipes for vial tops & injection sites'
+                                    badge: '💊 Sterile Grade',
+                                    badgeColor: '#6366f1',
+                                    name: 'Alcohol Wipes 70% IPA',
+                                    subname: 'Sterile Prep Pads',
+                                    desc: 'Medical-grade isopropyl. Use on vial tops and injection sites before every injection.',
+                                    tag: 'Safety',
+                                    tagColor: '#ec4899',
+                                    accentColor: '#ec4899',
                                 },
                             ].map((item) => (
                                 <a
@@ -175,39 +234,127 @@ const InjectionGuide = () => {
                                     rel="noopener noreferrer"
                                     style={{
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        padding: '1rem 1.25rem',
-                                        background: 'rgba(255, 153, 0, 0.06)',
-                                        border: '1px solid rgba(255, 153, 0, 0.2)',
-                                        borderRadius: '0.75rem',
+                                        flexDirection: 'column',
                                         textDecoration: 'none',
-                                        gap: '1rem',
-                                        transition: 'background 0.2s',
+                                        background: 'var(--bg-card)',
+                                        border: `1px solid ${item.accentColor}30`,
+                                        borderRadius: '1rem',
+                                        overflow: 'hidden',
+                                        transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                                        position: 'relative',
                                     }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 153, 0, 0.14)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 153, 0, 0.06)'}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.boxShadow = `0 12px 40px ${item.accentColor}25`;
+                                        e.currentTarget.style.borderColor = `${item.accentColor}60`;
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                        e.currentTarget.style.borderColor = `${item.accentColor}30`;
+                                    }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                        <span style={{ fontSize: '1.6rem' }}>{item.emoji}</span>
-                                        <div>
-                                            <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '0.2rem' }}>
-                                                {item.name}
-                                            </div>
-                                            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                                                {item.desc}
+                                    {/* Accent top bar */}
+                                    <div style={{
+                                        height: '3px',
+                                        background: `linear-gradient(90deg, ${item.accentColor}, ${item.accentColor}80)`,
+                                    }} />
+
+                                    {/* Card body */}
+                                    <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                                        {/* Badge row */}
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                            <span style={{
+                                                fontSize: '0.7rem',
+                                                fontWeight: '700',
+                                                color: item.badgeColor,
+                                                background: `${item.badgeColor}18`,
+                                                padding: '0.2rem 0.55rem',
+                                                borderRadius: '999px',
+                                                letterSpacing: '0.02em'
+                                            }}>
+                                                {item.badge}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '0.68rem',
+                                                fontWeight: '600',
+                                                color: item.tagColor,
+                                                background: `${item.tagColor}15`,
+                                                padding: '0.2rem 0.55rem',
+                                                borderRadius: '999px',
+                                            }}>
+                                                {item.tag}
+                                            </span>
+                                        </div>
+
+                                        {/* Emoji + Name */}
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                                            <span style={{
+                                                fontSize: '2.2rem',
+                                                lineHeight: 1,
+                                                background: `${item.accentColor}15`,
+                                                borderRadius: '0.6rem',
+                                                padding: '0.5rem',
+                                                flexShrink: 0
+                                            }}>
+                                                {item.emoji}
+                                            </span>
+                                            <div>
+                                                <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.3' }}>
+                                                    {item.name}
+                                                </div>
+                                                <div style={{ fontSize: '0.78rem', color: item.accentColor, fontWeight: '600', marginTop: '0.1rem' }}>
+                                                    {item.subname}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div style={{ color: '#ff9900', fontWeight: '600', fontSize: '0.8rem', flexShrink: 0 }}>
-                                        Amazon ↗
+
+                                        {/* Description */}
+                                        <p style={{
+                                            margin: 0,
+                                            fontSize: '0.82rem',
+                                            color: 'var(--text-secondary)',
+                                            lineHeight: '1.55',
+                                            flex: 1
+                                        }}>
+                                            {item.desc}
+                                        </p>
+
+                                        {/* CTA */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '0.4rem',
+                                            padding: '0.6rem 1rem',
+                                            background: 'linear-gradient(135deg, #ff9900, #ffb347)',
+                                            borderRadius: '0.6rem',
+                                            color: '#000',
+                                            fontWeight: '700',
+                                            fontSize: '0.82rem',
+                                            letterSpacing: '0.02em',
+                                            marginTop: 'auto',
+                                        }}>
+                                            <span>View on Amazon</span>
+                                            <span style={{ fontSize: '1rem' }}>↗</span>
+                                        </div>
                                     </div>
                                 </a>
                             ))}
                         </div>
 
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1.25rem', textAlign: 'center' }}>
-                            As an Amazon Associate, PeptideLog earns from qualifying purchases.
+                        {/* Disclaimer */}
+                        <p style={{
+                            fontSize: '0.72rem',
+                            color: 'var(--text-muted)',
+                            textAlign: 'center',
+                            margin: 0,
+                            padding: '0.75rem 1rem',
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '0.6rem',
+                        }}>
+                            💛 As an Amazon Associate, PeptideLog earns a small commission from qualifying purchases — at no extra cost to you.
                         </p>
                     </div>
                 </div>

@@ -405,6 +405,180 @@ const Dashboard = () => {
                     </section>
                 )}
 
+                {/* Recommended Supplies Banner */}
+                <section className={styles.section}>
+                    <div className={styles.sectionHeader} style={{ marginBottom: '1rem' }}>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span>🛒</span> Recommended Supplies
+                        </h2>
+                        <a
+                            href="/guides/injection"
+                            style={{
+                                fontSize: '0.82rem',
+                                color: 'var(--accent-primary)',
+                                textDecoration: 'none',
+                                fontWeight: '600',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.25rem',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            See All Supplies <ArrowRight size={14} />
+                        </a>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '-0.5rem 0 1rem' }}>
+                        Top-rated needles, pens & storage for safe injections.
+                    </p>
+
+                    {/* Horizontally scrolling product row */}
+                    <div style={{
+                        display: 'flex',
+                        gap: '1rem',
+                        overflowX: 'auto',
+                        paddingBottom: '0.5rem',
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                    }}>
+                        {[
+                            {
+                                href: 'https://amzn.to/4eN6a3H',
+                                emoji: '💉',
+                                badge: '⭐ Most Popular',
+                                badgeColor: '#f59e0b',
+                                name: 'Insulin Syringes 31G',
+                                subname: 'Box of 100',
+                                accentColor: '#3b82f6',
+                            },
+                            {
+                                href: 'https://amzn.to/3RKVAAs',
+                                emoji: '🖊️',
+                                badge: '🔥 Top Seller',
+                                badgeColor: '#ef4444',
+                                name: 'Reusable Peptide Pen V2',
+                                subname: '60-Unit Dial',
+                                accentColor: '#8b5cf6',
+                            },
+                            {
+                                href: 'https://amzn.to/4wzDWjk',
+                                emoji: '🔋',
+                                badge: "✅ Editor's Pick",
+                                badgeColor: '#10b981',
+                                name: '3mL Pen Cartridges',
+                                subname: '10-Pack',
+                                accentColor: '#06b6d4',
+                            },
+                            {
+                                href: 'https://amzn.to/42zQz05',
+                                emoji: '🧊',
+                                badge: '❄️ Must Have',
+                                badgeColor: '#06b6d4',
+                                name: 'Peptide Storage Case',
+                                subname: '63-Slot Organizer',
+                                accentColor: '#f59e0b',
+                            },
+                            {
+                                href: 'https://amzn.to/4wy1UeP',
+                                emoji: '🧴',
+                                badge: '💊 Sterile Grade',
+                                badgeColor: '#6366f1',
+                                name: 'Alcohol Wipes 70% IPA',
+                                subname: 'Sterile Prep Pads',
+                                accentColor: '#ec4899',
+                            },
+                        ].map((item) => (
+                            <a
+                                key={item.href}
+                                href={item.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    minWidth: '190px',
+                                    maxWidth: '210px',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    textDecoration: 'none',
+                                    background: 'var(--bg-card)',
+                                    border: `1px solid ${item.accentColor}30`,
+                                    borderRadius: '1rem',
+                                    overflow: 'hidden',
+                                    transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = `0 10px 30px ${item.accentColor}30`;
+                                    e.currentTarget.style.borderColor = `${item.accentColor}60`;
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                    e.currentTarget.style.borderColor = `${item.accentColor}30`;
+                                }}
+                            >
+                                {/* Accent bar */}
+                                <div style={{ height: '3px', background: `linear-gradient(90deg, ${item.accentColor}, ${item.accentColor}60)` }} />
+
+                                <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', flex: 1 }}>
+                                    {/* Badge */}
+                                    <span style={{
+                                        fontSize: '0.65rem',
+                                        fontWeight: '700',
+                                        color: item.badgeColor,
+                                        background: `${item.badgeColor}18`,
+                                        padding: '0.18rem 0.5rem',
+                                        borderRadius: '999px',
+                                        alignSelf: 'flex-start',
+                                    }}>
+                                        {item.badge}
+                                    </span>
+
+                                    {/* Emoji + name */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                        <span style={{
+                                            fontSize: '1.7rem',
+                                            background: `${item.accentColor}15`,
+                                            borderRadius: '0.5rem',
+                                            padding: '0.35rem',
+                                            lineHeight: 1,
+                                            flexShrink: 0,
+                                        }}>
+                                            {item.emoji}
+                                        </span>
+                                        <div>
+                                            <div style={{ fontWeight: '700', color: 'var(--text-primary)', fontSize: '0.88rem', lineHeight: '1.25' }}>
+                                                {item.name}
+                                            </div>
+                                            <div style={{ fontSize: '0.72rem', color: item.accentColor, fontWeight: '600' }}>
+                                                {item.subname}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* CTA */}
+                                    <div style={{
+                                        marginTop: 'auto',
+                                        padding: '0.5rem 0.75rem',
+                                        background: 'linear-gradient(135deg, #ff9900, #ffb347)',
+                                        borderRadius: '0.5rem',
+                                        color: '#000',
+                                        fontWeight: '700',
+                                        fontSize: '0.76rem',
+                                        textAlign: 'center',
+                                        letterSpacing: '0.02em',
+                                    }}>
+                                        Amazon ↗
+                                    </div>
+                                </div>
+                            </a>
+                        ))}
+                    </div>
+
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'center' }}>
+                        💛 Affiliate links — PeptideLog earns a small commission at no extra cost to you.
+                    </p>
+                </section>
+
                 {/* Popular Peptides for SEO Internal Linking */}
                 <section className={styles.section}>
                     <PopularPeptides limit={12} />
