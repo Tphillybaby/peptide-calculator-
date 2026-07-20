@@ -24,6 +24,14 @@
             "destination": "/assets/$1"
         },
         {
+            "source": "/encyclopedia/:slug",
+            "destination": "/encyclopedia/:slug/index.html"
+        },
+        {
+            "source": "/guides/:slug",
+            "destination": "/guides/:slug/index.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
@@ -69,6 +77,6 @@
             ]
         }
     ],
-    "buildCommand": "npm run build",
+    "buildCommand": "npm run build:full",
     "outputDirectory": "dist"
 }
