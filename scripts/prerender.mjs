@@ -157,6 +157,93 @@ function generatePeptidePage(templateHtml, peptide) {
     return html;
 }
 
+// ─── Guide page definitions ──────────────────────────────────────────────────
+// These are static content pages — content is hardcoded in React components,
+// so we just inject the correct meta tags (title, description, canonical, JSON-LD).
+
+const GUIDE_PAGES = [
+    {
+        route: '/guides/beginner',
+        title: "Beginner's Guide to Peptides | PeptideLog",
+        description: "Everything you need to know to start using peptides safely. Learn about reconstitution, dosing, injection technique, and storage for beginners.",
+        jsonLd: {
+            '@context': 'https://schema.org/',
+            '@type': 'HowTo',
+            name: "Beginner's Guide to Research Peptides",
+            description: "A comprehensive guide for peptide beginners covering reconstitution, dosing, injection, and storage.",
+            url: 'https://peptidelog.net/guides/beginner',
+        }
+    },
+    {
+        route: '/guides/injection',
+        title: "Peptide Injection Guide — Technique & Sites | PeptideLog",
+        description: "Step-by-step peptide injection guide. Learn subcutaneous and intramuscular injection technique, needle selection, site rotation, and sterile preparation.",
+        jsonLd: {
+            '@context': 'https://schema.org/',
+            '@type': 'HowTo',
+            name: 'Peptide Injection Guide',
+            description: 'Step-by-step guide to subcutaneous and intramuscular peptide injections.',
+            url: 'https://peptidelog.net/guides/injection',
+        }
+    },
+    {
+        route: '/guides/storage',
+        title: "How to Store Peptides — Reconstitution & Refrigeration | PeptideLog",
+        description: "Learn how to properly store lyophilized and reconstituted peptides. Temperature requirements, shelf life, bacteriostatic water, and long-term freezing tips.",
+        jsonLd: {
+            '@context': 'https://schema.org/',
+            '@type': 'HowTo',
+            name: 'Peptide Storage Guide',
+            description: 'Complete guide to storing lyophilized and reconstituted peptides safely.',
+            url: 'https://peptidelog.net/guides/storage',
+        }
+    },
+    {
+        route: '/guides/trt',
+        title: "TRT & Peptide Protocol Guide | PeptideLog",
+        description: "Comprehensive guide to Testosterone Replacement Therapy alongside peptide protocols. Dosing, stacking, monitoring, and optimization strategies.",
+        jsonLd: {
+            '@context': 'https://schema.org/',
+            '@type': 'Article',
+            name: 'TRT & Peptide Protocol Guide',
+            description: 'Guide to TRT combined with peptide protocols.',
+            url: 'https://peptidelog.net/guides/trt',
+        }
+    },
+];
+
+function generateGuidePage(templateHtml, guide) {
+    const canonical = `https://peptidelog.net${guide.route}`;
+    const title = guide.title;
+    const description = esc(guide.description.substring(0, 160));
+    const jsonLd = JSON.stringify(guide.jsonLd);
+
+    let html = templateHtml;
+
+    html = html.replace(/<title>[^<]*<\/title>/, `<title>${title}</title>`);
+    html = html.replace(/<meta name="description"\s+content="[^"]*"\s*\/>/,
+        `<meta name="description" content="${description}" />`);
+    html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/>/,
+        `<link rel="canonical" href="${canonical}" />`);
+    html = html.replace(/<meta property="og:url" content="[^"]*"\s*\/>/,
+        `<meta property="og:url" content="${canonical}" />`);
+    html = html.replace(/<meta property="og:title" content="[^"]*"\s*\/>/,
+        `<meta property="og:title" content="${title}" />`);
+    html = html.replace(/<meta property="og:description"\s+content="[^"]*"\s*\/>/,
+        `<meta property="og:description" content="${description}" />`);
+    html = html.replace(/<meta name="twitter:url" content="[^"]*"\s*\/>/,
+        `<meta name="twitter:url" content="${canonical}" />`);
+    html = html.replace(/<meta name="twitter:title" content="[^"]*"\s*\/>/,
+        `<meta name="twitter:title" content="${title}" />`);
+    html = html.replace(/<meta name="twitter:description"\s+content="[^"]*"\s*\/>/,
+        `<meta name="twitter:description" content="${description}" />`);
+    html = html.replace('</head>',
+        `<script type="application/ld+json">${jsonLd}</script>\n` +
+        `<meta name="prerender-status" content="rendered">\n</head>`);
+
+    return html;
+}
+
 // ─── Supabase fetch ──────────────────────────────────────────────────────────
 
 async function fetchPeptides() {
@@ -216,7 +303,24 @@ async function prerender() {
         }
     }
 
-    console.log(`\n[Prerender] ✅ ${success} pages generated, ❌ ${fail} failed`);
+    // Generate guide pages
+    let guideSuccess = 0;
+    for (const guide of GUIDE_PAGES) {
+        try {
+            const parts = guide.route.split('/').filter(Boolean); // ['guides','beginner']
+            const dir = path.join(distPath, ...parts);
+            fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(path.join(dir, 'index.html'), generateGuidePage(templateHtml, guide));
+            guideSuccess++;
+        } catch (err) {
+            console.warn(`[Prerender] ⚠️  Failed for guide "${guide.route}": ${err.message}`);
+            fail++;
+        }
+    }
+
+    console.log(`\n[Prerender] ✅ ${success} encyclopedia pages generated`);
+    console.log(`[Prerender] ✅ ${guideSuccess} guide pages generated`);
+    console.log(`[Prerender] ❌ ${fail} total failures`);
 
     // Verify a sample page
     if (success > 0 && peptides[0]) {
@@ -230,7 +334,7 @@ async function prerender() {
         console.log(`  Prerender marker found: ${hasPrerender ? '✅' : '❌'}`);
     }
 
-    if (fail > 0 && success === 0) process.exit(1);
+    if (fail > 0 && success === 0 && guideSuccess === 0) process.exit(1);
 }
 
 prerender().catch((err) => {

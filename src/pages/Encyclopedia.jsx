@@ -10,6 +10,7 @@ import SocialShare from '../components/SocialShare';
 import { getEncyclopediaSchemas } from '../utils/pageSchemas';
 import { POPULAR_PEPTIDES } from '../data/popularPeptides';
 import { peptideUrl } from '../utils/slugify';
+import EmailCapture from '../components/EmailCapture';
 import styles from './Encyclopedia.module.css';
 
 // Health benefit categories with keywords to match peptide benefits
@@ -302,6 +303,9 @@ const Encyclopedia = () => {
                             <span>{HEALTH_BENEFIT_CATEGORIES.length} Categories</span>
                         </div>
                     </div>
+
+                    {/* Email capture for guests */}
+                    <EmailCapture source="encyclopedia" variant="banner" />
                 </>
             )}
 

@@ -4,7 +4,8 @@ import {
     Activity, Syringe, Calendar, ArrowRight, TrendingDown,
     Package, BookOpen, Users, Bell, ChevronRight,
     Droplet, Clock, Target, Sparkles, BarChart3,
-    AlertCircle, CheckCircle2, Plus, History, Beaker
+    AlertCircle, CheckCircle2, Plus, History, Beaker,
+    TestTubes, TrendingUp, Zap
 } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
 import { useAuth } from '../context/AuthContext';
@@ -13,6 +14,7 @@ import ProgressAnalytics from '../components/ProgressAnalytics';
 import OnboardingWizard from '../components/OnboardingWizard';
 import StackShareCard from '../components/StackShareCard';
 import PopularPeptides from '../components/PopularPeptides';
+import EmailCapture from '../components/EmailCapture';
 import SEO from '../components/SEO';
 import styles from './Dashboard.module.css';
 
@@ -582,6 +584,69 @@ const Dashboard = () => {
                 {/* Popular Peptides for SEO Internal Linking */}
                 <section className={styles.section}>
                     <PopularPeptides limit={12} />
+                </section>
+
+                {/* Premium Tools Showcase */}
+                <section className={styles.section}>
+                    <h2 className={styles.sectionTitle} style={{ marginBottom: '1rem' }}>
+                        <Zap size={18} style={{ color: '#f59e0b', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+                        Powerful Tools
+                    </h2>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+                        <Link to="/stack-builder" style={{ textDecoration: 'none' }}>
+                            <div className="card glass-panel" style={{ padding: '1.25rem', cursor: 'pointer', transition: 'transform 0.2s, border-color 0.2s', border: '1px solid var(--glass-border)' }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                                    <div style={{ padding: '0.5rem', borderRadius: '10px', background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', display: 'flex' }}>
+                                        <Beaker size={18} color="white" />
+                                    </div>
+                                    <strong style={{ fontSize: '0.95rem' }}>Stack Builder</strong>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                                    Design peptide stacks and check for interactions, synergies, and conflicts.
+                                </p>
+                                <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#8b5cf6', fontWeight: 600 }}>Try it →</div>
+                            </div>
+                        </Link>
+                        <Link to="/blood-work" style={{ textDecoration: 'none' }}>
+                            <div className="card glass-panel" style={{ padding: '1.25rem', cursor: 'pointer', transition: 'transform 0.2s, border-color 0.2s', border: '1px solid var(--glass-border)' }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                                    <div style={{ padding: '0.5rem', borderRadius: '10px', background: 'linear-gradient(135deg, #14b8a6, #22d3ee)', display: 'flex' }}>
+                                        <TestTubes size={18} color="white" />
+                                    </div>
+                                    <strong style={{ fontSize: '0.95rem' }}>Blood Work Tracker</strong>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                                    Log and monitor your blood panels to track peptide effects over time.
+                                </p>
+                                <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#14b8a6', fontWeight: 600 }}>Try it →</div>
+                            </div>
+                        </Link>
+                        <Link to="/titration" style={{ textDecoration: 'none' }}>
+                            <div className="card glass-panel" style={{ padding: '1.25rem', cursor: 'pointer', transition: 'transform 0.2s, border-color 0.2s', border: '1px solid var(--glass-border)' }}
+                                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'none'}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
+                                    <div style={{ padding: '0.5rem', borderRadius: '10px', background: 'linear-gradient(135deg, #f59e0b, #f97316)', display: 'flex' }}>
+                                        <TrendingUp size={18} color="white" />
+                                    </div>
+                                    <strong style={{ fontSize: '0.95rem' }}>Titration Planner</strong>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                                    Plan your dose ramp-up schedule with week-by-week titration protocols.
+                                </p>
+                                <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#f59e0b', fontWeight: 600 }}>Try it →</div>
+                            </div>
+                        </Link>
+                    </div>
+                </section>
+
+                {/* Email Capture — guests only */}
+                <section className={styles.section}>
+                    <EmailCapture source="dashboard" variant="banner" />
                 </section>
 
                 {/* Quick Stats Footer - Mobile Only */}
