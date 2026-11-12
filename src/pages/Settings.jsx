@@ -740,7 +740,7 @@ const Settings = () => {
                                 <div className={styles.settingItem}>
                                     <div className={styles.settingInfo}>
                                         <span className={styles.settingLabel}>Injection Reminders</span>
-                                        <span className={styles.settingDescription}>Get notified when it's time for your next dose</span>
+                                        <span className={styles.settingDescription}>Background reminders on this device. Existing schedules use this device’s time zone when enabled.</span>
                                     </div>
                                     <label className={styles.toggle}>
                                         <input

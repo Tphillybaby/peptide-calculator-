@@ -37,6 +37,18 @@ returns boolean language sql security invoker set search_path = public, pg_temp 
         returning 1
     ) select exists(select 1 from claimed);
 $$;
-revoke all on function public.claim_reminder_delivery(uuid,uuid,timestamptz,integer,uuid) from public;
+revoke all on function public.claim_reminder_delivery(uuid,uuid,timestamptz,integer,uuid) from public, anon, authenticated;
 grant execute on function public.claim_reminder_delivery(uuid,uuid,timestamptz,integer,uuid) to service_role;
+-- Read private runtime configuration only from the trusted server role.
+create function public.reminder_runtime_config() returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare config jsonb;
+begin
+    select decrypted_secret::jsonb into config from vault.decrypted_secrets
+    where name = 'peptidelog_reminder_config';
+    return config;
+end;
+$$;
+revoke all on function public.reminder_runtime_config() from public, anon, authenticated;
+grant execute on function public.reminder_runtime_config() to service_role;
 commit;

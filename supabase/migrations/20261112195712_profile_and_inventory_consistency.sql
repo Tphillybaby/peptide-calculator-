@@ -1,4 +1,6 @@
 begin;
+create schema if not exists peptidelog_private;
+revoke all on schema peptidelog_private from public, anon, authenticated;
 alter table public.profiles add column if not exists age integer;
 alter table public.profiles add column if not exists gender text;
 alter table public.profiles add column if not exists weight_goal text;
@@ -18,7 +20,7 @@ alter table public.injections add column inventory_sync_version integer not null
 alter table public.injections add column inventory_baseline_mg numeric not null default 0;
 update public.injections set inventory_baseline_mg = greatest(0, coalesce(case dosage_unit when 'mg' then dosage_value when 'mcg' then dosage_value / 1000 else 0 end, 0));
 
-create function public.sync_injection_inventory() returns trigger
+create function peptidelog_private.sync_injection_inventory() returns trigger
 language plpgsql security definer set search_path = public, pg_temp as $$
 declare
     allocation record;
@@ -27,6 +29,9 @@ declare
     deducted numeric;
     old_mass numeric := 0;
 begin
+    if auth.uid() is not null and auth.uid() is distinct from (case when TG_OP = 'DELETE' then OLD.user_id else NEW.user_id end) then
+        raise exception 'Injection ownership mismatch';
+    end if;
     -- Cached older clients still perform their own insert-time deduction.
     if TG_OP = 'INSERT' and NEW.inventory_sync_version <> 1 then return NEW; end if;
     if TG_OP = 'UPDATE' and NEW.user_id is distinct from OLD.user_id then
@@ -68,15 +73,15 @@ begin
     return NEW;
 end;
 $$;
-revoke all on function public.sync_injection_inventory() from public;
+revoke all on function peptidelog_private.sync_injection_inventory() from public, anon, authenticated;
 
 -- BEFORE DELETE lets the trigger restore allocations before FK cascades remove them.
 create trigger injection_inventory_delete before delete on public.injections
-for each row execute function public.sync_injection_inventory();
+for each row execute function peptidelog_private.sync_injection_inventory();
 create trigger injection_inventory_write after insert or update of dosage_value, dosage_unit, peptide_name, user_id on public.injections
-for each row execute function public.sync_injection_inventory();
+for each row execute function peptidelog_private.sync_injection_inventory();
 -- A separate BEFORE INSERT marks only new records as fully managed.
-create function public.mark_injection_inventory_managed() returns trigger
+create function peptidelog_private.mark_injection_inventory_managed() returns trigger
 language plpgsql set search_path = public, pg_temp as $$
 begin
     if TG_OP = 'INSERT' then
@@ -88,6 +93,7 @@ begin
     return NEW;
 end;
 $$;
+revoke all on function peptidelog_private.mark_injection_inventory_managed() from public, anon, authenticated;
 create trigger injection_inventory_managed before insert or update on public.injections
-for each row execute function public.mark_injection_inventory_managed();
+for each row execute function peptidelog_private.mark_injection_inventory_managed();
 commit;

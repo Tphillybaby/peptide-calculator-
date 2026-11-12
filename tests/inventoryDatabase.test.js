@@ -25,7 +25,7 @@ beforeAll(async () => {
         insert into auth.users values ('${owner}'), ('${other}');
         insert into injections values ('${legacy}','${owner}','A',4,'mg');
     `);
-    for (const file of ['20261112000001_profile_and_inventory_consistency.sql','20261112000002_background_reminders.sql']) {
+    for (const file of ['20261112195712_profile_and_inventory_consistency.sql','20261112195752_background_reminders.sql']) {
         await db.exec(readFileSync(new URL('../supabase/migrations/'+file, import.meta.url), 'utf8'));
     }
     await db.exec(`insert into inventory(id,user_id,peptide_name,remaining_mg) values

@@ -1,3 +1,4 @@
+import { localDateString } from '../utils/scheduleTime';
 import { device, localNotifications } from './nativeService';
 import { webPushService } from './webPushService';
 
@@ -223,6 +224,20 @@ export const notificationService = {
             await webPushService.enable(userId);
         }
         const { supabase } = await import('../lib/supabase');
+        // Legacy schedules were stored as local date/time. On opt-in, preserve the
+        // times currently shown on this device and persist their UTC instants.
+        const { data: legacySchedules, error: scheduleError } = await supabase.from('schedules')
+            .select('id,scheduled_date,scheduled_time').eq('user_id', userId)
+            .is('scheduled_at', null).eq('completed', false).gte('scheduled_date', localDateString(new Date()));
+        if (scheduleError) throw scheduleError;
+        for (const schedule of legacySchedules || []) {
+            const instant = new Date(`${schedule.scheduled_date}T${schedule.scheduled_time || '08:00:00'}`);
+            if (!Number.isFinite(instant.getTime())) throw new Error('An existing schedule has an invalid time. Please edit or recreate it.');
+            if (instant <= new Date()) continue;
+            const { error } = await supabase.from('schedules').update({ scheduled_at: instant.toISOString() })
+                .eq('id', schedule.id).eq('user_id', userId).is('scheduled_at', null);
+            if (error) throw error;
+        }
         const { data, error: readError } = await supabase.from('profiles').select('notification_preferences').eq('id', userId).single();
         if (readError) throw readError;
         const { error } = await supabase.from('profiles').update({ notification_preferences: { ...data.notification_preferences, injectionReminders: true } }).eq('id', userId);

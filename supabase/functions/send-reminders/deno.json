@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.90.1",
+    "web-push": "npm:web-push@4.0.0"
+  },
+  "compilerOptions": { "allowJs": true, "strict": false }
+}
