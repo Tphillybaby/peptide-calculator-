@@ -105,6 +105,10 @@ const AdminPrices = () => {
                     if (!response.ok) {
                         throw new Error(result.error || 'Scrape failed');
                     }
+                    const updated = (result.results || []).reduce((n, r) => n + (r.updated || 0), 0);
+                    const failures = (result.results || []).flatMap(r => r.errors || []);
+                    if (!updated) throw new Error(failures.join('; ') || 'No verified prices collected');
+                    if (failures.length) errorMessages.push(`${vendor.name}: ${failures.join('; ')}`);
                     successCount++;
                 } catch (err) {
                     console.error(`Error scraping ${vendor.name}:`, err);
