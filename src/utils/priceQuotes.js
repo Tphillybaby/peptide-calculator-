@@ -12,11 +12,12 @@ export const normalizeQuote = (row, now = new Date()) => {
     if (!Number.isFinite(price) || price <= 0) return null;
     const vendor = Array.isArray(row.vendors) ? row.vendors[0] : row.vendors;
     if (!vendor || vendor.is_active === false) return null;
-    const massMg = quoteMassMg(row);
+    const amountAmbiguous = /capsules?|\bcaps\b|tablets?|softgels?|\bbottle\b|mg\s*(?:\/|per)\s*ml|multi.?pack|pack of|\d+\s*[x×]\s*\d|\d+\s*vials\b/i.test(`${row.original_product_name || ''} ${row.quantity || ''}`);
+    const massMg = amountAmbiguous ? null : quoteMassMg(row);
     const verified = new Date(row.last_verified_at);
     const age = row.last_verified_at && Number.isFinite(verified.getTime()) ? now - verified : null;
     const productUrl = safePriceUrl(row.product_url);
-    return { ...row, price, vendor, massMg, perMg: massMg ? price / massMg : null,
+    return { ...row, price, vendor, massMg, amountAmbiguous, perMg: massMg ? price / massMg : null,
         verified: age !== null && age >= 0 ? verified : null,
         fresh: age !== null && age >= 0 && age <= 7 * 86400000,
         url: productUrl || safePriceUrl(vendor.website_url), productLink: Boolean(productUrl) };

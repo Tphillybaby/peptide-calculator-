@@ -19,3 +19,10 @@ it('rejects invalid prices and unsafe URLs while distinguishing vendor home page
  expect(normalizeQuote({...row,price:'invalid'},now)).toBeNull();expect(safePriceUrl('javascript:alert(1)')).toBeNull();
  expect(normalizeQuote({...row,product_url:null},now)).toMatchObject({url:'https://vendor.example/',productLink:false});
 });
+
+it('does not price a whole capsule bottle or multi-vial pack using a single-unit amount',()=>{
+ for (const name of ['5-Amino-1MQ (50mg/capsule), 60 Capsules','BPC-157 5mg 10 vials','Peptide 5mg/ml bottle','Peptide 10 x 5mg']) {
+ const quote=normalizeQuote({...row,original_product_name:name},now);expect(quote.perMg).toBeNull();expect(quote.amountAmbiguous).toBe(true);
+ }
+ expect(normalizeQuote({...row,original_product_name:'Peptide 10mg vial'},now).perMg).toBe(5);
+});
