@@ -135,6 +135,7 @@ const AdminPrices = () => {
     };
 
     const updatePrice = async (priceId, newPrice) => {
+        if (!Number.isFinite(Number(newPrice)) || Number(newPrice) <= 0) { setError('Enter a positive price.'); return; }
         try {
             const { error } = await supabase
                 .from('peptide_prices')
@@ -143,7 +144,7 @@ const AdminPrices = () => {
                     updated_at: new Date().toISOString(),
                     last_verified_at: new Date().toISOString()
                 })
-                .eq('id', priceId);
+                .eq('id', priceId).select('id').single();
 
             if (error) throw error;
 

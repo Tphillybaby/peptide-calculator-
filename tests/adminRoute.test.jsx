@@ -1,0 +1,12 @@
+import React from 'react';
+import { it, expect, vi, afterEach } from 'vitest';
+import { render, screen, cleanup } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import AdminRoute from '../src/components/AdminRoute';
+const auth=vi.hoisted(()=>({user:{id:'admin'},authReady:true,loading:false,adminLoading:false,adminError:false,isAdmin:false}));
+vi.mock('../src/context/AuthContext',()=>({useAuth:()=>auth}));
+afterEach(cleanup);
+const page=()=>render(<MemoryRouter><AdminRoute><p>Secret admin tools</p></AdminRoute></MemoryRouter>);
+it('waits for admin verification even when general UI loading has finished',()=>{auth.adminLoading=true;page();expect(screen.getByText('Checking permissions...')).toBeInTheDocument();expect(screen.queryByText('Access Denied')).not.toBeInTheDocument();auth.adminLoading=false;});
+it('shows a retryable verification error without granting access',()=>{auth.adminError=true;page();expect(screen.getByRole('alert')).toHaveTextContent('Could not verify');expect(screen.queryByText('Secret admin tools')).not.toBeInTheDocument();auth.adminError=false;});
+it('opens tools only for a verified admin',()=>{auth.isAdmin=true;page();expect(screen.getByText('Secret admin tools')).toBeInTheDocument();auth.isAdmin=false;});

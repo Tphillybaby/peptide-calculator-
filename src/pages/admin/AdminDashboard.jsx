@@ -19,6 +19,7 @@ const AdminDashboard = () => {
         schedules: 0,
         openTickets: 0
     });
+    const [dataError, setDataError] = useState('');
     const [recentActivity, setRecentActivity] = useState([]);
     const [recentTickets, setRecentTickets] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -29,45 +30,24 @@ const AdminDashboard = () => {
     }, []);
 
     const fetchAllData = async () => {
-        setLoading(true);
+        setLoading(true); setDataError('');
         await Promise.all([
             fetchStats(),
             fetchRecentActivity(),
-            fetchRecentTickets(),
-            fetchInjectionTrend()
+            fetchRecentTickets()
         ]);
         setLoading(false);
     };
 
     const fetchStats = async () => {
         try {
-            const [users, injections, peptides, reviews, schedules, tickets] = await Promise.all([
-                supabase.from('profiles').select('*', { count: 'exact', head: true }),
-                supabase.from('injections').select('*', { count: 'exact', head: true }),
-                supabase.from('peptides').select('*', { count: 'exact', head: true }),
-                supabase.from('reviews').select('*', { count: 'exact', head: true }),
-                supabase.from('schedules').select('*', { count: 'exact', head: true }),
-                supabase.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'open')
-            ]);
-
-            // Log any errors for debugging
-            if (users.error) console.error('Error fetching users count:', users.error);
-            if (injections.error) console.error('Error fetching injections count:', injections.error);
-            if (peptides.error) console.error('Error fetching peptides count:', peptides.error);
-            if (reviews.error) console.error('Error fetching reviews count:', reviews.error);
-            if (schedules.error) console.error('Error fetching schedules count:', schedules.error);
-            if (tickets.error) console.error('Error fetching tickets count:', tickets.error);
-
-            setStats({
-                users: users.count || 0,
-                injections: injections.count || 0,
-                peptides: peptides.count || 0,
-                reviews: reviews.count || 0,
-                schedules: schedules.count || 0,
-                openTickets: tickets.count || 0
-            });
+            const { data, error } = await supabase.rpc('get_admin_overview', { p_days: 7 });
+            if (error) throw error;
+            setStats(data);
+            const diff = data.periodInjections - data.previousInjections;
+            setInjectionTrend({ count: data.periodInjections, direction: diff >= 0 ? 'up' : 'down', percentage: data.previousInjections ? Math.abs(Math.round(diff / data.previousInjections * 100)) : 0 });
         } catch (error) {
-            console.error('Error fetching stats:', error);
+            setStats({}); setDataError('Dashboard counts could not be loaded. Refresh to try again.');
         }
     };
 
@@ -76,7 +56,7 @@ const AdminDashboard = () => {
             const { data } = await auditService.getAllLogs({ limit: 10 });
             setRecentActivity(data || []);
         } catch (error) {
-            console.error('Error fetching activity:', error);
+            setDataError(prev => `${prev} Recent activity could not be loaded.`.trim());
         }
     };
 
@@ -85,36 +65,7 @@ const AdminDashboard = () => {
             const data = await supportService.getAllTickets();
             setRecentTickets((data || []).slice(0, 5));
         } catch (error) {
-            console.error('Error fetching tickets:', error);
-        }
-    };
-
-    const fetchInjectionTrend = async () => {
-        try {
-            const today = new Date();
-            const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-            const [thisWeek, prevWeek] = await Promise.all([
-                supabase
-                    .from('injections')
-                    .select('*', { count: 'exact', head: true })
-                    .gte('created_at', lastWeek.toISOString()),
-                supabase
-                    .from('injections')
-                    .select('*', { count: 'exact', head: true })
-                    .gte('created_at', twoWeeksAgo.toISOString())
-                    .lt('created_at', lastWeek.toISOString())
-            ]);
-
-            const diff = (thisWeek.count || 0) - (prevWeek.count || 0);
-            setInjectionTrend({
-                count: thisWeek.count || 0,
-                direction: diff >= 0 ? 'up' : 'down',
-                percentage: prevWeek.count ? Math.abs(Math.round((diff / prevWeek.count) * 100)) : 0
-            });
-        } catch (error) {
-            console.error('Error fetching trend:', error);
+            setDataError(prev => `${prev} Recent tickets could not be loaded.`.trim());
         }
     };
 
@@ -149,6 +100,7 @@ const AdminDashboard = () => {
                 </button>
             </div>
 
+            {dataError && <p role="alert">{dataError}</p>}
             {/* Stats Grid */}
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
@@ -157,7 +109,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Total Users</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.users}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.users ?? 'Unavailable')}</span>
                     </div>
                 </div>
 
@@ -167,7 +119,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Total Injections</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.injections}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.injections ?? 'Unavailable')}</span>
                         {!loading && injectionTrend.percentage > 0 && (
                             <span className={`${styles.trend} ${injectionTrend.direction === 'up' ? styles.trendUp : styles.trendDown}`}>
                                 {injectionTrend.direction === 'up' ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -183,7 +135,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Peptides in DB</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.peptides}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.peptides ?? 'Unavailable')}</span>
                     </div>
                 </div>
 
@@ -193,7 +145,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Open Tickets</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.openTickets}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.openTickets ?? 'Unavailable')}</span>
                         {!loading && stats.openTickets > 0 && (
                             <span className={styles.trendWarning}>
                                 <AlertCircle size={14} /> Needs attention
@@ -208,7 +160,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Reviews</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.reviews}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.reviews ?? 'Unavailable')}</span>
                     </div>
                 </div>
 
@@ -218,7 +170,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className={styles.statInfo}>
                         <span className={styles.statLabel}>Scheduled Doses</span>
-                        <span className={styles.statValue}>{loading ? '...' : stats.schedules}</span>
+                        <span className={styles.statValue}>{loading ? '...' : (stats.schedules ?? 'Unavailable')}</span>
                     </div>
                 </div>
             </div>
