@@ -1,3 +1,4 @@
+import ActiveLevels from './ActiveLevels';
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Plus, Trash2, Calendar, Syringe, X, Clock, TrendingUp, Activity, Edit2, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { useInjections } from '../hooks/useInjections';
@@ -85,9 +86,11 @@ const InjectionTracker = () => {
         };
 
         if (editingId) {
-            await updateInjection(editingId, injectionData);
+            const result = await updateInjection(editingId, injectionData);
+            if (!result.success) { alert(result.error?.message || 'Could not update injection.'); return; }
         } else {
-            await addInjection(injectionData);
+            const result = await addInjection(injectionData);
+            if (!result.success) { alert(result.message || result.error?.message || 'Could not save injection.'); return; }
         }
 
         resetForm();
@@ -196,8 +199,8 @@ const InjectionTracker = () => {
                             <Activity size={18} color="#10b981" />
                         </div>
                         <div className={styles.statContent}>
-                            <span className={styles.statValue}>{stats.activeLevel}</span>
-                            <span className={styles.statLabel}>mg active</span>
+                            <ActiveLevels stats={stats} />
+                            <span className={styles.statLabel}>Estimated remaining</span>
                         </div>
                     </div>
                     <div className={styles.statCard}>

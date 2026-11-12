@@ -1,3 +1,4 @@
+import ActiveLevels from '../components/ActiveLevels';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -240,11 +241,10 @@ const Dashboard = () => {
                             <Droplet size={24} />
                         </div>
                         <div className={styles.statInfo}>
-                            <span className={styles.statValue}>
-                                {stats ? stats.activeLevel : '0.00'}
-                                <span className={styles.statUnit}>mg</span>
-                            </span>
-                            <span className={styles.statLabel}>Est. Active Level</span>
+                            <div className={styles.statValue}>
+                                <ActiveLevels stats={stats} />
+                            </div>
+                            <span className={styles.statLabel}>Estimated remaining by substance</span>
                         </div>
                     </div>
 

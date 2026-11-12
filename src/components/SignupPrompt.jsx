@@ -5,12 +5,15 @@ import { useAuth } from '../context/AuthContext';
 import { getInteractionCount, wasRecentlyDismissed, PROMPT_STORAGE_KEY } from '../utils/signupPromptUtils';
 
 const SignupPrompt = ({ trigger = 'default' }) => {
-    const { user } = useAuth();
+    const { user, loading, hasAccount, authReady } = useAuth();
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         // Don't show if user is logged in
-        if (user) return;
+        if (loading || authReady === false || user || hasAccount) {
+            setVisible(false);
+            return;
+        }
 
         // Don't show if recently dismissed
         if (wasRecentlyDismissed()) return;
@@ -25,14 +28,14 @@ const SignupPrompt = ({ trigger = 'default' }) => {
             }, 1500);
             return () => clearTimeout(timer);
         }
-    }, [user]);
+    }, [user, loading, hasAccount, authReady]);
 
     const handleDismiss = () => {
         localStorage.setItem(PROMPT_STORAGE_KEY, Date.now().toString());
         setVisible(false);
     };
 
-    if (!visible) return null;
+    if (loading || authReady === false || user || hasAccount || !visible) return null;
 
     const benefits = [
         { icon: Bookmark, text: 'Save your calculations' },

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { usePeptides } from './usePeptides';
+import { getInjectionStats } from '../utils/injectionStats';
 import { paymentService } from '../services/paymentService';
 
 const LOCAL_STORAGE_KEY = 'peptide_tracker_injections';
@@ -29,6 +31,12 @@ export const useInjections = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { user } = useAuth();
+    const { peptides } = usePeptides();
+    const [now, setNow] = useState(Date.now);
+    useEffect(() => {
+        const timer = setInterval(() => setNow(Date.now()), 60000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Fetch injections from Supabase (for authenticated users)
     const fetchFromSupabase = useCallback(async () => {
@@ -45,6 +53,7 @@ export const useInjections = () => {
             // Map database fields to frontend model
             const formattedData = (data || []).map(item => ({
                 id: item.id,
+                inventoryBaselineMg: Number(item.inventory_baseline_mg || 0),
                 peptide: item.peptide_name,
                 dosage: item.dosage_value || item.dosage_mcg / 1000, // Convert mcg to mg for display
                 unit: item.dosage_unit || 'mg',
@@ -109,17 +118,12 @@ export const useInjections = () => {
 
             // Save to Supabase
             try {
-                const dosageInMg = injection.unit === 'mg'
-                    ? injection.dosage
-                    : injection.unit === 'mcg'
-                        ? injection.dosage / 1000
-                        : 0; // Ignore IU for mass deduction
-
                 // 1. Insert Injection
                 const { data, error: insertError } = await supabase
                     .from('injections')
                     .insert([{
                         user_id: user.id,
+                        inventory_sync_version: 1,
                         peptide_name: injection.peptide,
                         dosage_mcg: injection.unit === 'mg'
                             ? injection.dosage * 1000
@@ -138,33 +142,7 @@ export const useInjections = () => {
 
                 if (insertError) throw insertError;
 
-                // 2. Auto-Deduct from Inventory
-                if (dosageInMg > 0) {
-                    try {
-                        // Find oldest inventory item with stock
-                        const { data: inventoryItems } = await supabase
-                            .from('inventory')
-                            .select('id, remaining_mg, user_id')
-                            .eq('user_id', user.id)
-                            .eq('peptide_name', injection.peptide)
-                            .gt('remaining_mg', 0)
-                            .order('created_at', { ascending: true })
-                            .limit(1);
-
-                        if (inventoryItems && inventoryItems.length > 0) {
-                            const item = inventoryItems[0];
-                            const newRemaining = Math.max(0, item.remaining_mg - dosageInMg);
-
-                            await supabase
-                                .from('inventory')
-                                .update({ remaining_mg: newRemaining })
-                                .eq('id', item.id);
-                        }
-                    } catch (invError) {
-                        console.error('Silent error updating inventory:', invError);
-                        // Don't fail the injection log if inventory fails
-                    }
-                }
+                // Inventory adjustments are transactional database triggers, including edits/deletes.
 
                 // Update with real ID from database
                 setInjections(prev => prev.map(i =>
@@ -222,6 +200,7 @@ export const useInjections = () => {
                 return { success: true };
             } catch (err) {
                 console.error('Error updating injection:', err);
+                setError(err.message || 'Failed to update injection');
                 fetchFromSupabase(); // Revert to server state
                 return { success: false, error: err };
             }
@@ -272,45 +251,7 @@ export const useInjections = () => {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
     };
 
-    // Get statistics
-    const getStats = useCallback(() => {
-        if (injections.length === 0) return null;
-
-        const now = Date.now();
-        const lastInjection = injections[0];
-
-        // Calculate active levels (using rough half-life estimates)
-        let totalActive = 0;
-        injections.forEach(inj => {
-            const injTime = new Date(inj.date).getTime();
-            if (isNaN(injTime)) return; // Skip invalid dates
-
-            const elapsedHours = (now - injTime) / (1000 * 60 * 60);
-            // Use 168 hours (7 days) as default half-life for GLP-1 peptides
-            const halfLife = 168;
-            const dosageInMg = inj.unit === 'mcg' ? inj.dosage / 1000 : inj.dosage;
-            const remaining = dosageInMg * Math.pow(0.5, elapsedHours / halfLife);
-            if (remaining > 0.001) { // Only count if above threshold
-                totalActive += remaining;
-            }
-        });
-
-        // Weekly totals
-        const oneWeekAgo = now - (7 * 24 * 60 * 60 * 1000);
-        const weeklyInjections = injections.filter(i =>
-            new Date(i.date).getTime() > oneWeekAgo
-        );
-
-        return {
-            totalInjections: injections.length,
-            lastInjection,
-            activeLevel: totalActive.toFixed(3),
-            weeklyCount: weeklyInjections.length,
-            weeklyDosage: weeklyInjections.reduce((sum, i) =>
-                sum + (i.unit === 'mcg' ? i.dosage / 1000 : i.dosage), 0
-            ).toFixed(2)
-        };
-    }, [injections]);
+    const getStats = useCallback(() => getInjectionStats(injections, peptides, now), [injections, peptides, now]);
 
     return {
         injections,

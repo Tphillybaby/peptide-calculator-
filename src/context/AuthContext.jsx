@@ -1,3 +1,5 @@
+import { webPushService } from '../services/webPushService';
+import { notificationService } from '../services/notificationService';
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { getRedirectUrl } from '../utils/authRedirect';
@@ -9,9 +11,17 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [hasAccount, setHasAccount] = useState(() => {
+        try { return localStorage.getItem('peptidelog_has_account') === 'true'; } catch { return false; }
+    });
+    const rememberAccount = () => {
+        setHasAccount(true);
+        try { localStorage.setItem('peptidelog_has_account', 'true'); } catch { /* storage unavailable */ }
+    };
     const [isAdmin, setIsAdmin] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [authReady, setAuthReady] = useState(false);
 
     // Use refs to track state without triggering effect re-runs
     const loadingRef = useRef(loading);
@@ -78,19 +88,27 @@ export const AuthProvider = ({ children }) => {
             if (mounted) {
                 if (session?.user) {
                     setUser(session.user);
+                    rememberAccount();
                     // Start fetching extra data in background
                     fetchUserDetails(session.user.id);
                 }
                 // Don't wait for extra data to render the app
+                setAuthReady(true);
                 setLoading(false);
             }
+        }).catch(error => {
+            console.warn('Session check failed:', error.message);
+            if (mounted) setLoading(false);
+            // Keep signup prompts suppressed while the session is unknown.
         });
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (mounted) {
+                setAuthReady(true);
                 if (session?.user) {
                     setUser(session.user);
+                    rememberAccount();
                     // Re-fetch details on change (e.g. login/signup)
                     // We only re-fetch if the user ID changed to avoid redundant calls
                     if (userRef.current?.id !== session.user.id) {
@@ -165,6 +183,7 @@ export const AuthProvider = ({ children }) => {
             },
         });
         if (error) throw error;
+        if (data?.user) rememberAccount();
         return data;
     };
 
@@ -174,10 +193,20 @@ export const AuthProvider = ({ children }) => {
             password,
         });
         if (error) throw error;
+        if (data?.user) rememberAccount();
         return data;
     };
 
     const signOut = async () => {
+        try { await notificationService.disableReminders(); } catch (error) {
+            // Unsubscribe locally even if the row could not be removed; expired subscriptions are cleaned by cron.
+            if (webPushService.supported()) {
+                const registration = await navigator.serviceWorker.getRegistration();
+                const subscription = await registration?.pushManager.getSubscription();
+                await subscription?.unsubscribe();
+            }
+            console.warn('Could not remove reminder registration:', error.message);
+        }
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
     };
@@ -257,6 +286,8 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
+        hasAccount,
+        authReady,
         isAdmin,
         isPremium,
         loading,

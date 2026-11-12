@@ -6,12 +6,15 @@ import styles from './PromotionalAuthPopup.module.css';
 
 const PromotionalAuthPopup = () => {
     const [isVisible, setIsVisible] = useState(false);
-    const { user, loading } = useAuth();
+    const { user, loading, hasAccount, authReady } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
         // Don't show if loading, logged in, or previously dismissed
-        if (loading || user) return;
+        if (loading || authReady === false || user || hasAccount) {
+            setIsVisible(false);
+            return;
+        }
 
         const checkDismissal = () => {
             const dismissedAt = localStorage.getItem('auth_popup_dismissed');
@@ -29,7 +32,7 @@ const PromotionalAuthPopup = () => {
         };
 
         return checkDismissal();
-    }, [user, loading]);
+    }, [user, loading, hasAccount, authReady]);
 
     const handleClose = (e) => {
         if (e) e.stopPropagation();
@@ -42,7 +45,7 @@ const PromotionalAuthPopup = () => {
         navigate(path);
     };
 
-    if (!isVisible) return null;
+    if (loading || authReady === false || user || hasAccount || !isVisible) return null;
 
     return (
         <div className={styles.overlay} onClick={handleClose}>

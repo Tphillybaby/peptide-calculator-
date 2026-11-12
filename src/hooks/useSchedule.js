@@ -1,3 +1,4 @@
+import { localDateString, scheduledInstant } from '../utils/scheduleTime';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -8,35 +9,22 @@ import { paymentService } from '../services/paymentService';
 
 const STORAGE_KEY = 'peptide_tracker_schedule';
 const TEMPLATES_KEY = 'peptide_tracker_templates';
+let nativeNotificationQueue = Promise.resolve();
 
 export const useSchedule = () => {
     const [schedules, setSchedules] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
-
-    // Helper to explicitly sync notification from passed data
-    const syncMobileNotifications = useCallback((currentSchedules) => {
-        if (!device.isNative || !currentSchedules || currentSchedules.length === 0) return;
-
-
-        localNotifications.getPending().then(pending => {
-            const ids = pending.map(n => n.id);
-            if (ids.length > 0) localNotifications.cancel(ids);
-
-            currentSchedules.forEach(schedule => {
-                if (schedule.completed) return;
-                const scheduleDate = new Date(schedule.date);
-                if (scheduleDate > new Date()) {
-                    localNotifications.scheduleInjectionReminder({
-                        id: parseInt(schedule.id.toString().replace(/\D/g, '').slice(-8)) || Math.floor(Math.random() * 100000),
-                        title: 'Time for your dose!',
-                        body: `Take ${schedule.peptide} (${schedule.dosage}${schedule.unit})`,
-                        scheduledAt: scheduleDate
-                    });
-                }
-            });
-        });
+    const [remindersEnabled, setRemindersEnabled] = useState(() => {
+        try { return localStorage.getItem('peptidelog_reminders_enabled') === 'true'; } catch { return false; }
+    });
+    useEffect(() => {
+        const update = () => {
+            try { setRemindersEnabled(localStorage.getItem('peptidelog_reminders_enabled') === 'true'); } catch { setRemindersEnabled(false); }
+        };
+        window.addEventListener('reminder-preferences-changed', update);
+        return () => window.removeEventListener('reminder-preferences-changed', update);
     }, []);
 
     const loadFromLocalStorage = useCallback(() => {
@@ -76,7 +64,8 @@ export const useSchedule = () => {
 
             const formattedData = data.map(item => ({
                 id: item.id,
-                date: new Date(`${item.scheduled_date}T${item.scheduled_time}`).toISOString(),
+                date: item.scheduled_at || new Date(`${item.scheduled_date}T${item.scheduled_time}`).toISOString(),
+                backgroundReminderReady: Boolean(item.scheduled_at),
                 peptide: item.peptide_name,
                 dosage: item.dosage,
                 unit: item.unit,
@@ -133,56 +122,51 @@ export const useSchedule = () => {
         setSchedules([]);
         setTemplates([]);
         if (user) {
-            fetchSchedules().then((data) => {
-                if (data && device.isNative) {
-                    syncMobileNotifications(data);
-                }
-            });
+            fetchSchedules();
             fetchTemplates();
         } else {
             loadFromLocalStorage();
         }
-    }, [user, fetchSchedules, fetchTemplates, loadFromLocalStorage, syncMobileNotifications]);
+    }, [user, fetchSchedules, fetchTemplates, loadFromLocalStorage]);
 
-    // Schedule notifications whenever schedules change
+    // Background web reminders are delivered by the server; never duplicate them with page timers.
     useEffect(() => {
-        if (schedules.length > 0) {
-            // Web Notifications
-            if (!device.isNative) {
-                notificationService.scheduleReminders(schedules);
-            }
-            // Native Notifications
-            else {
-                // Clear all pending first to avoid duplicates (naive approach, but safe)
-                localNotifications.getPending().then(pending => {
-                    const ids = pending.map(n => n.id);
-                    if (ids.length > 0) localNotifications.cancel(ids);
-
-                    // Schedule new ones
-                    schedules.forEach(schedule => {
-                        if (schedule.completed) return;
-
-                        const scheduleDate = new Date(schedule.date);
-                        if (scheduleDate > new Date()) {
-                            localNotifications.scheduleInjectionReminder({
-                                id: parseInt(schedule.id.toString().replace(/\D/g, '').slice(-8)) || Math.floor(Math.random() * 100000), // Ensure integer ID for valid notification
-                                title: 'Time for your dose!',
-                                body: `Take ${schedule.peptide} (${schedule.dosage}${schedule.unit})`,
-                                scheduledAt: scheduleDate
-                            });
-                        }
-                    });
-                });
-            }
+        if (!device.isNative) {
+            if (!user && remindersEnabled) notificationService.scheduleReminders(schedules);
+            else notificationService.cancelAllNotifications();
+            return () => notificationService.cancelAllNotifications();
         }
-    }, [schedules]);
+        let cancelled = false;
+        const sync = async () => {
+            const pending = await localNotifications.getPending();
+            await localNotifications.cancel(pending.map(n => n.id));
+            if (cancelled || !remindersEnabled) return;
+            for (const schedule of schedules) {
+                if (schedule.completed) continue;
+                const scheduledAt = new Date(schedule.date);
+                if (scheduledAt <= new Date()) continue;
+                const id = [...String(schedule.id)].reduce((hash, char) => (hash * 31 + char.charCodeAt(0)) >>> 0, 0) % 1000000000;
+                for (const minutes of [30, 0]) {
+                    if (cancelled) return;
+                    const at = new Date(scheduledAt.getTime() - minutes * 60000);
+                    if (at > new Date()) await localNotifications.scheduleInjectionReminder({
+                        id: id * 2 + (minutes ? 1 : 0), title: 'PeptideLog reminder',
+                        body: minutes ? 'You have a dose scheduled in 30 minutes.' : 'You have a dose scheduled now.', scheduledAt: at
+                    });
+                }
+            }
+        };
+        nativeNotificationQueue = nativeNotificationQueue.then(sync).catch(error => console.error('Could not sync reminders:', error));
+        return () => { cancelled = true; };
+    }, [schedules, user, remindersEnabled]);
 
     // Add a single schedule entry
     const addSchedule = async (schedule) => {
         const newSchedule = {
             id: 'temp-' + Date.now(),
             completed: false,
-            ...schedule
+            ...schedule,
+            date: scheduledInstant(schedule.date, schedule.time)
         };
 
         const updated = [...schedules, newSchedule];
@@ -196,7 +180,7 @@ export const useSchedule = () => {
                     throw new Error('LIMIT_REACHED: Free limit reached (5 active schedules). Upgrade to Premium.');
                 }
 
-                const scheduleDate = new Date(schedule.date);
+                const scheduleDate = new Date(newSchedule.date);
                 const { data, error } = await supabase
                     .from('schedules')
                     .insert([{
@@ -204,7 +188,8 @@ export const useSchedule = () => {
                         peptide_name: schedule.peptide,
                         dosage: schedule.dosage,
                         unit: schedule.unit,
-                        scheduled_date: scheduleDate.toISOString().split('T')[0],
+                        scheduled_date: localDateString(scheduleDate),
+                        scheduled_at: newSchedule.date,
                         scheduled_time: schedule.time + ':00',
                         completed: false,
                         notes: schedule.notes || null,
@@ -218,12 +203,15 @@ export const useSchedule = () => {
                 setSchedules(prev => prev.map(s =>
                     s.id === newSchedule.id ? { ...s, id: data.id } : s
                 ));
+                return { success: true, data };
             } catch (error) {
                 console.error('Error adding schedule:', error);
                 fetchSchedules();
+                return { success: false, error };
             }
         } else {
             saveToLocalStorage(updated);
+            return { success: true, data: newSchedule };
         }
     };
 
@@ -237,7 +225,8 @@ export const useSchedule = () => {
             .filter(day => recurrenceDays.includes(getDay(day)))
             .map(day => {
                 // Create date at local noon to avoid timezone issues
-                const localDate = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12, 0, 0);
+                const [hours, minutes] = time.split(':').map(Number);
+                const localDate = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes);
                 return {
                     id: 'temp-' + Date.now() + '-' + day.getTime(),
                     date: localDate.toISOString(),
@@ -287,7 +276,8 @@ export const useSchedule = () => {
                     peptide_name: s.peptide,
                     dosage: s.dosage,
                     unit: s.unit,
-                    scheduled_date: new Date(s.date).toISOString().split('T')[0],
+                    scheduled_date: localDateString(new Date(s.date)),
+                    scheduled_at: s.date,
                     scheduled_time: s.time + ':00',
                     completed: false,
                     notes: s.notes,
@@ -390,7 +380,8 @@ export const useSchedule = () => {
             .filter(day => template.recurrenceDays.includes(getDay(day)))
             .map(day => {
                 // Create date at local noon to avoid timezone issues
-                const localDate = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12, 0, 0);
+                const [hours, minutes] = template.time.split(':').map(Number);
+                const localDate = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours, minutes);
                 return {
                     id: 'temp-' + Date.now() + '-' + day.getTime(),
                     date: localDate.toISOString(),
@@ -414,7 +405,8 @@ export const useSchedule = () => {
                     peptide_name: s.peptide,
                     dosage: s.dosage,
                     unit: s.unit,
-                    scheduled_date: new Date(s.date).toISOString().split('T')[0],
+                    scheduled_date: localDateString(new Date(s.date)),
+                    scheduled_at: s.date,
                     scheduled_time: s.time + ':00',
                     completed: false,
                     notes: s.notes,

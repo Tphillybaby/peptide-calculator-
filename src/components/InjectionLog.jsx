@@ -1,3 +1,4 @@
+import ActiveLevels from './ActiveLevels';
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import {
     ChevronLeft, ChevronRight, Plus, Trash2, Calendar, Syringe, X, Clock,
@@ -274,9 +275,11 @@ const InjectionLog = () => {
             };
 
             if (editingId) {
-                await updateInjection(editingId, injectionData);
+                const result = await updateInjection(editingId, injectionData);
+                if (!result.success) { alert(result.error?.message || 'Could not update injection.'); return; }
             } else {
-                await addInjection(injectionData);
+                const result = await addInjection(injectionData);
+                if (!result.success) { alert(result.message || result.error?.message || 'Could not save injection.'); return; }
             }
 
             // Switch view to the date we just logged
@@ -293,7 +296,7 @@ const InjectionLog = () => {
             }
         } else if (formMode === 'schedule') {
             // Add as scheduled item
-            await addSchedule({
+            const result = await addSchedule({
                 date: selectedDate.toISOString(),
                 peptide: formData.peptide,
                 dosage: parseFloat(formData.dosage),
@@ -301,6 +304,7 @@ const InjectionLog = () => {
                 time: formData.time,
                 notes: formData.notes
             });
+            if (!result.success) { alert(result.error?.message || 'Could not save schedule.'); return; }
         } else if (formMode === 'recurring') {
             // Create recurring schedule
             if (formData.recurrenceDays.length === 0) {
@@ -313,7 +317,7 @@ const InjectionLog = () => {
             endDate.setDate(endDate.getDate() + formData.duration);
             endDate.setHours(23, 59, 59, 999);
 
-            await createRecurringSchedule({
+            const template = await createRecurringSchedule({
                 peptide: formData.peptide,
                 dosage: parseFloat(formData.dosage),
                 unit: formData.unit,
@@ -321,6 +325,7 @@ const InjectionLog = () => {
                 recurrenceDays: formData.recurrenceDays,
                 notes: formData.notes
             }, startDate, endDate);
+            if (!template) { alert('Could not save recurring schedule. Please try again.'); return; }
         }
 
         resetForm();
@@ -362,7 +367,10 @@ const InjectionLog = () => {
 
     const handleDeleteInjection = async (id) => {
         if (confirmDelete === id) {
-            await deleteInjection(id);
+            const injection = injections.find(item => item.id === id);
+            if (injection?.inventoryBaselineMg > 0 && !confirm('This historical entry has no original vial allocation. Deleting it will not refund its original stock deduction. Continue and reconcile your inventory manually?')) return;
+            const result = await deleteInjection(id);
+            if (!result.success) { alert(result.error?.message || 'Could not delete injection.'); return; }
             setConfirmDelete(null);
         } else {
             setConfirmDelete(id);
@@ -419,8 +427,8 @@ const InjectionLog = () => {
                             <Activity size={18} color="#10b981" />
                         </div>
                         <div className={styles.statContent}>
-                            <span className={styles.statValue}>{stats.activeLevel}</span>
-                            <span className={styles.statLabel}>mg active</span>
+                            <ActiveLevels stats={stats} />
+                            <span className={styles.statLabel}>Estimated remaining</span>
                         </div>
                     </div>
                     <div className={styles.statCard}>
