@@ -111,6 +111,15 @@
                     "value": "no-store, max-age=0"
                 }
             ]
+        },
+        {
+            "source": "/recover.html",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, max-age=0"
+                }
+            ]
         }
     ],
     "buildCommand": "npm run build:full",

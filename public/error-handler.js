@@ -18,7 +18,7 @@
     description.textContent = message || 'Please reload to get the latest version.';
     var reload = document.createElement('button');
     reload.textContent = 'Reload page';
-    reload.onclick = function () { window.location.reload(); };
+    reload.onclick = function () { window.location.assign('/recover.html'); };
     banner.append(heading, description, reload);
     document.body.appendChild(banner);
   }

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Updating PeptideLog</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#0f172a;color:#f8fafc;font:16px system-ui}main{max-width:34rem;padding:2rem}a{color:#93c5fd}</style></head>
+<body><main><h1>Updating PeptideLog</h1><p id="status">Getting the latest app files. Your saved account data stays on this device.</p><a href="/calculator">Continue to calculator</a></main>
+<script>
+(async function () {
+  try {
+    if ('serviceWorker' in navigator) {
+      var registration = await navigator.serviceWorker.register('/sw.js', { scope:'/', updateViaCache:'none' });
+      await registration.update();
+      var worker = registration.installing || registration.waiting;
+      if (worker && worker.state !== 'activated') {
+        worker.postMessage({ type:'SKIP_WAITING' });
+        await new Promise(function (resolve, reject) {
+          var timeout = setTimeout(function () { reject(new Error('The app update is taking longer than expected.')); }, 15000);
+          function check() {
+            if (worker.state === 'activated') { clearTimeout(timeout); resolve(); }
+            if (worker.state === 'redundant') { clearTimeout(timeout); reject(new Error('Please try this update page again.')); }
+          }
+          worker.addEventListener('statechange', check); check();
+        });
+      }
+    }
+    location.replace('/calculator');
+  } catch (error) { document.getElementById('status').textContent = error.message + ' Use the link below to continue.'; }
+})();
+</script></body></html>
