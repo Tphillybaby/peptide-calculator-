@@ -1,5 +1,6 @@
+import { searchPeptides } from '../utils/encyclopedia';
 import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
     Search, ArrowRight, ArrowLeft, Beaker, Activity, Brain, Heart, Zap, BookOpen,
     Loader2, Dumbbell, Moon, Shield, Sparkles, Flame, Pill, Syringe, Scale
@@ -108,10 +109,11 @@ const HEALTH_BENEFIT_CATEGORIES = [
 ];
 
 const Encyclopedia = () => {
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchParams] = useSearchParams();
+    const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
     const [selectedCategory, setSelectedCategory] = useState(null);
 
-    const { peptides, loading } = usePeptides();
+    const { peptides, loading, error } = usePeptides();
 
     // Function to check if a peptide matches a health benefit category
     const peptideMatchesCategory = (peptide, category) => {
@@ -144,19 +146,10 @@ const Encyclopedia = () => {
             }
         }
 
-        // Filter by search term
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            results = results.filter(peptide => {
-                const name = (peptide.name || '').toLowerCase();
-                const description = (peptide.description || '').toLowerCase();
-                const benefits = (peptide.benefits || []).join(' ').toLowerCase();
-                return name.includes(term) || description.includes(term) || benefits.includes(term);
-            });
-        }
+        results = searchPeptides(results, searchTerm);
 
         // Sort results: Popular trending items first
-        return results.sort((a, b) => {
+        return [...results].sort((a, b) => {
             const indexA = POPULAR_PEPTIDES.findIndex(p => p.name === a.name);
             const indexB = POPULAR_PEPTIDES.findIndex(p => p.name === b.name);
 
@@ -193,6 +186,7 @@ const Encyclopedia = () => {
                 jsonLd={getEncyclopediaSchemas()}
             />
 
+            {error && <div role="alert" className={styles.emptyState}><h2>Encyclopedia unavailable</h2><p>We could not load the database. Your search is preserved; try again when your connection is available.</p><button type="button" onClick={() => window.location.reload()}>Reload encyclopedia</button></div>}
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.headerContent}>
@@ -212,7 +206,7 @@ const Encyclopedia = () => {
                         <p className={styles.subtitle}>
                             {selectedCategory
                                 ? selectedCategoryData?.description
-                                : 'Select a health benefit to explore peptides that can help'}
+                                : 'Explore substances by research topic, or search by name'}
                         </p>
                     </div>
                     <div className={styles.headerRight}>
@@ -237,13 +231,13 @@ const Encyclopedia = () => {
                         <Search size={20} />
                         <input
                             type="text"
-                            placeholder="Quick search all peptides..."
+                            aria-label="Search all peptides" placeholder="Quick search all peptides..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
 
-                    {searchTerm ? (
+                    {searchTerm.trim() ? (
                         // Show search results
                         <div className={styles.section}>
                             <h2 className={styles.sectionTitle}>

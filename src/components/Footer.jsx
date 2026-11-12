@@ -32,6 +32,7 @@ const Footer = () => {
 
                     <div className={styles.section}>
                         <h4>Support</h4>
+                        <Link to="/install" className={styles.link}>Install on your phone</Link>
                         <Link to="/contact" className={styles.link}>
                             <Mail size={16} />
                             Contact Us

@@ -141,5 +141,32 @@
         }
     ],
     "buildCommand": "npm run build:full",
-    "outputDirectory": "dist"
+    "outputDirectory": "dist",
+    "redirects": [
+        {
+            "source": "/encyclopedia/tb-500",
+            "destination": "/encyclopedia/tb-500-thymosin-beta-4",
+            "permanent": true
+        },
+        {
+            "source": "/encyclopedia/ghk-cu",
+            "destination": "/encyclopedia/ghk-cu-copper-peptide",
+            "permanent": true
+        },
+        {
+            "source": "/encyclopedia/pt-141",
+            "destination": "/encyclopedia/pt-141-bremelanotide",
+            "permanent": true
+        },
+        {
+            "source": "/encyclopedia/mk-677",
+            "destination": "/encyclopedia/mk-677-ibutamoren",
+            "permanent": true
+        },
+        {
+            "source": "/encyclopedia/cjc-1295",
+            "destination": "/encyclopedia?search=CJC-1295",
+            "permanent": true
+        }
+    ]
 }

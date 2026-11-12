@@ -1,3 +1,4 @@
+import { findPeptide, uniquePeptides } from '../utils/encyclopedia';
 import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { slugify } from '../utils/slugify';
@@ -18,7 +19,7 @@ export const usePeptides = () => {
                 if (error) throw error;
 
                 // Transform snake_case DB fields to camelCase for frontend compatibility
-                const transformed = (data || []).map(p => ({
+                const transformed = uniquePeptides(data || []).map(p => ({
                     ...p,
                     halfLife: p.half_life_hours ? `${p.half_life_hours} hours` : 'Unknown',
                     sideEffects: p.side_effects || [],
@@ -52,21 +53,7 @@ export const usePeptides = () => {
      * This provides backward compatibility: old links with encoded names
      * still work, and new clean slug URLs work too.
      */
-    const getPeptideBySlug = (param) => {
-        if (!param) return null;
-
-        // 1. Try exact slug match first (new clean URLs)
-        const bySlug = peptides.find(p => p.slug === param.toLowerCase());
-        if (bySlug) return bySlug;
-
-        // 2. Fallback: try decoding as a name (old encoded URLs like "BPC-157" or "NAD%2B...")
-        try {
-            const decoded = decodeURIComponent(param);
-            return peptides.find(p => p.name.toLowerCase() === decoded.toLowerCase());
-        } catch {
-            return null;
-        }
-    };
+    const getPeptideBySlug = (param) => findPeptide(peptides, param);
 
     const getPeptidesByCategory = (category) => {
         return peptides.filter(p => p.category === category);
