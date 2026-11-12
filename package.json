@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:prerender": "node scripts/prerender.mjs",
-    "build:full": "vite build && node scripts/prerender.mjs",
+    "build:full": "vite build && node scripts/prerender.mjs && node scripts/compat-entry.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
