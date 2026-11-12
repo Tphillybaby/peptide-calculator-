@@ -235,6 +235,7 @@ const Dashboard = () => {
                         <p className={styles.subtitle}>Here's your peptide journey at a glance</p>
                     </div>
                     <div className={styles.dailyActions}>
+                        <Link to="/install" className={styles.viewAllBtn}>Install on your phone</Link>
                         {!dosesLoading && recentActivity.length > 0 && <Link to="/log?repeat=last" className={styles.viewAllBtn}>Repeat last dose</Link>}
                         <Link to="/log?action=new" className={styles.primaryAction}><Plus size={20} />Log Injection</Link>
                     </div>

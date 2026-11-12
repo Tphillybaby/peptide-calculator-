@@ -9,7 +9,7 @@ import ShareButton from '../components/ShareButton';
 
 const PeptideDetail = () => {
     const { name } = useParams();
-    const { getPeptideBySlug, loading } = usePeptides();
+    const { getPeptideBySlug, loading, error } = usePeptides();
 
     // Supports both slug URLs (/encyclopedia/bpc-157) and
     // legacy encoded URLs (/encyclopedia/BPC-157)
@@ -23,8 +23,9 @@ const PeptideDetail = () => {
         );
     }
 
+    if (error) return <div className="page-container" role="alert"><h1>Could not load this entry</h1><p>Please check your connection and try again.</p><button type="button" onClick={() => window.location.reload()}>Try again</button><p><Link to="/encyclopedia">Back to encyclopedia</Link></p></div>;
     if (!peptide) {
-        return <Navigate to="/encyclopedia" replace />;
+        return <Navigate to={`/encyclopedia?search=${encodeURIComponent(name || '')}`} replace />;
     }
 
     return (
@@ -38,19 +39,8 @@ const PeptideDetail = () => {
                     "@type": "Product",
                     "name": peptide.name,
                     "description": peptide.description,
-                    "category": peptide.category,
-                    "review": {
-                        "@type": "Review",
-                        "reviewRating": {
-                            "@type": "Rating",
-                            "ratingValue": "5",
-                            "bestRating": "5"
-                        },
-                        "author": {
-                            "@type": "Organization",
-                            "name": "PeptideLog Community"
-                        }
-                    }
+                    "category": peptide.category
+
                 }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

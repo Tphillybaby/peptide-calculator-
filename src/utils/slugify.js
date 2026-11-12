@@ -29,5 +29,12 @@ export const slugify = (text) => {
  * @returns {string} e.g. "/encyclopedia/bpc-157"
  */
 export const peptideUrl = (name) => {
-    return `/encyclopedia/${slugify(name)}`;
+    const aliases = {
+        'TB-500': 'TB-500 (Thymosin Beta-4)',
+        'GHK-Cu': 'GHK-Cu (Copper Peptide)',
+        'MK-677': 'MK-677 (Ibutamoren)',
+        'PT-141': 'PT-141 (Bremelanotide)'
+    };
+    if (name === 'CJC-1295') return '/encyclopedia?search=CJC-1295';
+    return `/encyclopedia/${slugify(aliases[name] || name)}`;
 };

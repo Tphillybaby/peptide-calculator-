@@ -1,3 +1,4 @@
+import { uniquePeptides } from '../src/utils/encyclopedia.js';
 /**
  * Prerender Script for SEO — Lightweight Static HTML Generator
  *
@@ -290,7 +291,7 @@ async function prerender() {
     let success = 0;
     let fail = 0;
 
-    for (const peptide of peptides) {
+    for (const peptide of uniquePeptides(peptides)) {
         try {
             const slug = slugify(peptide.name);
             const dir  = path.join(distPath, 'encyclopedia', slug);

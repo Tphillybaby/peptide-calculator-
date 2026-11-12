@@ -19,6 +19,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 
 // Main pages - lazy load all
+const Install = lazy(() => import('./pages/Install'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Log = lazy(() => import('./pages/Log'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -147,6 +148,7 @@ function AppRoutes() {
           </ErrorBoundary>
         }>
           <Route index element={<Dashboard />} />
+          <Route path="install" element={<Install />} />
           <Route path="log" element={<Log />} />
           {/* Backwards compatibility redirects */}
           <Route path="tracker" element={<Navigate to="/log" replace />} />
