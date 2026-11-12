@@ -6,9 +6,10 @@ import { notificationService } from '../services/notificationService';
 const STORAGE_KEY = 'peptide_tracker_inventory';
 const LOW_STOCK_THRESHOLD = 10; // mg
 
-export const useInventory = () => {
+export const useInventory = ({ notifyLowStock = true } = {}) => {
     const [inventory, setInventory] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const { user } = useAuth();
 
     const loadFromLocalStorage = useCallback(() => {
@@ -32,6 +33,7 @@ export const useInventory = () => {
     }, []);
 
     const checkLowStock = useCallback((items) => {
+        if (!notifyLowStock) return;
         items.forEach(item => {
             if (item.remaining_mg <= LOW_STOCK_THRESHOLD && item.remaining_mg > 0) {
                 // Check if we've already notified for this item recently
@@ -49,11 +51,12 @@ export const useInventory = () => {
                 }
             }
         });
-    }, []);
+    }, [notifyLowStock]);
 
     const fetchInventory = useCallback(async () => {
         try {
             setLoading(true);
+            setError(null);
             const { data, error } = await supabase
                 .from('inventory')
                 .select('*')
@@ -66,7 +69,8 @@ export const useInventory = () => {
             checkLowStock(data || []);
         } catch (error) {
             console.error('Error fetching inventory:', error);
-            loadFromLocalStorage();
+            setError(error);
+            setInventory([]);
         } finally {
             setLoading(false);
         }
@@ -217,6 +221,7 @@ export const useInventory = () => {
     return {
         inventory,
         loading,
+        error,
         addInventory,
         updateInventory,
         deleteInventory,

@@ -150,7 +150,7 @@
 /* Main Grid */
 .mainGrid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr 2fr;
     gap: var(--space-2xl);
     margin-bottom: var(--space-2xl);
 }
@@ -727,3 +727,12 @@
         font-size: 0.75rem;
     }
 }
+.dailyActions { display:flex; align-items:center; flex-wrap:wrap; gap:1rem; }
+.dailyGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.25rem; margin-bottom:2rem; }
+.dailyCard { padding:1.5rem; border:1px solid var(--border-color, #334155); border-radius:16px; background:var(--bg-secondary); }
+.dailyCard h2 { display:flex; align-items:center; gap:.6rem; font-size:1.15rem; margin:0 0 .6rem; }
+.dailyCard p { color:var(--text-secondary); margin:.6rem 0 1rem; }
+.dailyRow { display:flex; flex-direction:column; gap:.3rem; padding:.7rem 0; border-bottom:1px solid var(--border-color, #334155); overflow-wrap:anywhere; }
+.dailyRow span { color:var(--text-secondary); font-size:.875rem; }
+.dailyCard > a { display:inline-block; margin-top:1rem; min-height:44px; }
+@media(max-width:700px) { .dailyGrid { grid-template-columns:1fr; } }

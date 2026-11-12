@@ -1,3 +1,5 @@
+import { useSearchParams } from 'react-router-dom';
+import { recentDoses, repeatDoseDraft } from '../utils/dailyDashboard';
 import ActiveLevels from './ActiveLevels';
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import {
@@ -80,6 +82,8 @@ const InjectionLog = () => {
     });
 
     const loading = injectionsLoading || schedulesLoading;
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [repeatReview, setRepeatReview] = useState(false);
     const stats = useMemo(() => getStats(), [getStats]);
 
     // Calendar helpers
@@ -200,6 +204,7 @@ const InjectionLog = () => {
             recurrenceDays: [],
             duration: 28
         });
+        setRepeatReview(false);
         setEditingId(null);
         setFormMode('log');
     };
@@ -207,13 +212,8 @@ const InjectionLog = () => {
     const openLogForm = (prefill = null) => {
         resetForm();
         if (prefill) {
-            setFormData(prev => ({
-                ...prev,
-                peptide: prefill.peptide,
-                dosage: prefill.dosage?.toString() || '',
-                unit: prefill.unit || 'mg',
-                date: toLocalDateTimeString()
-            }));
+            setFormData(prev => ({ ...prev, ...repeatDoseDraft(prefill, toLocalDateTimeString()) }));
+            setRepeatReview(true);
         } else {
             setFormData(prev => ({
                 ...prev,
@@ -223,6 +223,27 @@ const InjectionLog = () => {
         setFormMode('log');
         setShowForm(true);
     };
+
+    useEffect(() => {
+        if (loading) return;
+        const repeat = searchParams.get('repeat') === 'last';
+        const create = searchParams.get('action') === 'new';
+        const upcoming = searchParams.get('view') === 'upcoming';
+        if (!repeat && !create && !upcoming) return;
+        if (upcoming) setActiveView('schedule');
+        else {
+            const now = new Date();
+            setSelectedDate(now); setCurrentDate(now); setActiveView('calendar');
+            const last = repeat ? recentDoses(injections)[0] : null;
+            openLogForm(last);
+            if (!last) setFormData(prev => ({ ...prev, date: toLocalDateTimeString(now) }));
+        }
+        const next = new URLSearchParams(searchParams);
+        if (repeat) next.delete('repeat');
+        if (create) next.delete('action');
+        if (upcoming) next.delete('view');
+        setSearchParams(next, { replace: true });
+    }, [loading, searchParams, setSearchParams]);
 
     const openScheduleForm = () => {
         resetForm();
@@ -262,6 +283,7 @@ const InjectionLog = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.peptide || !formData.dosage) return;
+        if (formMode === 'log' && !formData.site) { alert('Choose an injection site before saving.'); return; }
 
         if (formMode === 'log') {
             // Add as logged injection
@@ -410,6 +432,7 @@ const InjectionLog = () => {
                     </div>
                 </div>
                 <div className={styles.headerRight}>
+                    {recentDoses(injections).length > 0 && <button type="button" onClick={() => setSearchParams({ repeat: 'last' })} className={styles.siteButton}><Repeat size={16} /> Repeat last dose</button>}
                     {isUsingLocalStorage && (
                         <span className={styles.guestBadge}>
                             <CloudOff size={14} />
@@ -587,6 +610,7 @@ const InjectionLog = () => {
                         {/* Form */}
                         {showForm && (
                             <form className={styles.form} onSubmit={handleSubmit}>
+                                {repeatReview && <p role="status">Repeating your last logged dose. Review the dose and time, then choose an injection site before saving.</p>}
                                 <div className={styles.formHeader}>
                                     <h4>
                                         {formMode === 'log' && (editingId ? 'Edit Injection' : 'Log Injection')}

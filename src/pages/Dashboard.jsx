@@ -1,3 +1,6 @@
+import { recentDoses, upcomingDoses, lowStockVials } from '../utils/dailyDashboard';
+import { useSchedule } from '../hooks/useSchedule';
+import { useInventory } from '../hooks/useInventory';
 import ActiveLevels from '../components/ActiveLevels';
 import React, { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -30,7 +33,11 @@ const getTimeAgo = (date) => {
 };
 
 const Dashboard = () => {
-    const { getStats, injections } = useInjections();
+    const { getStats, injections, loading: dosesLoading } = useInjections();
+    const { schedules, loading: scheduleLoading, error: scheduleError } = useSchedule();
+    const { inventory, loading: inventoryLoading, error: inventoryError } = useInventory({ notifyLowStock: false });
+    const upcoming = upcomingDoses(schedules).slice(0, 3);
+    const lowStock = lowStockVials(inventory).slice(0, 3);
     const { user } = useAuth();
     const { showOnboarding, completeOnboarding, skipOnboarding } = useOnboarding();
 
@@ -91,7 +98,7 @@ const Dashboard = () => {
     // Get recent activity
     const recentActivity = useMemo(() => {
         if (!injections || injections.length === 0) return [];
-        return injections.slice(0, 4).map(inj => ({
+        return recentDoses(injections).slice(0, 4).map(inj => ({
             ...inj,
             timeAgo: getTimeAgo(new Date(inj.date))
         }));
@@ -226,13 +233,26 @@ const Dashboard = () => {
                         <h1>{greeting}, <span className={styles.userName}>{userName}</span></h1>
                         <p className={styles.subtitle}>Here's your peptide journey at a glance</p>
                     </div>
-                    {user && (
-                        <Link to="/tracker" className={styles.primaryAction}>
-                            <Plus size={20} />
-                            <span className={styles.actionText}>Log Injection</span>
-                        </Link>
-                    )}
+                    <div className={styles.dailyActions}>
+                        {!dosesLoading && recentActivity.length > 0 && <Link to="/log?repeat=last" className={styles.viewAllBtn}>Repeat last dose</Link>}
+                        <Link to="/log?action=new" className={styles.primaryAction}><Plus size={20} />Log Injection</Link>
+                    </div>
                 </header>
+
+                <div className={styles.dailyGrid}>
+                    <section className={styles.dailyCard}>
+                        <h2><Calendar size={20} /> Upcoming doses</h2>
+                        <p>Today and the next six days · your saved schedule</p>
+                        {scheduleLoading ? <p>Loading schedule…</p> : scheduleError ? <p>Schedule unavailable. Try opening your log again.</p> : upcoming.length ? upcoming.map(item => <div key={item.id} className={styles.dailyRow}><strong>{item.peptide}</strong><span>{item.dosage} {item.unit} · {new Date(item.date).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}{new Date(item.date) < new Date() ? ' · Scheduled time passed' : ''}</span></div>) : <p>No upcoming doses scheduled.</p>}
+                        <Link to="/log?view=upcoming">View schedule →</Link>
+                    </section>
+                    <section className={styles.dailyCard}>
+                        <h2><Package size={20} /> Low stock</h2>
+                        <p>Vials with 20% or less remaining</p>
+                        {inventoryLoading ? <p>Loading inventory…</p> : inventoryError ? <p>Inventory unavailable. Try opening inventory again.</p> : lowStock.length ? lowStock.map(item => <div key={item.id} className={styles.dailyRow}><strong>{item.peptide_name}</strong><span>{item.remaining_mg} mg of {item.quantity_mg} mg remaining{item.batch_number ? ` · ${item.batch_number}` : ''}</span></div>) : <p>No low-stock vials.</p>}
+                        <Link to="/inventory">Manage inventory →</Link>
+                    </section>
+                </div>
 
                 {/* Stats Overview */}
                 <div className={styles.statsGrid}>
@@ -290,6 +310,42 @@ const Dashboard = () => {
 
                 {/* Main Content Grid */}
                 <div className={styles.mainGrid}>
+                    {/* Recent Activity */}
+                    <section className={styles.section}>
+                        <div className={styles.sectionHeader}>
+                            <h2><History size={20} /> Recent Activity</h2>
+                            {recentActivity.length > 0 && (
+                                <Link to="/log" className={styles.viewAllBtn}>
+                                    View All <ChevronRight size={16} />
+                                </Link>
+                            )}
+                        </div>
+                        {recentActivity.length > 0 ? (
+                            <div className={styles.activityList}>
+                                {recentActivity.map((activity, index) => (
+                                    <div key={activity.id || index} className={styles.activityItem}>
+                                        <div className={styles.activityIcon}>
+                                            <CheckCircle2 size={16} />
+                                        </div>
+                                        <div className={styles.activityInfo}>
+                                            <span className={styles.activityTitle}>{activity.peptide}</span>
+                                            <span className={styles.activityMeta}>
+                                                {activity.dosage}{activity.unit} • {activity.timeAgo}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className={styles.emptyState}>
+                                <Syringe size={32} className={styles.emptyIcon} />
+                                <p>No injections logged yet</p>
+                                <Link to="/log?action=new" className={styles.emptyAction}>
+                                    Log your first injection
+                                </Link>
+                            </div>
+                        )}
+                    </section>
                     {/* Quick Actions */}
                     <section className={styles.section}>
                         <div className={styles.sectionHeader}>
@@ -355,42 +411,7 @@ const Dashboard = () => {
                         </div>
                     </section>
 
-                    {/* Recent Activity */}
-                    <section className={styles.section}>
-                        <div className={styles.sectionHeader}>
-                            <h2><History size={20} /> Recent Activity</h2>
-                            {recentActivity.length > 0 && (
-                                <Link to="/log" className={styles.viewAllBtn}>
-                                    View All <ChevronRight size={16} />
-                                </Link>
-                            )}
-                        </div>
-                        {recentActivity.length > 0 ? (
-                            <div className={styles.activityList}>
-                                {recentActivity.map((activity, index) => (
-                                    <div key={activity.id || index} className={styles.activityItem}>
-                                        <div className={styles.activityIcon}>
-                                            <CheckCircle2 size={16} />
-                                        </div>
-                                        <div className={styles.activityInfo}>
-                                            <span className={styles.activityTitle}>{activity.peptide}</span>
-                                            <span className={styles.activityMeta}>
-                                                {activity.dosage}{activity.unit} • {activity.timeAgo}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className={styles.emptyState}>
-                                <Syringe size={32} className={styles.emptyIcon} />
-                                <p>No injections logged yet</p>
-                                <Link to="/log" className={styles.emptyAction}>
-                                    Log your first injection
-                                </Link>
-                            </div>
-                        )}
-                    </section>
+
                 </div>
 
                 {/* Progress Analytics Section */}
