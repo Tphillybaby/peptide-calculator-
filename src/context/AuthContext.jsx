@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }) => {
         try { localStorage.setItem('peptidelog_has_account', 'true'); } catch { /* storage unavailable */ }
     };
     const [isAdmin, setIsAdmin] = useState(false);
+    const [adminCheck, setAdminCheck] = useState({ userId: null, ready: false, error: false });
     const [isPremium, setIsPremium] = useState(false);
     const [loading, setLoading] = useState(true);
     const [authReady, setAuthReady] = useState(false);
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         let mounted = true;
+        let detailsRequest = 0;
 
         // Failsafe: Force app to load after 3 seconds even if auth is slow
         const safetyTimeout = setTimeout(() => {
@@ -45,6 +47,10 @@ export const AuthProvider = ({ children }) => {
 
         // Fetch additional user details (Admin/Premium) without blocking the UI
         const fetchUserDetails = async (userId) => {
+            const request = ++detailsRequest;
+            setIsAdmin(false);
+            setIsPremium(false);
+            setAdminCheck({ userId, ready: false, error: false });
             try {
                 // Fetch independently to avoid one failing the other
                 const profilePromise = supabase.from('profiles').select('is_admin').eq('id', userId).single();
@@ -62,7 +68,9 @@ export const AuthProvider = ({ children }) => {
                     updateSignInPromise
                 ]);
 
-                if (!mounted) return;
+                if (!mounted || request !== detailsRequest) return;
+                if (profileResult.error) throw profileResult.error;
+                setAdminCheck({ userId, ready: true, error: false });
 
                 const adminStatus = profileResult.data?.is_admin || false;
                 setIsAdmin(adminStatus);
@@ -79,6 +87,7 @@ export const AuthProvider = ({ children }) => {
                 }
                 setIsPremium(premiumStatus);
             } catch (error) {
+                if (mounted && request === detailsRequest) { setIsAdmin(false); setAdminCheck({ userId, ready: true, error: true }); }
                 console.error('Background user details fetch failed:', error);
             }
         };
@@ -115,6 +124,8 @@ export const AuthProvider = ({ children }) => {
                         fetchUserDetails(session.user.id);
                     }
                 } else {
+                    detailsRequest++;
+                    setAdminCheck({ userId: null, ready: true, error: false });
                     setUser(null);
                     setIsAdmin(false);
                     setIsPremium(false);
@@ -289,6 +300,8 @@ export const AuthProvider = ({ children }) => {
         hasAccount,
         authReady,
         isAdmin,
+        adminLoading: Boolean(user) && (adminCheck.userId !== user.id || !adminCheck.ready),
+        adminError: Boolean(user) && adminCheck.userId === user.id && adminCheck.error,
         isPremium,
         loading,
         signUp,

@@ -53,7 +53,7 @@ const AdminUsers = () => {
             setStats({
                 total: profiles?.length || 0,
                 admins: profiles?.filter(p => p.is_admin).length || 0,
-                newThisWeek: profiles?.filter(p => p.updated_at && new Date(p.updated_at) >= weekAgo).length || 0,
+                newThisWeek: profiles?.filter(p => p.created_at && new Date(p.created_at) >= weekAgo).length || 0,
                 activeToday: profiles?.filter(p => p.last_sign_in && new Date(p.last_sign_in) >= todayStart).length || 0
             });
 
@@ -76,22 +76,11 @@ const AdminUsers = () => {
         if (userStats[userId]) return; // Already loaded
 
         try {
-            const [injections, schedules, reviews] = await Promise.all([
-                supabase.from('injections').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-                supabase.from('schedules').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-                supabase.from('reviews').select('*', { count: 'exact', head: true }).eq('user_id', userId)
-            ]);
-
-            setUserStats(prev => ({
-                ...prev,
-                [userId]: {
-                    injections: injections.count || 0,
-                    schedules: schedules.count || 0,
-                    reviews: reviews.count || 0
-                }
-            }));
+            const { data, error } = await supabase.rpc('admin_user_counts', { p_user_id: userId });
+            if (error) throw error;
+            setUserStats(prev => ({ ...prev, [userId]: data }));
         } catch (err) {
-            console.error('Error fetching user stats:', err);
+            setError('Could not load account activity counts.');
         }
     };
 
@@ -104,11 +93,7 @@ const AdminUsers = () => {
         }
 
         try {
-            // Note: Update using profiles table
-            const { error } = await supabase
-                .from('profiles')
-                .update({ has_market_access: newStatus })
-                .eq('id', userId);
+            const { error } = await supabase.rpc('admin_set_access', { p_user_id: userId, p_has_market_access: newStatus });
 
             if (error) throw error;
 
@@ -142,10 +127,7 @@ const AdminUsers = () => {
         }
 
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .update({ is_admin: newStatus })
-                .eq('id', userId);
+            const { error } = await supabase.rpc('admin_set_access', { p_user_id: userId, p_is_admin: newStatus });
 
             if (error) throw error;
 

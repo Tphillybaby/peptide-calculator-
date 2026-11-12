@@ -8,11 +8,11 @@ import { Loader, ShieldX } from 'lucide-react';
  * Checks if the current user has is_admin = true in their profile
  */
 const AdminRoute = ({ children }) => {
-    const { user, isAdmin, loading } = useAuth();
+    const { user, isAdmin, loading, authReady, adminLoading, adminError } = useAuth();
     const location = useLocation();
 
     // Still loading auth or admin status
-    if (loading) {
+    if (loading || !authReady || adminLoading) {
         return (
             <div style={{
                 display: 'flex',
@@ -32,6 +32,8 @@ const AdminRoute = ({ children }) => {
     if (!user) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
+
+    if (adminError) return <main style={{padding:'2rem'}} role="alert"><h1>Could not verify admin access</h1><p>Check your connection and try again. No admin tools have been opened.</p><button type="button" onClick={() => window.location.reload()}>Retry permission check</button></main>;
 
     // Not an admin - show access denied
     if (!isAdmin) {
