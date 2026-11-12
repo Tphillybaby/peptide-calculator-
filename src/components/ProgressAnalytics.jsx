@@ -1,3 +1,4 @@
+import DoseProgress from './DoseProgress';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Line, Doughnut, Bar } from 'react-chartjs-2';
 import {
@@ -59,7 +60,7 @@ const ProgressAnalytics = () => {
         const cutoff = subDays(new Date(), parseInt(timeRange));
         return injections.filter(inj => {
             const date = new Date(inj.injection_date || inj.date);
-            return date >= cutoff;
+            return date >= cutoff && date <= new Date();
         });
     }, [injections, timeRange]);
 
@@ -330,6 +331,7 @@ const ProgressAnalytics = () => {
                 </div>
             </div>
 
+            <DoseProgress injections={injections} days={timeRange} />
             {/* Charts */}
             <div className={styles.chartsGrid}>
                 {/* Trend Chart */}

@@ -72,7 +72,7 @@
                 },
                 {
                     "key": "Cache-Control",
-                    "value": "public, max-age=0, s-maxage=60, stale-while-revalidate=600"
+                    "value": "no-cache, max-age=0, must-revalidate"
                 }
             ]
         },
@@ -114,6 +114,24 @@
         },
         {
             "source": "/recover.html",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, max-age=0"
+                }
+            ]
+        },
+        {
+            "source": "/version.json",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-store, max-age=0"
+                }
+            ]
+        },
+        {
+            "source": "/index.html",
             "headers": [
                 {
                     "key": "Cache-Control",

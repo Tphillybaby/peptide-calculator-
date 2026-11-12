@@ -1,0 +1,13 @@
+.panel { padding:1.25rem; margin-bottom:1.5rem; border:1px solid var(--border-color, #64748b); border-radius:16px; background:var(--bg-secondary); overflow-wrap:anywhere; }
+.panel h2 { font-size:1.15rem; margin:0 0 .75rem; }
+.panel p { margin:.6rem 0; line-height:1.5; }
+.muted { color:var(--text-secondary); font-size:.85rem; }
+.panel button,.panel a,.panel summary { min-height:44px; padding:.65rem .9rem; display:inline-flex; align-items:center; cursor:pointer; }
+.panel button { border:1px solid var(--border-color, #64748b); border-radius:8px; color:var(--text-primary); background:var(--bg-primary); }
+.panel label { display:block; margin:1rem 0 .5rem; }
+.panel select { width:100%; max-width:420px; min-height:44px; font-size:1rem; padding:.5rem; color:var(--text-primary); background:var(--bg-primary); border:1px solid var(--border-color,#64748b); border-radius:8px; }
+.chart { height:300px; margin:1rem 0; }
+.tableScroll { overflow-x:auto; }
+.tableScroll table { width:100%; border-collapse:collapse; }
+.tableScroll th,.tableScroll td { padding:.65rem; text-align:left; border-bottom:1px solid var(--border-color,#64748b); min-width:90px; }
+@media(max-width:600px) { .panel { padding:1rem; } .chart { height:260px; } }

@@ -1,10 +1,10 @@
+import { lowStockVials } from '../utils/dailyDashboard';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { notificationService } from '../services/notificationService';
 
 const STORAGE_KEY = 'peptide_tracker_inventory';
-const LOW_STOCK_THRESHOLD = 10; // mg
 
 export const useInventory = ({ notifyLowStock = true } = {}) => {
     const [inventory, setInventory] = useState([]);
@@ -35,7 +35,7 @@ export const useInventory = ({ notifyLowStock = true } = {}) => {
     const checkLowStock = useCallback((items) => {
         if (!notifyLowStock) return;
         items.forEach(item => {
-            if (item.remaining_mg <= LOW_STOCK_THRESHOLD && item.remaining_mg > 0) {
+            if (lowStockVials([item]).length && item.remaining_mg > 0) {
                 // Check if we've already notified for this item recently
                 const lastNotified = localStorage.getItem(`low_stock_notified_${item.id}`);
                 const now = Date.now();
@@ -86,74 +86,32 @@ export const useInventory = ({ notifyLowStock = true } = {}) => {
     }, [user, fetchInventory, loadFromLocalStorage]);
 
     const addInventory = async (item) => {
-        const newItem = {
-            id: 'temp-' + Date.now(),
-            ...item,
-            remaining_mg: item.quantity_mg,
-            created_at: new Date().toISOString()
-        };
-
-        const updated = [newItem, ...inventory];
-        setInventory(updated);
-
-        if (user) {
-            try {
-                const { data, error } = await supabase
-                    .from('inventory')
-                    .insert([{
-                        user_id: user.id,
-                        peptide_name: item.peptide_name,
-                        quantity_mg: item.quantity_mg,
-                        remaining_mg: item.quantity_mg,
-                        purchase_date: item.purchase_date || null,
-                        expiration_date: item.expiration_date || null,
-                        batch_number: item.batch_number || null,
-                        source: item.source || null
-                    }])
-                    .select()
-                    .single();
-
+        const record = { ...item, remaining_mg: item.quantity_mg };
+        try {
+            if (user) {
+                const { data, error } = await supabase.from('inventory').insert({ ...record, user_id: user.id }).select().single();
                 if (error) throw error;
-
-                setInventory(prev => prev.map(i =>
-                    i.id === newItem.id ? data : i
-                ));
-            } catch (error) {
-                console.error('Error adding inventory:', error);
-                fetchInventory();
+                setInventory(prev => [data, ...prev]);
+            } else {
+                const next = [{ ...record, id: crypto.randomUUID(), created_at: new Date().toISOString() }, ...inventory];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); setInventory(next);
             }
-        } else {
-            saveToLocalStorage(updated);
-        }
+            return { success: true };
+        } catch (error) { return { success: false, error }; }
     };
 
     const updateInventory = async (id, updates) => {
-        const updated = inventory.map(item =>
-            item.id === id ? { ...item, ...updates } : item
-        );
-        setInventory(updated);
-
-        if (user) {
-            try {
-                const { error } = await supabase
-                    .from('inventory')
-                    .update(updates)
-                    .eq('id', id);
-
+        try {
+            let saved = updates;
+            if (user) {
+                const { data, error } = await supabase.from('inventory').update(updates).eq('id', id).eq('user_id', user.id).select().single();
                 if (error) throw error;
-
-                // Check if this update triggers low stock alert
-                const updatedItem = updated.find(i => i.id === id);
-                if (updatedItem) {
-                    checkLowStock([updatedItem]);
-                }
-            } catch (error) {
-                console.error('Error updating inventory:', error);
-                fetchInventory();
+                saved = data;
             }
-        } else {
-            saveToLocalStorage(updated);
-        }
+            const next = inventory.map(item => item.id === id ? { ...item, ...saved } : item);
+            if (!user) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+            setInventory(next); return { success: true };
+        } catch (error) { return { success: false, error }; }
     };
 
     const deleteInventory = async (id) => {
@@ -193,11 +151,7 @@ export const useInventory = ({ notifyLowStock = true } = {}) => {
         return true;
     };
 
-    const getLowStockItems = () => {
-        return inventory.filter(item =>
-            item.remaining_mg <= LOW_STOCK_THRESHOLD && item.remaining_mg > 0
-        );
-    };
+    const getLowStockItems = () => lowStockVials(inventory);
 
     const getExpiringItems = (daysAhead = 30) => {
         const cutoff = new Date();

@@ -1,3 +1,4 @@
+import { useDosePresets } from '../hooks/useDosePresets';
 import { useSearchParams } from 'react-router-dom';
 import { recentDoses, repeatDoseDraft } from '../utils/dailyDashboard';
 import ActiveLevels from './ActiveLevels';
@@ -42,6 +43,8 @@ const toLocalDateTimeString = (date = new Date()) => {
 const InjectionLog = () => {
     // Hooks
     const { isPremium } = useAuth();
+    const dosePresets = useDosePresets();
+    const [presetName, setPresetName] = useState('');
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
     const {
@@ -76,6 +79,7 @@ const InjectionLog = () => {
         site: 'Abdomen',
         time: '08:00',
         notes: '',
+            bodyWeightLbs: '',
         date: toLocalDateTimeString(),
         recurrenceDays: [],
         duration: 28
@@ -200,6 +204,7 @@ const InjectionLog = () => {
             site: 'Abdomen',
             time: '08:00',
             notes: '',
+            bodyWeightLbs: '',
             date: toLocalDateTimeString(selectedDate),
             recurrenceDays: [],
             duration: 28
@@ -283,6 +288,7 @@ const InjectionLog = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.peptide || !formData.dosage) return;
+        if (formData.bodyWeightLbs && (!Number.isFinite(Number(formData.bodyWeightLbs)) || Number(formData.bodyWeightLbs) <= 0 || Number(formData.bodyWeightLbs) > 1500)) { alert('Enter a body weight between 0 and 1500 lb.'); return; }
         if (formMode === 'log' && !formData.site) { alert('Choose an injection site before saving.'); return; }
 
         if (formMode === 'log') {
@@ -293,6 +299,7 @@ const InjectionLog = () => {
                 unit: formData.unit,
                 site: formData.site,
                 notes: formData.notes || '',
+                bodyWeightLbs: formData.bodyWeightLbs ? Number(formData.bodyWeightLbs) : null,
                 date: new Date(formData.date).toISOString()
             };
 
@@ -378,6 +385,7 @@ const InjectionLog = () => {
             site: injection.site || 'Abdomen',
             time: '08:00',
             notes: injection.notes || '',
+            bodyWeightLbs: injection.bodyWeightLbs || '',
             date: toLocalDateTimeString(new Date(injection.date)),
             recurrenceDays: [],
             duration: 28
@@ -441,6 +449,12 @@ const InjectionLog = () => {
                     )}
                 </div>
             </div>
+
+            <section className={styles.presets} aria-label="Saved dose protocols">
+                <h2>Saved dose protocols</h2><p>{dosePresets.synced ? 'Saved to your account across devices.' : 'Guest protocols are saved on this device.'} Protocols fill a review form; they never log or schedule a dose automatically.</p>
+                {dosePresets.error && <p role="alert">{dosePresets.error}</p>}
+                {dosePresets.loading ? <p>Loading protocols…</p> : dosePresets.presets.length ? <div className={styles.presetList}>{dosePresets.presets.map(p => <div key={p.id} className={styles.presetRow}><button type="button" onClick={() => { setActiveView('calendar'); setSelectedDate(new Date()); setCurrentDate(new Date()); openLogForm(p); }}><strong>{p.name}</strong><span>{p.peptide} · {p.dosage} {p.unit}</span></button><button type="button" disabled={dosePresets.busy} aria-label={`Delete protocol ${p.name}`} onClick={() => { if (confirm(`Delete saved protocol “${p.name}”? Dose history will stay unchanged.`)) dosePresets.remove(p.id); }}><Trash2 size={18} /></button></div>)}</div> : <p>No saved protocols yet. Open Log Injection and save the dose details you use often.</p>}
+            </section>
 
             {/* Stats Cards */}
             {stats && (
@@ -609,8 +623,8 @@ const InjectionLog = () => {
 
                         {/* Form */}
                         {showForm && (
-                            <form className={styles.form} onSubmit={handleSubmit}>
-                                {repeatReview && <p role="status">Repeating your last logged dose. Review the dose and time, then choose an injection site before saving.</p>}
+                            <form data-preserve-draft className={styles.form} onSubmit={handleSubmit}>
+                                {repeatReview && <p role="status">Dose details filled in. Review the dose and time, then choose an injection site before saving.</p>}
                                 <div className={styles.formHeader}>
                                     <h4>
                                         {formMode === 'log' && (editingId ? 'Edit Injection' : 'Log Injection')}
@@ -786,6 +800,10 @@ const InjectionLog = () => {
                                     />
                                 </div>
 
+                                {formMode === 'log' && <>
+                                    <div className={styles.inputGroup}><label htmlFor="body-weight">Body weight (lb, optional)</label><input id="body-weight" type="number" min="0.1" max="1500" step="0.1" value={formData.bodyWeightLbs || ''} onChange={e => setFormData({ ...formData, bodyWeightLbs: e.target.value })} /></div>
+                                    <div className={styles.inputGroup}><label htmlFor="protocol-name">Save dose details as a protocol (optional)</label><input id="protocol-name" maxLength={80} placeholder="e.g. Morning protocol" value={presetName} onChange={e => setPresetName(e.target.value)} /><button type="button" disabled={dosePresets.busy || dosePresets.loading} onClick={async () => { if (await dosePresets.save(presetName, formData)) setPresetName(''); }}>Save protocol</button>{dosePresets.error && <p role="alert">{dosePresets.error}</p>}</div>
+                                </>}
                                 <button type="submit" className={styles.submitBtn}>
                                     {formMode === 'log' && (editingId ? <><Check size={18} /> Update</> : <><Plus size={18} /> Log Injection</>)}
                                     {formMode === 'schedule' && <><CalendarPlus size={18} /> Add to Schedule</>}

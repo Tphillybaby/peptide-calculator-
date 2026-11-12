@@ -54,8 +54,11 @@ export default defineConfig(async ({ mode }) => {
     console.warn('[Sitemap] Failed to fetch dynamic routes:', e)
   }
 
+  const appVersion = env.VERCEL_GIT_COMMIT_SHA || `build-${Date.now()}`;
   return {
+    define: { __APP_VERSION__: JSON.stringify(appVersion) },
     plugins: [
+      { name: 'app-version', generateBundle() { this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ version: appVersion }) }); } },
       react(),
       Sitemap({
         hostname: 'https://peptidelog.net',
@@ -92,13 +95,16 @@ export default defineConfig(async ({ mode }) => {
         workbox: {
           importScripts: ['/push-events.js'],
           cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          clientsClaim: true,
+          globPatterns: ['**/*.{js,css,svg,png,ico,woff2}'],
+          globIgnores: ['**/recover.html', '**/version.json', '**/stats.html'],
           navigateFallback: null,
           runtimeCaching: [{
             urlPattern: ({ request }) => request.mode === 'navigate',
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'peptidelog-pages-v2',
-              networkTimeoutSeconds: 5,
+              cacheName: 'peptidelog-pages-v3',
               cacheableResponse: { statuses: [200] }
             }
           }]
