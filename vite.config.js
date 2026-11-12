@@ -89,9 +89,22 @@ export default defineConfig(async ({ mode }) => {
       }),
       VitePWA({
         registerType: 'autoUpdate',
-        workbox: { importScripts: ['/push-events.js'] },
+        workbox: {
+          importScripts: ['/push-events.js'],
+          cleanupOutdatedCaches: true,
+          navigateFallback: null,
+          runtimeCaching: [{
+            urlPattern: ({ request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'peptidelog-pages-v2',
+              networkTimeoutSeconds: 5,
+              cacheableResponse: { statuses: [200] }
+            }
+          }]
+        },
         // Use inline registration which includes error handling
-        injectRegister: 'inline',
+        injectRegister: false,
         // Disable service worker during development
         devOptions: {
           enabled: false
