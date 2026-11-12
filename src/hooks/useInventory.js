@@ -86,7 +86,7 @@ export const useInventory = ({ notifyLowStock = true } = {}) => {
     }, [user, fetchInventory, loadFromLocalStorage]);
 
     const addInventory = async (item) => {
-        const record = { ...item, remaining_mg: item.quantity_mg };
+        const record = { ...item, remaining_mg: item.quantity_mg, purchase_date: item.purchase_date || null, expiration_date: item.expiration_date || null, source: item.source || null, batch_number: item.batch_number || null };
         try {
             if (user) {
                 const { data, error } = await supabase.from('inventory').insert({ ...record, user_id: user.id }).select().single();
@@ -101,6 +101,10 @@ export const useInventory = ({ notifyLowStock = true } = {}) => {
     };
 
     const updateInventory = async (id, updates) => {
+        updates = { ...updates };
+        for (const key of ['purchase_date', 'expiration_date', 'source', 'batch_number']) {
+            if (Object.hasOwn(updates, key)) updates[key] = updates[key] || null;
+        }
         try {
             let saved = updates;
             if (user) {
