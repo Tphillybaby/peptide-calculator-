@@ -28,7 +28,9 @@ Set these SERVER environment variables on the existing Vercel project:
 
 Generate the VAPID pair once using the `web-push` package's `generateVAPIDKeys()` in a secure administrative environment. Keep it stable across deployments. Do not commit secrets.
 
-`/api/cron/send-reminders` runs every minute. The Vercel plan must support that frequency; a Hobby plan's daily cron limit is insufficient. If the existing plan does not support it, use an authorized external minute scheduler with the same bearer token; do not upgrade a paid plan without the owner's approval. The job sends 30-minute and due-time reminders, retries within a five-minute delivery window, leases deliveries to avoid concurrent duplicate sends, and removes expired subscriptions. Notification tags collapse duplicate deliveries after a rare send/ack failure. Delivery is not guaranteed by browsers or operating systems.
+`/api/cron/send-reminders` is invoked by Supabase Cron every minute using `pg_cron`, `pg_net`, and Vault. It is deliberately absent from Vercel's cron configuration so the site stays on the existing Hobby plan. No paid-plan upgrade is required or authorized. Use `supabase/setup_background_reminder_cron.sql` after configuring the Vault shared secret; confirm available Supabase extensions before applying it.
+
+The job sends 30-minute and due-time reminders, retries within a five-minute delivery window, leases deliveries to avoid concurrent duplicate sends, and removes expired subscriptions. Notification tags collapse duplicate deliveries after a rare send/ack failure. Delivery is not guaranteed by browsers or operating systems. The endpoint and configuration API stay disabled until required environment variables are present.
 
 Subscriptions are scoped to authenticated users with row-level security. Notifications contain generic reminder text to avoid putting substance or dose details on a lock screen. Endpoints are restricted to known public browser push services. The same PWA worker handles both caching and background push; logout unsubscribes this device.
 
