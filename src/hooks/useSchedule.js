@@ -15,6 +15,7 @@ export const useSchedule = () => {
     const [schedules, setSchedules] = useState([]);
     const [templates, setTemplates] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const { user } = useAuth();
     const [remindersEnabled, setRemindersEnabled] = useState(() => {
         try { return localStorage.getItem('peptidelog_reminders_enabled') === 'true'; } catch { return false; }
@@ -54,6 +55,7 @@ export const useSchedule = () => {
     const fetchSchedules = useCallback(async () => {
         try {
             setLoading(true);
+            setError(null);
             const { data, error } = await supabase
                 .from('schedules')
                 .select('*')
@@ -80,7 +82,8 @@ export const useSchedule = () => {
             return formattedData;
         } catch (error) {
             console.error('Error fetching schedules:', error);
-            loadFromLocalStorage();
+            setError(error);
+            setSchedules([]);
             return [];
         } finally {
             setLoading(false);
@@ -500,6 +503,7 @@ export const useSchedule = () => {
         schedules,
         templates,
         loading,
+        error,
         addSchedule,
         createRecurringSchedule,
         deleteTemplate,
