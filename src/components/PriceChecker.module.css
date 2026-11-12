@@ -1217,3 +1217,26 @@
     height: 16px;
   }
 }
+.quoteNotice { display:flex; gap:.8rem; padding:1.25rem; border:1px solid var(--border-color,#94a3b8); border-radius:12px; margin-bottom:1.5rem; }
+.quoteNotice > svg { flex-shrink:0; }
+.quoteNotice p,.quotePanel p { line-height:1.6; margin:.5rem 0; }
+.quoteMeta { color:var(--text-secondary); line-height:1.6; }
+.quoteFilters { display:flex; flex-wrap:wrap; align-items:end; gap:1rem; margin:1.5rem 0; }
+.quoteFilters label { display:flex; flex-direction:column; gap:.5rem; }
+.quoteFilters input,.quoteFilters select,.controls > button,.quoteActions > * { min-height:44px; font-size:1rem; padding:.65rem; border-radius:8px; }
+.quoteFilters input,.quoteFilters select { color:var(--text-primary); background:var(--bg-secondary); border:1px solid var(--border-color,#94a3b8); }
+.quoteFilters .quoteCheck { flex-direction:row; align-items:center; }
+.quoteCheck input { min-height:24px; width:20px; }
+.quotePanel { padding:1.25rem; margin:1rem 0; border:1px solid var(--border-color,#94a3b8); border-radius:14px; background:var(--bg-secondary); overflow-wrap:anywhere; }
+.quoteHeading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+.quoteHeading h2 { margin:0; font-size:1.2rem; }
+.quotePrice { font-size:1.6rem; }
+.staleNotice { padding:.75rem; border-left:4px solid #d97706; background:rgba(217,119,6,.1); line-height:1.6; }
+.quoteActions { display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+.quoteActions a { display:inline-flex; align-items:center; gap:.5rem; color:var(--accent-primary,#2563eb); text-decoration:underline; }
+.quoteActions button,.controls > button { background:var(--bg-primary); color:var(--text-primary); border:1px solid var(--border-color,#94a3b8); cursor:pointer; }
+.quoteHistory { margin-top:1rem; }
+.historyScroll { overflow-x:auto; }
+.historyScroll table { width:100%; border-collapse:collapse; }
+.historyScroll th,.historyScroll td { text-align:left; padding:.65rem; border-bottom:1px solid var(--border-color,#94a3b8); min-width:90px; }
+@media(max-width:650px) { .quoteFilters,.quoteHeading { flex-direction:column; align-items:stretch; } .controls > button { width:100%; } .quotePanel { padding:1rem; } .quoteNotice { padding:1rem; } }

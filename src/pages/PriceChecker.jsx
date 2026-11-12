@@ -7,7 +7,7 @@ const PriceChecker = () => {
         <div style={{ padding: 0 }}>
             <SEO
                 title="Peptide Price Checker & Comparison"
-                description="Compare peptide prices from top vendors. Find the best deals on BPC-157, Tirzepatide, and more. Updated daily."
+                description="Compare recorded peptide vendor quotes, vial amounts, cost per mg, and verification dates. Check current availability directly with vendors."
                 canonical="/price-checker"
             />
             <PriceCheckerComponent />
