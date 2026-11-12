@@ -1,9 +1,11 @@
+import {useSiteConfig} from '../context/SiteConfigContext';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Shield, FileText, Mail } from 'lucide-react';
 import styles from './Footer.module.css';
 
 const Footer = () => {
+    const {settings} = useSiteConfig();
     const currentYear = new Date().getFullYear();
 
     return (
@@ -11,8 +13,8 @@ const Footer = () => {
             <div className={styles.container}>
                 <div className={styles.grid}>
                     <div className={styles.section}>
-                        <h3>PeptideLog</h3>
-                        <p>Your personal peptide management companion</p>
+                        <h3>{settings?.site_name || 'PeptideLog'}</h3>
+                        <p>{settings?.site_description || 'Your personal peptide management companion'}</p>
                         <div className={styles.made}>
                             Made with <Heart size={14} className={styles.heart} /> for the biohacking community
                         </div>
@@ -32,6 +34,7 @@ const Footer = () => {
 
                     <div className={styles.section}>
                         <h4>Support</h4>
+                        {settings?.support_email && <a className={styles.link} href={`mailto:${settings.support_email}`}>{settings.support_email}</a>}
                         <Link to="/install" className={styles.link}>Install on your phone</Link>
                         <Link to="/contact" className={styles.link}>
                             <Mail size={16} />
@@ -55,7 +58,7 @@ const Footer = () => {
 
                 <div className={styles.bottom}>
                     <p className={styles.copyright}>
-                        © {currentYear} PeptideLog. All rights reserved.
+                        © {currentYear} {settings?.site_name || 'PeptideLog'}. All rights reserved.
                     </p>
                     <p className={styles.version}>
                         Version 1.0.0

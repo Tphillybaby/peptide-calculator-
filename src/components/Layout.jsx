@@ -1,3 +1,5 @@
+import { SiteGate, SiteAnnouncements } from './SiteRuntime';
+import { useSiteConfig } from '../context/SiteConfigContext';
 import React, { useEffect } from 'react';
 import { Outlet, useLocation, Link } from 'react-router-dom';
 import Navigation from './Navigation';
@@ -7,6 +9,7 @@ import { device, statusBar, appEvents } from '../services/nativeService';
 
 const Layout = () => {
     const location = useLocation();
+    const {settings} = useSiteConfig();
 
     useEffect(() => {
         // Handle status bar styling based on theme
@@ -135,7 +138,7 @@ const Layout = () => {
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text'
                     }}>
-                        PeptideLog
+                        {settings?.site_name || 'PeptideLog'}
                     </span>
                 </Link>
                 <LanguageSelector variant="compact" />
@@ -149,7 +152,8 @@ const Layout = () => {
                     paddingBottom: 'calc(80px + var(--safe-area-bottom, 0px))'
                 }}
             >
-                <Outlet />
+                <SiteAnnouncements />
+                <SiteGate><Outlet /></SiteGate>
             </main>
             <Footer />
             <Navigation />
