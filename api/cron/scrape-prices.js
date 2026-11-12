@@ -16,7 +16,7 @@ export default async function handler(req) {
     const authHeader = req.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
             headers: { 'Content-Type': 'application/json' },
@@ -45,6 +45,7 @@ export default async function handler(req) {
             body: JSON.stringify({}), // Scrape all active vendors
         });
 
+        if (!response.ok) throw new Error(`Price scraper returned HTTP ${response.status}`);
         const result = await response.json();
 
         console.log('[Cron] Scrape result:', JSON.stringify(result));
