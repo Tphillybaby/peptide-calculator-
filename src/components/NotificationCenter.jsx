@@ -9,8 +9,8 @@ import notificationService from '../services/notificationService';
 import styles from './NotificationCenter.module.css';
 
 const DEFAULT_PREFERENCES = {
-    push_enabled: true,
-    dose_reminders: true,
+    push_enabled: false,
+    dose_reminders: false,
     reminder_minutes_before: 30,
     low_stock_alerts: true,
     price_drop_alerts: true,
@@ -59,6 +59,11 @@ const NotificationCenter = ({ onClose }) => {
                     console.error('Error loading preferences:', err);
                 }
             }
+            if (user) {
+                const { data } = await supabase.from('profiles').select('notification_preferences').eq('id', user.id).single();
+                const enabled = data?.notification_preferences?.injectionReminders === true;
+                setPreferences(prev => ({ ...prev, push_enabled: enabled, dose_reminders: enabled }));
+            }
             setLoading(false);
         };
 
@@ -67,8 +72,11 @@ const NotificationCenter = ({ onClose }) => {
 
     // Request permission
     const handleRequestPermission = async () => {
-        const granted = await notificationService.requestPermission();
-        setPermissionStatus(granted ? 'granted' : 'denied');
+        try {
+            await notificationService.enableReminders(user?.id);
+            setPermissionStatus('granted');
+            setPreferences(prev => ({ ...prev, push_enabled: true, dose_reminders: true }));
+        } catch (error) { alert(error.message); }
     };
 
     // Save preferences
@@ -88,7 +96,17 @@ const NotificationCenter = ({ onClose }) => {
                 });
 
             if (error) throw error;
+            const enabled = preferences.push_enabled && preferences.dose_reminders;
+            if (enabled) await notificationService.enableReminders(user.id);
+            else {
+                await notificationService.disableReminders();
+                const { data, error: readError } = await supabase.from('profiles').select('notification_preferences').eq('id', user.id).single();
+                if (readError) throw readError;
+                const { error: saveError } = await supabase.from('profiles').update({ notification_preferences: { ...data.notification_preferences, injectionReminders: false } }).eq('id', user.id);
+                if (saveError) throw saveError;
+            }
         } catch (err) {
+            alert(err.message || 'Could not save notification preferences.');
             console.error('Error saving preferences:', err);
         } finally {
             setSaving(false);
@@ -112,11 +130,12 @@ const NotificationCenter = ({ onClose }) => {
     };
 
     // Send test notification
-    const sendTestNotification = () => {
-        notificationService.sendNotification('🧪 Test Notification', {
+    const sendTestNotification = async () => {
+        const delivered = await notificationService.sendNotification('🧪 Test Notification', {
             body: 'Push notifications are working correctly!',
             tag: 'test'
         });
+        if (!delivered) { alert('Could not display a notification. Check device permissions.'); return; }
         setTestSent(true);
         setTimeout(() => setTestSent(false), 3000);
     };
@@ -166,7 +185,7 @@ const NotificationCenter = ({ onClose }) => {
         }
     ];
 
-    const reminderOptions = [15, 30, 60, 120];
+    const reminderOptions = [30];
 
     if (loading) {
         return (

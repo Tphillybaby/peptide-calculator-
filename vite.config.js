@@ -89,6 +89,7 @@ export default defineConfig(async ({ mode }) => {
       }),
       VitePWA({
         registerType: 'autoUpdate',
+        workbox: { importScripts: ['/push-events.js'] },
         // Use inline registration which includes error handling
         injectRegister: 'inline',
         // Disable service worker during development

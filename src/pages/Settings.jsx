@@ -1,3 +1,4 @@
+import { profileUpdate } from '../utils/profileUpdate';
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity, Sun, Moon, Globe, Share2, FileText, CreditCard, Check } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -60,7 +61,7 @@ const Settings = () => {
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
     const [notifications, setNotifications] = useState({
-        injectionReminders: true,
+        injectionReminders: false,
         expirationAlerts: true,
         weeklyReports: true,
         priceAlerts: false
@@ -122,7 +123,7 @@ const Settings = () => {
                         const prefs = typeof data.notification_preferences === 'string'
                             ? JSON.parse(data.notification_preferences)
                             : data.notification_preferences;
-                        setNotifications(prev => ({ ...prev, ...prefs }));
+                        setNotifications(prev => ({ ...prev, ...prefs, injectionReminders: prefs.injectionReminders ?? prefs.email_reminders ?? false }));
                     } catch { /* ignore malformed prefs */ }
                 }
             } else {
@@ -148,13 +149,7 @@ const Settings = () => {
         try {
             setSaving(true);
             setMessage(null);
-
-            const updates = {
-                id: user.id,
-                full_name: profile.full_name,
-                updated_at: new Date().toISOString()
-                // Add other fields to schema.sql if you want to persist them
-            };
+            const updates = profileUpdate(user.id, profile);
 
             const { error } = await supabase
                 .from('profiles')
@@ -164,7 +159,7 @@ const Settings = () => {
             setMessage({ type: 'success', text: 'Settings saved successfully' });
         } catch (error) {
             console.error('Error updating profile:', error);
-            setMessage({ type: 'error', text: 'Failed to save settings' });
+            setMessage({ type: 'error', text: error.message || 'Failed to save settings' });
         } finally {
             setSaving(false);
         }
@@ -750,18 +745,20 @@ const Settings = () => {
                                     <label className={styles.toggle}>
                                         <input
                                             type="checkbox"
-                                            checked={notifications.email_reminders}
+                                            checked={notifications.injectionReminders}
                                             onChange={async (e) => {
-                                                if (e.target.checked) {
-                                                    const granted = await notificationService.requestPermission();
-                                                    if (granted) {
-                                                        setNotifications({ ...notifications, email_reminders: true });
-                                                        notificationService.sendNotification('Reminders Enabled', { body: 'You will now receive injection reminders.' });
-                                                    } else {
-                                                        alert('Please enable notifications in your browser settings.');
+                                                const enabled = e.target.checked;
+                                                try {
+                                                    if (enabled) await notificationService.enableReminders(user.id);
+                                                    else {
+                                                        await notificationService.disableReminders();
+                                                        const { error } = await supabase.from('profiles').update({ notification_preferences: { ...notifications, injectionReminders: false } }).eq('id', user.id);
+                                                        if (error) throw error;
                                                     }
-                                                } else {
-                                                    setNotifications({ ...notifications, email_reminders: false });
+                                                    setNotifications(prev => ({ ...prev, injectionReminders: enabled }));
+                                                    setMessage({ type: 'success', text: enabled ? 'Background reminders enabled on this device.' : 'Injection reminders disabled.' });
+                                                } catch (error) {
+                                                    setMessage({ type: 'error', text: error.message || 'Could not update reminders.' });
                                                 }
                                             }}
                                         />

@@ -1,3 +1,6 @@
+import { device, localNotifications } from './nativeService';
+import { webPushService } from './webPushService';
+
 /**
  * Enhanced Push Notification Service for scheduled dose reminders and alerts
  */
@@ -10,7 +13,7 @@ class NotificationServiceClass {
      * Check if notifications are supported
      */
     isSupported() {
-        return 'Notification' in window;
+        return device.isNative || (typeof window !== 'undefined' && 'Notification' in window);
     }
 
     /**
@@ -22,8 +25,11 @@ class NotificationServiceClass {
             return false;
         }
 
-        const permission = await Notification.requestPermission();
-        return permission === 'granted';
+        try {
+            if (device.isNative) return await localNotifications.requestPermission();
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        } catch { return false; }
     }
 
     /**
@@ -31,30 +37,33 @@ class NotificationServiceClass {
      */
     getPermission() {
         if (!this.isSupported()) return 'unsupported';
-        return Notification.permission;
+        return device.isNative ? 'default' : Notification.permission;
     }
 
     /**
      * Send an immediate notification
      */
-    sendNotification(title, options = {}) {
-        if (Notification.permission === 'granted') {
-            const notification = new Notification(title, {
-                icon: '/pwa-192x192.png',
-                badge: '/pwa-192x192.png',
-                vibrate: [100, 50, 100],
-                ...options
-            });
-
-            notification.onclick = function () {
-                window.focus();
-                notification.close();
-                if (options.onClick) options.onClick();
-            };
-
+    async sendNotification(title, options = {}) {
+        if (!this.isSupported()) return null;
+        try {
+            if (device.isNative) {
+                await localNotifications.schedule([{ id: Date.now() % 2147483647, title, body: options.body }]);
+                return true;
+            }
+            if (Notification.permission !== 'granted') return null;
+            const { onClick, ...notificationOptions } = options;
+            const registration = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+            if (registration) {
+                await registration.showNotification(title, { icon: '/pwa-192x192.png', ...notificationOptions });
+                return true;
+            }
+            const notification = new Notification(title, { icon: '/pwa-192x192.png', ...notificationOptions });
+            notification.onclick = () => { window.focus(); notification.close(); onClick?.(); };
             return notification;
+        } catch (error) {
+            console.warn('Notification could not be displayed:', error.message);
+            return null;
         }
-        return null;
     }
 
     /**
@@ -69,15 +78,20 @@ class NotificationServiceClass {
         const delay = targetTime.getTime() - now.getTime();
 
         // Don't schedule if the time has passed
-        if (delay <= 0) {
+        if (!Number.isFinite(delay) || delay <= 0) {
             return false;
         }
 
         // Schedule the notification
+        // Browser timers overflow after ~24.8 days. Re-arm long reminders safely.
         const timeoutId = setTimeout(() => {
+            if (Date.now() < targetTime.getTime()) {
+                this.scheduleNotification(id, scheduledTime, title, options);
+                return;
+            }
             this.sendNotification(title, options);
             this.scheduledNotifications.delete(id);
-        }, delay);
+        }, Math.min(delay, 2147483647));
 
         this.scheduledNotifications.set(id, timeoutId);
         return true;
@@ -201,6 +215,33 @@ const notificationServiceInstance = new NotificationServiceClass();
 // Export both the instance and named exports for compatibility
 export const notificationService = {
     requestPermission: () => notificationServiceInstance.requestPermission(),
+    enableReminders: async (userId) => {
+        if (!userId) throw new Error('Sign in to enable background reminders.');
+        if (device.isNative) {
+            if (!await localNotifications.requestPermission()) throw new Error('Notification permission was not granted.');
+        } else {
+            await webPushService.enable(userId);
+        }
+        const { supabase } = await import('../lib/supabase');
+        const { data, error: readError } = await supabase.from('profiles').select('notification_preferences').eq('id', userId).single();
+        if (readError) throw readError;
+        const { error } = await supabase.from('profiles').update({ notification_preferences: { ...data.notification_preferences, injectionReminders: true } }).eq('id', userId);
+        if (error) throw error;
+        try { localStorage.setItem('peptidelog_reminders_enabled', 'true'); } catch { /* storage unavailable */ }
+        window.dispatchEvent(new Event('reminder-preferences-changed'));
+        return true;
+    },
+    disableReminders: async () => {
+        try { localStorage.setItem('peptidelog_reminders_enabled', 'false'); } catch { /* storage unavailable */ }
+        window.dispatchEvent(new Event('reminder-preferences-changed'));
+        notificationServiceInstance.cancelAllNotifications();
+        if (device.isNative) {
+            const pending = await localNotifications.getPending();
+            await localNotifications.cancel(pending.map(item => item.id));
+        } else {
+            await webPushService.disable();
+        }
+    },
     sendNotification: (title, options) => notificationServiceInstance.sendNotification(title, options),
     scheduleNotification: (title, options, delayMs) => notificationServiceInstance.scheduleNotificationDelay(title, options, delayMs),
     scheduleReminders: (schedules, minutes) => notificationServiceInstance.scheduleReminders(schedules, minutes),

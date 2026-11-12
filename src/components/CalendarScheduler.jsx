@@ -69,14 +69,14 @@ const CalendarScheduler = () => {
     const autocompleteRef = useRef(null);
 
     const requestNotifications = useCallback(async () => {
-        const granted = await notificationService.requestPermission();
-        setNotificationPermission(granted ? 'granted' : 'denied');
-        if (granted) {
-            // Immediately schedule if granted
-            notificationService.scheduleReminders(schedules);
-            alert('Notifications enabled! You will be reminded 30 minutes before your scheduled doses.');
+        try {
+            await notificationService.enableReminders(user?.id);
+            setNotificationPermission('granted');
+            alert('Background reminders enabled for this device. Delivery depends on your device notification settings.');
+        } catch (error) {
+            alert(error.message || 'Could not enable reminders.');
         }
-    }, [schedules]);
+    }, [user]);
 
     // Filter peptides for autocomplete - use useMemo instead of useEffect + setState
     const filteredPeptides = useMemo(() => {
