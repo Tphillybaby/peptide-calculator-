@@ -1,3 +1,6 @@
+import { useInjections } from '../hooks/useInjections';
+import { vialDoseEstimate, validateStock } from '../utils/dailyTools';
+import { lowStockVials } from '../utils/dailyDashboard';
 import React, { useState } from 'react';
 import { Package, Plus, Trash2, Edit2, AlertCircle, ShoppingBag, Droplet, Calendar, Search } from 'lucide-react';
 import useInventory from '../hooks/useInventory';
@@ -5,7 +8,7 @@ import styles from './Inventory.module.css';
 
 const Inventory = () => {
     const {
-        inventory,
+        inventory, loading, error,
         addInventory,
         updateInventory,
         deleteInventory,
@@ -14,6 +17,9 @@ const Inventory = () => {
         getTotalStock
     } = useInventory();
 
+    const { injections } = useInjections();
+    const [saveError, setSaveError] = useState('');
+    const [saving, setSaving] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState(null);
     const [formData, setFormData] = useState({
@@ -31,22 +37,21 @@ const Inventory = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const itemData = {
-            ...formData,
-            quantity_mg: parseFloat(formData.quantity_mg)
-        };
-
-        if (editingItem) {
-            await updateInventory(editingItem.id, itemData);
-        } else {
-            await addInventory(itemData);
-        }
-
-        closeModal();
+        if (saving) return;
+        setSaving(true); setSaveError('');
+        try {
+            const itemData = { ...formData, quantity_mg: Number(formData.quantity_mg) };
+            if (editingItem) itemData.remaining_mg = validateStock(formData.remaining_mg, formData.quantity_mg);
+            else { validateStock(itemData.quantity_mg, itemData.quantity_mg); delete itemData.remaining_mg; }
+            const result = editingItem ? await updateInventory(editingItem.id, itemData) : await addInventory(itemData);
+            if (!result.success) throw result.error;
+            closeModal();
+        } catch (e) { setSaveError(e.message || 'Could not save inventory.'); }
+        finally { setSaving(false); }
     };
 
     const openAddModal = () => {
-        setEditingItem(null);
+        setEditingItem(null); setSaveError('');
         setFormData({
             peptide_name: '',
             quantity_mg: '',
@@ -59,10 +64,11 @@ const Inventory = () => {
     };
 
     const openEditModal = (item) => {
-        setEditingItem(item);
+        setEditingItem(item); setSaveError('');
         setFormData({
             peptide_name: item.peptide_name,
             quantity_mg: item.quantity_mg,
+            remaining_mg: item.remaining_mg,
             source: item.source || '',
             purchase_date: item.purchase_date ? item.purchase_date.split('T')[0] : '',
             expiration_date: item.expiration_date ? item.expiration_date.split('T')[0] : '',
@@ -99,6 +105,8 @@ const Inventory = () => {
                 </button>
             </header>
 
+            {loading && <p role="status">Loading inventory…</p>}
+            {error && <p role="alert">Inventory could not be loaded. Reload to try again.</p>}
             {/* Stats Overview */}
             <div className={styles.statsGrid}>
                 <div className={styles.statCard}>
@@ -133,14 +141,14 @@ const Inventory = () => {
             </div>
 
             {/* Inventory List */}
-            {inventory.length > 0 ? (
+            {!loading && !error && (inventory.length > 0 ? (
                 <div className={styles.inventoryList}>
                     {inventory.map(item => (
                         <div key={item.id} className={styles.inventoryItem}>
                             <div className={styles.itemInfo}>
                                 <div className={styles.itemName}>
                                     {item.peptide_name}
-                                    {item.remaining_mg <= 10 && (
+                                    {lowStockVials([item]).length > 0 && (
                                         <span className={styles.lowStockBadge}>
                                             <AlertCircle size={12} /> Low Stock
                                         </span>
@@ -148,12 +156,13 @@ const Inventory = () => {
                                 </div>
                                 <div className={styles.itemDetails}>
                                     <span>{item.remaining_mg}mg remaining (of {item.quantity_mg}mg)</span>
+                                    <span>{(() => { const estimate = vialDoseEstimate(item, injections); return estimate ? `About ${estimate.count} full doses at your last logged dose (${estimate.dose})` : 'Log a dose in mg or mcg to estimate doses left'; })()}</span>
                                     {item.source && <span>• {item.source}</span>}
                                     {item.batch_number && <span>• Batch: {item.batch_number}</span>}
                                 </div>
                                 <div className={styles.stockBarWrapper}>
                                     <div
-                                        className={`${styles.stockBar} ${item.remaining_mg <= 10 ? styles.low : ''}`}
+                                        className={`${styles.stockBar} ${lowStockVials([item]).length > 0 ? styles.low : ''}`}
                                         style={{ width: `${getPercentRemaining(item)}%` }}
                                     />
                                 </div>
@@ -165,7 +174,7 @@ const Inventory = () => {
                                     onClick={() => openEditModal(item)}
                                     title="Edit Item"
                                 >
-                                    <Edit2 size={16} />
+                                    <Edit2 size={16} /> <span>Correct stock / edit</span>
                                 </button>
                                 <button
                                     className={`${styles.actionBtn} ${styles.deleteBtn}`}
@@ -191,14 +200,17 @@ const Inventory = () => {
                         <Plus size={20} /> Add First Item
                     </button>
                 </div>
-            )}
+            ))}
 
             {/* Add/Edit Modal */}
             {modalOpen && (
                 <div className={styles.modal} onClick={closeModal}>
                     <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                         <h2>{editingItem ? 'Edit Item' : 'Add to Inventory'}</h2>
-                        <form onSubmit={handleSubmit}>
+                        <form data-preserve-draft onSubmit={handleSubmit}>
+                            {saveError && <p role="alert">{saveError}</p>}
+                            {editingItem && <div className={styles.formGroup}><label htmlFor="remaining-stock">Remaining stock (mg)</label><input id="remaining-stock" type="number" min="0" max={formData.quantity_mg} step="any" required value={formData.remaining_mg ?? ''} onChange={e => setFormData({ ...formData, remaining_mg: e.target.value })} /><p>Enter the amount currently in this vial. This corrects stock; it does not change dose history. Later edits to logged doses still adjust their original vial allocations.</p></div>}
+
                             <div className={styles.formGroup}>
                                 <label>Peptide Name</label>
                                 <input
@@ -215,8 +227,8 @@ const Inventory = () => {
                                 <input
                                     type="number"
                                     required
-                                    min="0"
-                                    step="0.1"
+                                    min="0.001"
+                                    step="any"
                                     value={formData.quantity_mg}
                                     onChange={e => setFormData({ ...formData, quantity_mg: e.target.value })}
                                     placeholder="e.g. 5"
@@ -265,7 +277,7 @@ const Inventory = () => {
                                 <button type="button" className={styles.cancelBtn} onClick={closeModal}>
                                     Cancel
                                 </button>
-                                <button type="submit" className={styles.submitBtn}>
+                                <button type="submit" disabled={saving} className={styles.submitBtn}>
                                     {editingItem ? 'Update Item' : 'Add Item'}
                                 </button>
                             </div>

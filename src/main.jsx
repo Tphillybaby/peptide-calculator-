@@ -1,3 +1,4 @@
+import AppUpdate from './components/AppUpdate';
 import { StrictMode } from 'react'
 import { Analytics } from '@vercel/analytics/react'
 import { createRoot } from 'react-dom/client'
@@ -37,6 +38,7 @@ window.addEventListener('vite:preloadError', (event) => {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
+      <AppUpdate />
       <App />
       <Analytics />
     </HelmetProvider>

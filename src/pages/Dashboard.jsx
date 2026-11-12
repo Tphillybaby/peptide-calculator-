@@ -1,3 +1,4 @@
+import ReminderStatus from '../components/ReminderStatus';
 import { recentDoses, upcomingDoses, lowStockVials } from '../utils/dailyDashboard';
 import { useSchedule } from '../hooks/useSchedule';
 import { useInventory } from '../hooks/useInventory';
@@ -254,6 +255,7 @@ const Dashboard = () => {
                     </section>
                 </div>
 
+                <ReminderStatus schedules={schedules} />
                 {/* Stats Overview */}
                 <div className={styles.statsGrid}>
                     <div className={`${styles.statCard} ${styles.statPrimary}`}>
@@ -415,11 +417,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Progress Analytics Section */}
-                {user && (
-                    <section className={styles.analyticsSection}>
-                        <ProgressAnalytics />
-                    </section>
-                )}
+                <section className={styles.analyticsSection}><ProgressAnalytics /></section>
 
                 {/* Viral Growth: Stack Share Card */}
                 {user && (
@@ -428,6 +426,7 @@ const Dashboard = () => {
                     </section>
                 )}
 
+                <details className={styles.suppliesDisclosure}><summary>Recommended supplies <span>Optional shopping links</span></summary>
                 {/* Recommended Supplies Banner */}
                 <section className={styles.section}>
                     <div className={styles.sectionHeader} style={{ marginBottom: '1rem' }}>
@@ -601,6 +600,7 @@ const Dashboard = () => {
                         💛 Affiliate links — PeptideLog earns a small commission at no extra cost to you.
                     </p>
                 </section>
+                </details>
 
                 {/* Popular Peptides for SEO Internal Linking */}
                 <section className={styles.section}>

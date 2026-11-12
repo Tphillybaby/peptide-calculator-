@@ -1,3 +1,5 @@
+import ReminderStatus from '../components/ReminderStatus';
+import { useSchedule } from '../hooks/useSchedule';
 import { profileUpdate } from '../utils/profileUpdate';
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Shield, Bell, Database, Save, LogOut, AlertTriangle, Loader, Lock, Mail, Download, Trash2, Star, MessageSquare, ExternalLink, Activity, Sun, Moon, Globe, Share2, FileText, CreditCard, Check } from 'lucide-react';
@@ -46,7 +48,8 @@ const Settings = () => {
     const [passwordSaving, setPasswordSaving] = useState(false);
     const [notifSaving, setNotifSaving] = useState(false);
     const [message, setMessage] = useState(null);
-    const [activeTab, setActiveTab] = useState('profile');
+    const [activeTab, setActiveTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'notifications' ? 'notifications' : 'profile');
+    const { schedules: reminderSchedules } = useSchedule();
 
     const [profile, setProfile] = useState({
         full_name: '',
@@ -735,6 +738,7 @@ const Settings = () => {
                     {activeTab === 'notifications' && (
                         <div className={styles.section}>
                             <h2>Notification Preferences</h2>
+                            <ReminderStatus schedules={reminderSchedules} settings />
 
                             <div className={styles.toggleGroup}>
                                 <div className={styles.settingItem}>

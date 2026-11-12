@@ -17,20 +17,6 @@
   <!-- Register app updates immediately; a blocked analytics request must not delay recovery. -->
   <script>
     if ('serviceWorker' in navigator) {
-      var wasControlled = !!navigator.serviceWorker.controller;
-      navigator.serviceWorker.addEventListener('controllerchange', function () {
-        var root = document.getElementById('root');
-        var rendered = root && Array.from(root.children).some(function (child) {
-          return !['NOSCRIPT', 'SCRIPT', 'STYLE'].includes(child.tagName);
-        });
-        if (wasControlled && root && !rendered && location.pathname !== '/callback') {
-          try {
-            if (sessionStorage.getItem('sw_recovery_reloaded')) return;
-            sessionStorage.setItem('sw_recovery_reloaded', 'true');
-            location.reload();
-          } catch (error) { /* restricted storage: leave manual reload available */ }
-        }
-      });
       navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' })
         .then(function (registration) { return registration.update(); })
         .catch(function (error) { console.warn('App update check failed:', error.message); });
