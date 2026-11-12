@@ -1,3 +1,4 @@
+import {useSiteConfig} from '../context/SiteConfigContext';
 import ReminderStatus from '../components/ReminderStatus';
 import { recentDoses, upcomingDoses, lowStockVials } from '../utils/dailyDashboard';
 import { useSchedule } from '../hooks/useSchedule';
@@ -34,6 +35,7 @@ const getTimeAgo = (date) => {
 };
 
 const Dashboard = () => {
+    const {flags} = useSiteConfig();
     const { getStats, injections, loading: dosesLoading } = useInjections();
     const { schedules, loading: scheduleLoading, error: scheduleError } = useSchedule();
     const { inventory, loading: inventoryLoading, error: inventoryError } = useInventory({ notifyLowStock: false });
@@ -418,7 +420,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Progress Analytics Section */}
-                <section className={styles.analyticsSection}><ProgressAnalytics /></section>
+                {flags.progress_analytics !== false && <section className={styles.analyticsSection}><ProgressAnalytics /></section>}
 
                 {/* Viral Growth: Stack Share Card */}
                 {user && (

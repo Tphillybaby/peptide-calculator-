@@ -1,0 +1,4 @@
+import {it,expect} from 'vitest';
+import {checkoutOptions,PRICE_IDS} from '../supabase/functions/create-checkout/options';
+it('enables real Stripe codes without changing existing subscriptions',()=>{const options=checkoutOptions({priceId:PRICE_IDS[0],returnUrl:'https://www.peptidelog.net/settings?tab=subscription',customerId:'cus_test',userId:'owner'});expect(options.allow_promotion_codes).toBe(true);expect(options.cancel_url).toBe('https://www.peptidelog.net/settings');expect(options.line_items).toEqual([{price:PRICE_IDS[0],quantity:1}]);});
+it('rejects arbitrary plans and off-site checkout redirects',()=>{for(const returnUrl of ['https://evil.example','http://peptidelog.net','https://peptidelog.net.evil.example'])expect(()=>checkoutOptions({priceId:PRICE_IDS[0],returnUrl})).toThrow();expect(()=>checkoutOptions({priceId:'price_other',returnUrl:'https://peptidelog.net'})).toThrow();});

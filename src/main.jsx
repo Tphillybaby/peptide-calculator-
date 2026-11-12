@@ -1,3 +1,4 @@
+import { SiteConfigProvider } from './context/SiteConfigContext';
 import AppUpdate from './components/AppUpdate';
 import { StrictMode } from 'react'
 import { Analytics } from '@vercel/analytics/react'
@@ -39,7 +40,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <AppUpdate />
-      <App />
+      <SiteConfigProvider><App /></SiteConfigProvider>
       <Analytics />
     </HelmetProvider>
   </StrictMode>,

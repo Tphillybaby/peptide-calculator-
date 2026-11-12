@@ -1,0 +1,11 @@
+import React from 'react';
+import {it,expect,vi,afterEach} from 'vitest';
+import {render,screen,cleanup} from '@testing-library/react';
+import {MemoryRouter} from 'react-router-dom';
+import {SiteGate,SiteAnnouncements} from '../src/components/SiteRuntime';
+const auth=vi.hoisted(()=>({isAdmin:false}));const config=vi.hoisted(()=>({settings:{maintenance_mode:false,registration_enabled:true,site_name:'PeptideLog'},flags:{},announcements:[],loading:false,error:false}));
+vi.mock('../src/context/AuthContext',()=>({useAuth:()=>auth}));vi.mock('../src/context/SiteConfigContext',()=>({useSiteConfig:()=>config}));
+afterEach(()=>{cleanup();auth.isAdmin=false;config.settings.maintenance_mode=false;config.flags={};});
+const show=path=>render(<MemoryRouter initialEntries={[path]}><SiteGate><p>Page content</p></SiteGate></MemoryRouter>);
+it('applies maintenance mode while keeping login and admin access available',()=>{config.settings.maintenance_mode=true;show('/');expect(screen.getByText('We’ll be back shortly')).toBeInTheDocument();cleanup();show('/login');expect(screen.getByText('Page content')).toBeInTheDocument();cleanup();auth.isAdmin=true;show('/admin');expect(screen.getByText('Page content')).toBeInTheDocument();});
+it('uses saved page switches and renders announcement text without HTML injection',()=>{config.flags.price_checker=false;show('/price-checker');expect(screen.queryByText('Page content')).not.toBeInTheDocument();cleanup();config.announcements=[{id:'one',title:'News',message:'<script>unsafe</script>'}];render(<SiteAnnouncements/>);expect(screen.getByText('<script>unsafe</script>')).toBeInTheDocument();});
